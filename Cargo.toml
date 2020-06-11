@@ -8,3 +8,7 @@ edition = "2018"
 
 [dependencies]
 cursive = "0.15"
+tui = "0.9"
+termion = "1.5"
+termios = "*"
+libc = "*"

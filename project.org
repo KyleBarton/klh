@@ -158,3 +158,49 @@ Craig A. Finseth
 - On marks:
   "There are two types of marks. They differ only in how they behave in the case that an insertion is made at the location of the mark. Normal marks move with the insertion. Thus, the newly inserted character will be just before the mark. Fixed marks remain in place: the newly inserted character will be just after the mark. An example of the difference is in the case where a command is to identify the characters that are inserted. The command merely needs to create both a fixed and a normal mark at the same place. After the insertion, the two marks will bracket the new characters."
 
+** Architecture
+*** TODO Diagrams
+*** Components
+**** Buffer Editor
+***** Summary
+Program whose functions are of the form ~(Buffer, args) -> Buffer~, and are
+stateless. The lone exception is for ~split_buffer~, which is of the form
+~(Buffer, args) -> Vec<Buffer>~ It is the engine that drives the actual changing
+of a piece of text.
+:TODO_NOTE:
+Need to look more closely at the API here. Should
+this be a mutable reference? Or just try to use the &str API? Or role a more
+involved struct at this level too?
+:END:
+***** Functions
+****** append_char
+Appends the given Buffer with a given character
+****** prepend_char
+Prepends the given Buffer with a given character
+****** insert_char_at_point
+Inserts a given character at a given location in the Buffer.
+****** pop_char
+Removes the last char of the Buffer
+****** cut_char
+Removes the first char of the Buffer
+****** split_buffer
+Splits a given buffer at a given point, returning a list of buffers as a
+partition of the given buffer
+****** get_char_at_point
+Returns the char in the Buffer that matches the given index
+****** get_next_point_for_char
+Returns the next index in the Buffer that matches the given char
+:TODO_NOTE:
+We need to define "next" here -- how does state work?
+:END:
+**** Buffer Coordinator
+***** Summary
+Program whose functions are to receive commands from the Command Interpreter and
+translate to changes to the buffers in the buffer store. To start, this can be
+translating commands to the buffer editor
+**** Buffer Store
+***** Summary
+Program who provisions and maintains buffers in memory. In charge of any
+locking/race-condition management that will be necessary. Also in charge of
+saving files.
+
