@@ -204,3 +204,13 @@ Program who provisions and maintains buffers in memory. In charge of any
 locking/race-condition management that will be necessary. Also in charge of
 saving files.
 
+** Tasks
+*** Features
+**** TODO refactor into components
+**** TODO implement error handling strategy
+**** TODO implement logging strategy
+**** TODO implement point
+**** TODO implement =buffer_editor=
+**** TODO implement testing strategy
+*** Bugs/Cleanup
+**** TODO arrow keys need to be handled
