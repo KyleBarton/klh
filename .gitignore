@@ -1,2 +1,4 @@
 /target
 .\#*
+# this where i'm debug-logging for now
+klh.log
