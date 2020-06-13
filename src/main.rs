@@ -13,22 +13,17 @@ use std::fs::File;
 fn main() -> io::Result<()> {
     let std_fd = libc::STDIN_FILENO;
     let termios = enable_canononical(std_fd);
-    println!("Begin typing! You're in klh");
-
     let mut log = String::new();
 
     //TODO string is not the struc we want to use here
     let mut ed_buffer = String::new();
 
     loop {
+        display_buffer(&ed_buffer);
+
         //TODO to be safe we should be injecting the fd here
         let mut command_buffer = [0;1];
         await_command(&mut command_buffer).unwrap();
-        if command_buffer[0] == /*Escape*/27 {
-            break;
-        }
-
-        process_command(&command_buffer, &mut ed_buffer).unwrap();
 
         write!(
             &mut log,
@@ -36,7 +31,12 @@ fn main() -> io::Result<()> {
             command_buffer[0],
             command_buffer[0] as char).unwrap();
 
-        display_buffer(&ed_buffer);
+        match process_command(&command_buffer, &mut ed_buffer) {
+            Some(_exit_code) => break, //just leave the loop for now
+            None => (), //keep looping
+        };
+
+
     }
 
     let log_filename = "klh.log";
@@ -70,7 +70,10 @@ fn disable_canonical(term: Termios, fd: i32) {
     tcsetattr(fd, TCSANOW, & term).unwrap();
 }
 
-//TODO we need to wrap std::io entirely here
+/*
+TODO We need to be abstract to the input buffer here. Impls of reader seem
+reasonable to start
+ */
 fn await_command(buffer: &mut[u8]) -> Result<(), std::io::Error> {
     let mut reader = io::stdin();
     match reader.read_exact(buffer) {
@@ -85,13 +88,16 @@ fn save_log(filename: &str, log: &String) -> io::Result<()> {
     Ok(())
 }
 
-fn process_command(command_buf: &[u8], ed_buf: &mut String) -> Result<(), std::io::Error> {
+fn process_command(command_buf: &[u8], ed_buf: &mut String) -> Option<u16> {
     if command_buf.len() != 1 {
         panic!("Command buf should only every be len 1");
     }
     let cmd = command_buf[0];
 
+    //TODO the arrow keys make esp happen right now, we need to fix that
     match cmd {
+        //exit the program
+        27 => { return Some(0);}
         //backspace
         127 => { ed_buf.remove(ed_buf.len()-1); },
         //lowercase
@@ -101,7 +107,6 @@ fn process_command(command_buf: &[u8], ed_buf: &mut String) -> Result<(), std::i
         //ok turns out we want to do this by default right now
         _ => write!(ed_buf, "{}", cmd as char).unwrap(),
     };
-
-    Ok(())
+    None
 }
 
