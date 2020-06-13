@@ -1,14 +1,15 @@
+extern crate termion;
 extern crate termios;
 extern crate libc;
 
 use std::io;
 use std::io::prelude::*;
 use termios::*;
+use termion::*;
 use std::fmt::Write;
 use std::io::Write as Otherwise;
 use std::fs::File;
 
-//backspace == ascii 127
 fn main() -> io::Result<()> {
     let std_fd = libc::STDIN_FILENO;
     let termios = enable_canononical(std_fd);
@@ -23,7 +24,7 @@ fn main() -> io::Result<()> {
         //TODO to be safe we should be injecting the fd here
         let mut command_buffer = [0;1];
         await_command(&mut command_buffer).unwrap();
-        if command_buffer[0] == 'Q' as u8 {
+        if command_buffer[0] == /*Escape*/27 {
             break;
         }
 
@@ -35,8 +36,7 @@ fn main() -> io::Result<()> {
             command_buffer[0],
             command_buffer[0] as char).unwrap();
 
-        display(&command_buffer);
-        //display_buffer(&ed_buffer);
+        display_buffer(&ed_buffer);
     }
 
     let log_filename = "klh.log";
@@ -49,20 +49,13 @@ fn main() -> io::Result<()> {
     Ok(())
 }
 
-/*So this has the obvious problem of coupling to command interpretation
-That is, display() implicitly has the "echo" action on all commands. What's nice here is we aren't redrawing
-every time.
-*/
-fn display(buffer: &[u8]) {
-    if buffer.len() != 1 {
-       panic!("Only accepting single-byte buffers at this time");
-    }
-    print!("{}", buffer[0] as char);
-    let stdout = io::stdout();
-    stdout.lock().flush().unwrap();
-}
-
+/* Open question: Should performance be a
+ * display concern? Or a caller's concern? Eventually we'll want to do diff
+ * analysis and only change what we need*/
 fn display_buffer(buffer: &String) {
+    print!("{}{}", clear::All, cursor::Goto(1, 1));
+    print!("{}", buffer);
+    io::stdout().lock().flush().unwrap();
 }
 
 fn enable_canononical(fd: i32) -> termios::Termios {
@@ -99,6 +92,8 @@ fn process_command(command_buf: &[u8], ed_buf: &mut String) -> Result<(), std::i
     let cmd = command_buf[0];
 
     match cmd {
+        //backspace
+        127 => { ed_buf.remove(ed_buf.len()-1); },
         //lowercase
         97..=122 => write!(ed_buf, "{}", cmd as char).unwrap(),
         //uppercase
