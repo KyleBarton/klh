@@ -15,7 +15,7 @@ use klh::models::{ContentBuffer, Command};
 
 fn main() -> io::Result<()> {
     let std_fd = libc::STDIN_FILENO;
-    let termios = enable_canononical(std_fd);
+    let termios = disable_canonical(std_fd);
     let mut reader = std::io::stdin();
     let mut log = String::new();
 
@@ -54,13 +54,13 @@ fn main() -> io::Result<()> {
 
     println!("\nexiting! Log of this session can be found in {}", log_filename);
 
-    disable_canonical(termios, std_fd);
+    reenable_canonical(termios, std_fd);
 
     Ok(())
 }
 
 
-fn enable_canononical(fd: i32) -> termios::Termios {
+fn disable_canonical(fd: i32) -> termios::Termios {
     let termios = Termios::from_fd(fd).unwrap();
     let mut my_termios = termios.clone();
     my_termios.c_lflag &= !(ICANON | ECHO);
@@ -68,7 +68,7 @@ fn enable_canononical(fd: i32) -> termios::Termios {
     return termios;
 }
 
-fn disable_canonical(term: Termios, fd: i32) {
+fn reenable_canonical(term: Termios, fd: i32) {
     tcsetattr(fd, TCSANOW, & term).unwrap();
 }
 
