@@ -195,7 +195,7 @@ We need to define "next" here -- how does state work?
 :END:
 **** Buffer Coordinator
 ***** Summary
-Program whose functions are to receive commands from the Command Interpreter and
+Program whose functions are to receive commands from the =Command Interpreter= and
 translate to changes to the buffers in the buffer store. To start, this can be
 translating commands to the buffer editor
 **** Buffer Store
@@ -203,6 +203,14 @@ translating commands to the buffer editor
 Program who provisions and maintains buffers in memory. In charge of any
 locking/race-condition management that will be necessary. Also in charge of
 saving files.
+**** Command Interpreter
+***** Summary
+Awaits data on a given input stream, and when received, translates them into
+commands to the buffer coordinator
+:REFACTOR:
+This may need to be split into a Command listener and Command INterpreter(s)
+subscribed to events
+:END:
 
 ** Tasks
 *** Features
@@ -214,3 +222,6 @@ saving files.
 **** TODO implement testing strategy
 *** Bugs/Cleanup
 **** TODO arrow keys need to be handled
+Note that arrow keys send multiple characters to the screen -> <ESC>+A|B|C|D
+**** TODO Cleanup access control across project
+**** TODO restore the screen
