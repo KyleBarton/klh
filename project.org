@@ -217,11 +217,14 @@ subscribed to events
 **** TODO refactor into components
 **** TODO implement error handling strategy
 **** TODO implement logging strategy
-**** TODO implement point
+**** DONE implement point
+CLOSED: [2020-06-14 Sun 22:12]
 **** TODO implement =buffer_editor=
 **** TODO implement testing strategy
 *** Bugs/Cleanup
-**** TODO arrow keys need to be handled
+**** DONE arrow keys need to be handled
+CLOSED: [2020-06-14 Sun 22:12]
 Note that arrow keys send multiple characters to the screen -> <ESC>+A|B|C|D
 **** TODO Cleanup access control across project
-**** TODO restore the screen
+**** DONE restore the screen
+CLOSED: [2020-06-14 Sun 22:12]
