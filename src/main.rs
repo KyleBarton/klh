@@ -5,18 +5,19 @@ extern crate libc;
 use std::io;
 use termios::*;
 use termion::screen::AlternateScreen;
-use std::fmt::Write;
-use std::io::Write as Otherwise;
+use std::io::Write;
 use std::fs::File;
 
 use klh::command_interpreter::*;
 use klh::display::*;
-use klh::models::{ContentBuffer, Command};
+use klh::models::{ContentBuffer, UserInput, InputType};
 
 fn main() -> io::Result<()> {
     let std_fd = libc::STDIN_FILENO;
+    /*These two lines have to stay together*/
     let termios = disable_canonical(std_fd);
     let mut reader = std::io::stdin();
+    /*END*/
     let mut log = String::new();
 
     let mut current_buffer = ContentBuffer {
@@ -30,22 +31,15 @@ fn main() -> io::Result<()> {
 
         display_buffer(&current_buffer, &mut screen);
 
-        let mut command = Command {
-            raw_input: [0;1],
+        let mut command = UserInput {
+            input_type: InputType::Waiting,
         };
 
-        //TODO to be safe we should be injecting the fd here
-        await_command(&mut command, &mut reader).unwrap();
+        await_input(&mut command, &mut reader).unwrap();
 
-        write!(
-            &mut log,
-            "Command entered was {:?} ===> {}\n",
-            command.raw_input[0],
-            command.raw_input[0] as char).unwrap();
-
-        match process_command(&command, &mut current_buffer) {
-            Some(_exit_code) => break, //just leave the loop for now
-            None => (), //keep looping
+        match process_input(&command, &mut current_buffer, &mut log) {
+            Some(_exit_code) => break,
+            None => (),
         }
     }
 
