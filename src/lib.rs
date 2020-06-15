@@ -134,14 +134,22 @@ pub mod display {
         screen.flush().unwrap();
     }
 
+    /*indexes are still a little weird here For instance, cursor doesn't seem to
+    calculate quite right on delete of the enter key This needs a fully tested
+    suite at this point though
+     */
     pub fn calculate_cursor(buffer: &ContentBuffer) -> (u16, u16) {
-        let y = buffer.content.matches("\n").count();
-        let last_newline = match buffer.content.rfind('\n') {
-            Some(ind) => ind,
+        let point_as_index = buffer.point as usize;
+        let before_point = &buffer.content[..point_as_index];
+
+        let y = before_point.matches("\n").count();
+
+        let last_newline = match before_point.rfind('\n') {
+            Some(ind) => ind+1,
             None => 0,
         };
         let x = max(
-            buffer.content[last_newline..].len() as i16 -1,
+            before_point[last_newline..].len() as i16,
             0
         );
 
