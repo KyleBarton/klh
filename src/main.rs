@@ -8,9 +8,10 @@ use termion::screen::AlternateScreen;
 use std::io::Write;
 use std::fs::File;
 
-use klh::command_interpreter::*;
+use klh::command_executor::*;
+use klh::input_handler::*;
 use klh::display::*;
-use klh::models::{ContentBuffer, UserInput, InputType};
+use klh::models::{ContentBuffer, Command};
 
 fn main() -> io::Result<()> {
     let std_fd = libc::STDIN_FILENO;
@@ -31,13 +32,11 @@ fn main() -> io::Result<()> {
 
         display_buffer(&current_buffer, &mut screen);
 
-        let mut command = UserInput {
-            input_type: InputType::Waiting,
-        };
+        let input = await_input_v2(&mut reader, &mut log).unwrap();
 
-        await_input(&mut command, &mut reader).unwrap();
+        let command: Command = process_input_v2(input, &mut log)?;
 
-        match process_input(&command, &mut current_buffer, &mut log) {
+        match execute_command(&command, &mut current_buffer, &mut log){
             Some(_exit_code) => break,
             None => (),
         }
