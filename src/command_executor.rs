@@ -34,7 +34,8 @@ pub fn execute_command(command: &Command, buffer: &mut ContentBuffer, log: &mut 
             write!(log, "Keystroke Processed: <BACKSPACE>\n").unwrap();
             buffer.content.remove(
                 //point actually hangs out at buffer.len (out of range) right now
-                min(buffer.point.try_into().unwrap(), buffer.content.len()-1)
+                //TODO when Buffer_Editor gets implemented, we need to model point as a position _between_ chars
+                min((buffer.point-1).try_into().unwrap(), buffer.content.len()-1)
             );
             buffer.point = max(buffer.point-1, 0);
             write!(log, "Point is at: {}\n", buffer.point).unwrap();
