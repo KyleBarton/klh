@@ -1,7 +1,3 @@
-extern crate termion;
-extern crate termios;
-extern crate libc;
-
 use std::io;
 use termios::*;
 use termion::screen::AlternateScreen;
