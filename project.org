@@ -173,22 +173,22 @@ this be a mutable reference? Or just try to use the &str API? Or role a more
 involved struct at this level too?
 :END:
 ***** Functions
-****** append_char
-Appends the given Buffer with a given character
-****** prepend_char
+****** =append_char=
+Inserts the given Buffer with a given character at its point
+****** =prepend_char=
 Prepends the given Buffer with a given character
-****** insert_char_at_point
+****** =insert_char_at_point=
 Inserts a given character at a given location in the Buffer.
-****** pop_char
+****** =pop_char=
 Removes the last char of the Buffer
-****** cut_char
+****** =cut_char=
 Removes the first char of the Buffer
-****** split_buffer
+****** =split_buffer=
 Splits a given buffer at a given point, returning a list of buffers as a
 partition of the given buffer
-****** get_char_at_point
+****** =get_char_at_point=
 Returns the char in the Buffer that matches the given index
-****** get_next_point_for_char
+****** =get_next_point_for_char=
 Returns the next index in the Buffer that matches the given char
 :TODO_NOTE:
 We need to define "next" here -- how does state work?
