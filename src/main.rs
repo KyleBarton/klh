@@ -7,7 +7,8 @@ use std::fs::File;
 use klh::command_executor::*;
 use klh::input_handler::*;
 use klh::display::*;
-use klh::models::{ContentBuffer, Command};
+use klh::models::Command;
+use klh::buffer;
 
 fn main() -> io::Result<()> {
     let std_fd = libc::STDIN_FILENO;
@@ -17,22 +18,19 @@ fn main() -> io::Result<()> {
     /*END*/
     let mut log = String::new();
 
-    let mut current_buffer = ContentBuffer {
-        content: String::new(),
-        point: 0,
-    };
+    let mut current_buffer_v2 = buffer::LineBuffer::new();
 
     let mut screen = AlternateScreen::from(std::io::stdout());
 
     loop {
 
-        display_buffer(&current_buffer, &mut screen);
+        display_buffer_v2(&current_buffer_v2, &mut screen);
 
         let input = await_input_v2(&mut reader, &mut log).unwrap();
 
         let command: Command = process_input_v2(input, &mut log)?;
 
-        match execute_command(&command, &mut current_buffer, &mut log){
+        match execute_command_v2(&command, &mut current_buffer_v2, &mut log) {
             Some(_exit_code) => break,
             None => (),
         }
@@ -66,5 +64,3 @@ fn save_log(filename: &str, log: &String) -> io::Result<()> {
     write!(&mut file, "{}", &log).unwrap();
     Ok(())
 }
-
-
