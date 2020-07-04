@@ -4,6 +4,7 @@ pub enum Command {
     BufferDelete,
     AdvancePoint,
     RetreatPoint,
+    Save,
     Quit,
     Default, //mostly for stubbing
 }
@@ -16,6 +17,7 @@ pub enum ControlType {
     ArrowRight,
     CursorUp,
     CursorDown,
+    Save,
 }
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub enum InputType {

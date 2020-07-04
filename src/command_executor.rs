@@ -1,6 +1,7 @@
 use std::fmt::Write;
 use crate::models::Command;
 use crate::buffer;
+use crate::buffer_provider;
 
 //TODO logging still
 pub fn execute_command_v2(command: &Command, buffer: &mut impl buffer::Buffer, log: &mut impl Write) -> Option<u16> {
@@ -32,6 +33,11 @@ pub fn execute_command_v2(command: &Command, buffer: &mut impl buffer::Buffer, l
             write!(log, "Keystroke Processed: <BACK>\n").unwrap();
             buffer.move_current_location(-1).unwrap();
             write!(log, "Point is at: {:?}\n", buffer.get_current_location().unwrap()).unwrap();
+        },
+        Command::Save => {
+            write!(log, "Command Processed: SAVE\n").unwrap();
+            buffer_provider::save(buffer, log).unwrap();
+            write!(log, "Successfully saved to {}\n", &buffer.get_name().unwrap());
         }
         _ => (),
     }

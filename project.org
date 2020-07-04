@@ -214,13 +214,15 @@ subscribed to events
 
 ** Tasks
 *** Features
-**** TODO refactor into components
+**** DONE refactor into components
+CLOSED: [2020-07-03 Fri 12:09]
 **** TODO implement error handling strategy
 **** TODO implement logging strategy
 **** DONE implement point
 CLOSED: [2020-06-14 Sun 22:12]
 **** TODO implement =buffer_editor=
 **** TODO implement testing strategy
+**** TODO implement =buffer_store=
 *** Bugs/Cleanup
 **** DONE arrow keys need to be handled
 CLOSED: [2020-06-14 Sun 22:12]

@@ -23,6 +23,7 @@ pub trait Buffer {
     fn get_current_location(&self) -> Result<Coordinate, String>;
     fn move_current_location(&mut self, amount: i64) -> Result<Coordinate, String>;
     fn get_chars(&self) -> Result<String, String>; //returns all chars in a big string
+    fn get_name(&self) -> Result<&str, String>;
 }
 
 pub trait Location {
@@ -51,6 +52,7 @@ impl Coordinate {
 pub struct LineBuffer {
     point: Coordinate, //currently point is horizontal only, i.e. 0 on a new line
     lines: Vec<String>,
+    name: String,
 }
 
 //TODO this needs to be only accessible from the buffer_manager
@@ -59,6 +61,21 @@ impl LineBuffer {
         LineBuffer {
             point: Coordinate::new(),
             lines: Vec::new(),
+            name: String::from(""),
+        }
+    }
+
+    pub fn with_content(content: &str, name: &str) -> LineBuffer {
+        let lines = &content.split("\n").collect::<Vec<&str>>();
+
+        let lines: Vec<String> = lines.iter().map(|s| {
+            String::from(*s)
+        }).collect();
+
+        LineBuffer {
+            lines,
+            point: Coordinate::new(),
+            name: String::from(name),
         }
     }
 
@@ -109,6 +126,49 @@ impl LineBuffer {
             };
         self.point = pt;
     }
+
+    fn delete(&mut self) -> Result<(), String> {
+        let current_line = &self.lines[self.point.line];
+
+        if self.point.offset == 0 {
+            self.point =
+            if self.point.line < 1 {
+                Coordinate {
+                    offset: 0,
+                    line: 0,
+                }
+            } else {
+                let new_line = self.point.line-1;
+                let new_offset = self.lines[new_line].len();
+                let first_part = String::from(&self.lines[new_line]);
+                let second_part = String::from(&self.lines[self.point.line]);
+                let new_line_content = String::from(first_part + &second_part);
+                mem::replace(&mut self.lines[new_line], new_line_content);
+                self.lines.remove(self.point.line);
+                Coordinate {
+                    line: new_line,
+                    offset: new_offset,
+                }
+            };
+        }
+        else {
+            println!("point: {:?}", self.point);
+            println!("ln: {}", current_line);
+            let first_part = String::from(&current_line[..self.point.offset-1]);
+            let second_part = String::from(&current_line[self.point.offset..]);
+
+            let new_line = String::from(first_part + &second_part);
+
+            mem::replace(&mut self.lines[self.point.line], new_line);
+            self.point.offset = if self.point.offset < 1 {
+                0
+            } else {
+                self.point.offset -1
+            };
+
+        }
+        Ok(())
+    }
 }
 
 impl Buffer for LineBuffer {
@@ -122,23 +182,7 @@ impl Buffer for LineBuffer {
 
     fn delete_at_point(&mut self, deletions: usize) -> Result<(), String> {
         for _n in 0..deletions {
-            match self.lines[self.point.line].pop() {
-                Some(_ch) => self.point.offset =
-                if self.point.offset < 1 {
-                    0
-                } else {
-                    self.point.offset -1
-                },
-                None => {
-                    self.point.line =
-                        if self.point.line < 1 {
-                            0
-                        } else {
-                            self.lines.remove(self.point.line);
-                            self.point.line -1
-                    };
-                },
-            }
+            self.delete().unwrap();
         }
         Ok(())
     }
@@ -200,6 +244,10 @@ impl Buffer for LineBuffer {
         let chars: String = String::from(&self.lines.join("\n"));
         Ok(chars)
         //return Ok(&self.lines.)
+    }
+
+    fn get_name(&self) -> Result<&str, String> {
+        Ok(&self.name)
     }
 }
 
@@ -324,12 +372,48 @@ here already.
     #[test]
     fn line_buffer_should_not_delete_past_beginning_of_buffer() {
         let mut buffer = LineBuffer::new();
-        buffer.append_at_point("abcd");
+        buffer.append_at_point("abcd").unwrap();
 
         buffer.delete_at_point(5).unwrap();
 
         assert_eq!(buffer.get_chars().unwrap(), String::from(""));
         assert_eq!(buffer.get_current_location().unwrap(), Coordinate { line: 0, offset: 0,})
+    }
+
+    #[test]
+    fn line_buffer_should_delete_mid_line() {
+        let mut buffer = LineBuffer::new();
+        buffer.append_at_point("abcd").unwrap();
+        buffer.move_current_location(-2).unwrap();
+
+        buffer.delete_at_point(1).unwrap();
+
+        assert_eq!(buffer.get_chars().unwrap(), String::from("acd"))
+    }
+
+    #[test]
+    fn line_buffer_should_not_delete_past_beginning_mid_line() {
+        let mut buffer = LineBuffer::new();
+        buffer.append_at_point("abcd").unwrap();
+        buffer.move_current_location(-2).unwrap();
+
+        buffer.delete_at_point(3).unwrap();
+
+        assert_eq!(buffer.get_chars().unwrap(), String::from("cd"));
+        assert_eq!(buffer.get_current_location().unwrap(), Coordinate { line: 0, offset: 0})
+    }
+
+    #[test]
+    fn line_buffer_should_delete_line_mid_buffer() {
+        let mut buffer = LineBuffer::new();
+        buffer.append_at_point("abc\n\ndef").unwrap();
+        buffer.move_current_location(-3).unwrap();
+        assert_eq!(buffer.get_current_location().unwrap(), Coordinate { line: 2, offset: 0});
+
+        buffer.delete_at_point(1).unwrap();
+
+        assert_eq!(buffer.get_chars().unwrap(), String::from("abc\ndef"));
+        assert_eq!(buffer.get_current_location().unwrap(), Coordinate { line: 1, offset: 0});
     }
 
     #[test]
