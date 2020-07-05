@@ -5,14 +5,16 @@ use crate::buffer;
 
 use crate::buffer::{ Buffer, LineBuffer };
 
+
+pub enum BufferType {
+    Normal,
+}
+
+//TODO FIGURE OUT WHY WE HAVE BOTH OF THESE?
 //TODO str is not what we want here for file option, and we need our own errors
 pub fn new_buffer(_file_name: Option<&str>) -> Result<impl buffer::Buffer, String> {
     //Err(String::from("not yet implemented"))
     Ok(buffer::LineBuffer::new())
-}
-
-pub enum BufferType {
-    Normal,
 }
 pub fn new(buffer_type: BufferType) -> Result<LineBuffer, String> {
     Ok(LineBuffer::new())
