@@ -224,7 +224,8 @@ CLOSED: [2020-06-14 Sun 22:12]
 CLOSED: [2020-07-07 Tue 22:53]
 **** TODO implement testing strategy
 **** TODO implement =buffer_store=
-**** TODO implement =session=
+**** DONE implement =session=
+CLOSED: [2020-07-08 Wed 22:28]
 Basically, it's =world= from /Craft/, but I'd still like it to be more modular
 *** Bugs/Cleanup
 **** DONE arrow keys need to be handled

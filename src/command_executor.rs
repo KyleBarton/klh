@@ -1,45 +1,41 @@
-use std::fmt::Write;
 use crate::models::Command;
 use crate::buffer;
 use crate::buffer_provider;
+use log::{info};
 
-//TODO logging still
-pub fn execute_command_v2(command: &Command, buffer: &mut impl buffer::Buffer, log: &mut impl Write) -> Option<u16> {
-    write!(log, "Command is {:?}\n", command).unwrap();
+pub fn execute_command_v2(command: &Command, buffer: &mut impl buffer::Buffer) -> Option<u16> {
+    info!("Executing command: {:?}", command);
     match command {
         Command::BufferInsert(ch) => {
-            write!(log, "Command insert: {}, {:?}\n", ch, *ch as u8).unwrap();
-
             buffer.append_at_point(&ch.to_string()).unwrap();
 
-            write!(log, "Point is at: {:?}\n", buffer.get_current_location().unwrap()).unwrap();
+            info!("Inserted: {}, {:?}", ch, *ch as u8);
         },
         Command::Quit => {
-            write!(log, "Keystroke Processed: <ESC>\n").unwrap();
-            write!(log, "Point is at: {:?}\n", buffer.get_current_location().unwrap()).unwrap();
+            info!("Exiting command executor on quit command");
             return Some(0)
         },
         Command::BufferDelete => {
-            write!(log, "Keystroke Processed: <BACKSPACE>\n").unwrap();
             buffer.delete_at_point(1).unwrap();
-            write!(log, "Point is at: {:?}\n", buffer.get_current_location().unwrap()).unwrap();
+            info!("Executed delete at point");
         },
         Command::AdvancePoint => {
-            write!(log, "Keystroke Processed: <FORWARD>\n").unwrap();
             buffer.move_current_location(1).unwrap();
-            write!(log, "Point is at {:?}\n", buffer.get_current_location().unwrap()).unwrap();
+            info!("Advanced point");
         },
         Command::RetreatPoint => {
-            write!(log, "Keystroke Processed: <BACK>\n").unwrap();
             buffer.move_current_location(-1).unwrap();
-            write!(log, "Point is at: {:?}\n", buffer.get_current_location().unwrap()).unwrap();
+            info!("Retreated point");
         },
         Command::Save => {
-            write!(log, "Command Processed: SAVE\n").unwrap();
-            buffer_provider::save(buffer, log).unwrap();
-            write!(log, "Successfully saved to {}\n", &buffer.get_name().unwrap());
+            buffer_provider::save(buffer).unwrap();
+            info!("Successfully saved to {}", &buffer.get_name().unwrap());
         }
-        _ => (),
+        _ => {
+            info!("Command not handled, skipping execution");
+            ()
+        },
     }
+    info!("Command processed, point is at {:?}", buffer.get_current_location().unwrap());
     None
 }

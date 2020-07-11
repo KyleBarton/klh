@@ -1,7 +1,4 @@
-use std::io;
-use std::fs::File;
-use std::io::Write;
-use std::fmt::Write as other;
+use log::{info};
 use crate::display;
 use crate::input_handler;
 use crate::startup;
@@ -54,9 +51,8 @@ pub struct Session {
 }
 
 impl Session {
-    //TODO this is where you would new-up the buffer store
-    //TODO This actually maybe should be distinct from start_up()
     pub fn new(args: startup::StartupArgs) -> Session {
+        info!("Creating new session");
         Session {
             startup_args: args,
             current_buffer: buffer_provider::new(buffer_provider::BufferType::Normal).unwrap(),
@@ -66,16 +62,21 @@ impl Session {
         }
     }
 
+    //TODO this is where you would new-up the buffer store
     //Should only ever be run once for the session. Must bookend with a tear_down call
     fn init(&mut self) -> Result<(), String> {
-        //redundant with constructor?
         self.screen = SessionScreen::new().unwrap();
         self.reader = std::io::stdin();
         self.state = SessionState::PostInit;
 
         let new_buffer = match self.startup_args.get_file_name() {
-            None => buffer_provider::new(buffer_provider::BufferType::Normal).unwrap(),
-            Some(f) => buffer_provider::from_file(buffer_provider::BufferType::Normal, f).unwrap(),
+            None => {
+                info!("Starting with current buffer as default");
+                buffer_provider::new(buffer_provider::BufferType::Normal).unwrap()
+            },
+            Some(f) => {
+                info!("Starting with current buffer from given file {}", &f);
+                buffer_provider::from_file(buffer_provider::BufferType::Normal, f).unwrap() },
         };
         self.current_buffer = new_buffer;
         Ok(())
@@ -86,21 +87,23 @@ impl Session {
     //note that that means we have to assume buffers exist and they have to stay intact
     fn add_hooks(&mut self) -> Result<(), String> {
         self.state = SessionState::PostHooks;
+        info!("Hooks loaded");
         Ok(())
     }
 
     //This is where user/system config can be loaded
     fn load_config(&mut self) -> Result<(), String> {
         self.state = SessionState::UserReady;
+        info!("Config loaded");
         Ok(())
     }
 
     //await an input to act on
-    fn await_user(&mut self, mut log: &mut impl std::fmt::Write) -> Result<(), String> {
+    fn await_user(&mut self) -> Result<(), String> {
         self.screen.display(&self.current_buffer).unwrap();
-        let input = input_handler::await_input_v2(&mut self.reader, &mut log).unwrap();
-        let command: Command = input_handler::process_input_v2(input, &mut log).unwrap();
-        match command_executor::execute_command_v2(&command, &mut self.current_buffer, &mut log) {
+        let input = input_handler::await_input_v2(&mut self.reader).unwrap();
+        let command: Command = input_handler::process_input_v2(input).unwrap();
+        match command_executor::execute_command_v2(&command, &mut self.current_buffer) {
             Some(_exit_code) => self.state = SessionState::TearDownReady,
             None => (),
         };
@@ -108,34 +111,26 @@ impl Session {
     }
 
     //Can only be run once for the session. Must bookend with init()
-    fn tear_down(&mut self, log: &String) -> Result<(), String> {
-        let log_filename = "klh.log";
-        Session::save_log(&log_filename, &log).unwrap();
+    fn tear_down(&mut self) -> Result<(), String> {
         self.state = SessionState::PostTearDown;
+        info!("Teardown complete");
         Ok(())
     }
 
 
     //I think this can be our only public function (other than new)
     pub fn run(&mut self) -> Result<(), String> {
-        //TODO we'll keep the log in run for now and revamp logging completely later
-        let mut log = String::from("");
+        info!("Starting session");
         loop {
             match &self.state {
                 SessionState::New => self.init(),
                 SessionState::PostInit => self.add_hooks(),
                 SessionState::PostHooks => self.load_config(),
-                SessionState::UserReady => self.await_user(&mut log),
-                SessionState::TearDownReady => { self.tear_down(&log) },
+                SessionState::UserReady => self.await_user(),
+                SessionState::TearDownReady => { self.tear_down() },
                 SessionState::PostTearDown => break,
             }.unwrap();
         }
-        Ok(())
-    }
-
-    fn save_log(filename: &str, log: &String) -> io::Result<()> {
-        let mut file = File::create(filename)?;
-        write!(&mut file, "{}", &log).unwrap();
         Ok(())
     }
 }
