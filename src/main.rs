@@ -1,8 +1,8 @@
 use klh::session;
 use klh::startup::StartupArgs;
 use simplelog;
-use std::io;
 use std::fs;
+use std::io;
 use termios::*;
 
 fn main() -> io::Result<()> {
@@ -11,7 +11,8 @@ fn main() -> io::Result<()> {
     simplelog::LevelFilter::Info,
     simplelog::Config::default(),
     fs::File::create("klh.log").unwrap(),
-  )]).unwrap();
+  )])
+  .unwrap();
   /*end*/
   let std_fd = libc::STDIN_FILENO;
   /*These two lines have to stay together*/
