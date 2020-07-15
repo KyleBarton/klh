@@ -6,7 +6,7 @@ use termion::{clear, cursor};
 /* Open question: Should performance be a
  * display concern? Or a caller's concern? Eventually we'll want to do diff
  * analysis and only change what we need*/
-pub fn display_buffer_v2(buffer: &impl buffer::Buffer, screen: &mut impl Write) {
+pub fn display_buffer_v2(buffer: &Box<dyn buffer::Buffer>, screen: &mut impl Write) {
   write!(screen, "{}{}", clear::All, cursor::Goto(1, 1)).unwrap();
   let location = buffer.get_current_location().unwrap();
   let cursor = location.as_tuple();

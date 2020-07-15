@@ -3,7 +3,7 @@ use crate::buffer_provider;
 use crate::models::Command;
 use log::info;
 
-pub fn execute_command_v2(command: &Command, buffer: &mut impl buffer::Buffer) -> Option<u16> {
+pub fn execute_command_v2(command: &Command, buffer: &mut Box<dyn buffer::Buffer>) -> Option<u16> {
   info!("Executing command: {:?}", command);
   match command {
     Command::BufferInsert(ch) => {

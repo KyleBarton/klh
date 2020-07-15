@@ -217,7 +217,8 @@ subscribed to events
 **** DONE refactor into components
 CLOSED: [2020-07-03 Fri 12:09]
 **** TODO implement error handling strategy
-**** TODO implement logging strategy
+**** DONE implement logging strategy
+CLOSED: [2020-07-11 Sat 17:18]
 **** DONE implement point
 CLOSED: [2020-06-14 Sun 22:12]
 **** DONE implement =buffer_editor=

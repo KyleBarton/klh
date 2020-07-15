@@ -1,4 +1,3 @@
-use crate::buffer;
 use log::*;
 use std::fs::File;
 use std::fs::OpenOptions;
@@ -11,29 +10,24 @@ pub enum BufferType {
   Normal,
 }
 
-//TODO FIGURE OUT WHY WE HAVE BOTH OF THESE?
-//TODO str is not what we want here for file option, and we need our own errors
-pub fn new_buffer(_file_name: Option<&str>) -> Result<impl buffer::Buffer, String> {
-  Ok(buffer::LineBuffer::new())
-}
-pub fn new(buffer_type: BufferType) -> Result<LineBuffer, String> {
+pub fn new(buffer_type: BufferType) -> Result<Box<dyn Buffer>, String> {
   match buffer_type {
-    BufferType::Normal => Ok(LineBuffer::new()),
+    BufferType::Normal => Ok(Box::new(LineBuffer::new())),
   }
 }
 
-pub fn from_file(buffer_type: BufferType, file_name: &str) -> Result<LineBuffer, String> {
+pub fn from_file(buffer_type: BufferType, file_name: &str) -> Result<Box<dyn Buffer>, String> {
   match buffer_type {
     BufferType::Normal => {
       let mut file = File::open(file_name).unwrap();
       let mut contents = String::new();
       file.read_to_string(&mut contents).unwrap();
-      Ok(LineBuffer::with_content(&contents, &file_name))
+      Ok(Box::new(LineBuffer::with_content(&contents, &file_name)))
     }
   }
 }
 
-pub fn save(buffer: &impl Buffer) -> Result<(), String> {
+pub fn save(buffer: &Box<dyn Buffer>) -> Result<(), String> {
   let mut file = match OpenOptions::new()
     .write(true)
     .open(buffer.get_name().unwrap())

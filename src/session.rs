@@ -34,7 +34,7 @@ impl SessionScreen {
     Ok(SessionScreen { screen })
   }
 
-  pub fn display(&mut self, buffer: &impl buffer::Buffer) -> Result<(), String> {
+  pub fn display(&mut self, buffer: &Box<dyn buffer::Buffer>) -> Result<(), String> {
     display::display_buffer_v2(buffer, &mut self.screen);
     Ok(())
   }
@@ -42,7 +42,7 @@ impl SessionScreen {
 
 pub struct Session {
   startup_args: startup::StartupArgs,
-  current_buffer: buffer::LineBuffer,
+  current_buffer: Option<Box<dyn buffer::Buffer>>,
   state: SessionState,
   screen: SessionScreen,
   reader: std::io::Stdin, //todo eeeewww
@@ -53,7 +53,7 @@ impl Session {
     info!("Creating new session");
     Session {
       startup_args: args,
-      current_buffer: buffer_provider::new(buffer_provider::BufferType::Normal).unwrap(),
+      current_buffer: None,
       state: SessionState::New,
       screen: SessionScreen::new().unwrap(),
       reader: std::io::stdin(),
@@ -67,17 +67,16 @@ impl Session {
     self.reader = std::io::stdin();
     self.state = SessionState::PostInit;
 
-    let new_buffer = match self.startup_args.get_file_name() {
+    self.current_buffer = match self.startup_args.get_file_name() {
       None => {
         info!("Starting with current buffer as default");
-        buffer_provider::new(buffer_provider::BufferType::Normal).unwrap()
+        Some(buffer_provider::new(buffer_provider::BufferType::Normal).unwrap())
       }
       Some(f) => {
         info!("Starting with current buffer from given file {}", &f);
-        buffer_provider::from_file(buffer_provider::BufferType::Normal, f).unwrap()
+        Some(buffer_provider::from_file(buffer_provider::BufferType::Normal, f).unwrap())
       }
     };
-    self.current_buffer = new_buffer;
     Ok(())
   }
 
@@ -99,14 +98,19 @@ impl Session {
 
   //await an input to act on
   fn await_user(&mut self) -> Result<(), String> {
-    self.screen.display(&self.current_buffer).unwrap();
-    let input = input_handler::await_input_v2(&mut self.reader).unwrap();
-    let command: Command = input_handler::process_input_v2(input).unwrap();
-    match command_executor::execute_command_v2(&command, &mut self.current_buffer) {
-      Some(_exit_code) => self.state = SessionState::TearDownReady,
-      None => (),
-    };
-    Ok(())
+    match self.current_buffer.as_mut() {
+        None => Ok(()),
+        Some(b) => {
+            self.screen.display(b).unwrap();
+            let input = input_handler::await_input_v2(&mut self.reader).unwrap();
+            let command: Command = input_handler::process_input_v2(input).unwrap();
+            match command_executor::execute_command_v2(&command, b) {
+                Some(_exit_code) => self.state = SessionState::TearDownReady,
+                None => (),
+            };
+            Ok(())
+        },
+    }
   }
 
   //Can only be run once for the session. Must bookend with init()
