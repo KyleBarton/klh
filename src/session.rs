@@ -4,11 +4,12 @@ use crate::command_executor;
 use crate::display;
 use crate::input_handler;
 use crate::models::Command;
-use crate::startup;
-use log::info;
+use crate::{buffer_store::{BufferStoreArgs, BufferStore}, startup};
+use log::*;
 
 use termion::screen;
 
+#[derive(Copy, Clone)]
 enum SessionState {
   //Brand new, no state whatsoever
   New,
@@ -42,7 +43,7 @@ impl SessionScreen {
 
 pub struct Session {
   startup_args: startup::StartupArgs,
-  current_buffer: Option<Box<dyn buffer::Buffer>>,
+  buffer_store: BufferStore,
   state: SessionState,
   screen: SessionScreen,
   reader: std::io::Stdin, //todo eeeewww
@@ -53,7 +54,7 @@ impl Session {
     info!("Creating new session");
     Session {
       startup_args: args,
-      current_buffer: None,
+      buffer_store: BufferStore::new(),
       state: SessionState::New,
       screen: SessionScreen::new().unwrap(),
       reader: std::io::stdin(),
@@ -62,66 +63,68 @@ impl Session {
 
   //TODO this is where you would new-up the buffer store
   //Should only ever be run once for the session. Must bookend with a tear_down call
-  fn init(&mut self) -> Result<(), String> {
+  fn init(&mut self) -> Result<(), &str> {
     self.screen = SessionScreen::new().unwrap();
     self.reader = std::io::stdin();
     self.state = SessionState::PostInit;
 
-    self.current_buffer = match self.startup_args.get_file_name() {
+    match self.startup_args.get_file_name() {
       None => {
-        info!("Starting with current buffer as default");
-        Some(buffer_provider::new(buffer_provider::BufferType::Normal).unwrap())
-      }
+	let buffer_store_args = BufferStoreArgs::new(buffer_provider::BufferType::Normal, "");
+	self.buffer_store.add_new(buffer_store_args);
+      },
       Some(f) => {
-        info!("Starting with current buffer from given file {}", &f);
-        Some(buffer_provider::from_file(buffer_provider::BufferType::Normal, f).unwrap())
+	let buffer_store_args = BufferStoreArgs::new(buffer_provider::BufferType::Normal, f);
+	self.buffer_store.add_new(buffer_store_args);
       }
-    };
+    }
     Ok(())
   }
 
   //This is where you can potentially load dynamic code, and initialize pub-sub
   //This is also where a "soft reload" would reset the sesion to
   //note that that means we have to assume buffers exist and they have to stay intact
-  fn add_hooks(&mut self) -> Result<(), String> {
+  fn add_hooks(&mut self) -> Result<(), &str> {
     self.state = SessionState::PostHooks;
     info!("Hooks loaded");
     Ok(())
   }
 
   //This is where user/system config can be loaded
-  fn load_config(&mut self) -> Result<(), String> {
+  fn load_config(&mut self) -> Result<(), &str> {
     self.state = SessionState::UserReady;
     info!("Config loaded");
     Ok(())
   }
 
   //await an input to act on
-  fn await_user(&mut self) -> Result<(), String> {
-    match self.current_buffer.as_mut() {
-        None => Ok(()),
-        Some(b) => {
-            self.screen.display(b).unwrap();
-            let input = input_handler::await_input_v2(&mut self.reader).unwrap();
-            let command: Command = input_handler::process_input_v2(input).unwrap();
-            match command_executor::execute_command_v2(&command, b) {
-                Some(_exit_code) => self.state = SessionState::TearDownReady,
-                None => (),
-            };
-            Ok(())
-        },
+  fn await_user(&mut self) -> Result<(), &str> {
+
+    match self.buffer_store.get_current_mut() {
+      Err(message) => Err(message),
+      Ok(b) => {
+	self.screen.display(b).unwrap();
+	let input = input_handler::await_input_v2(&mut self.reader).unwrap();
+	let command: Command = input_handler::process_input_v2(input).unwrap();
+	match command_executor::execute_command_v2(&command, b) {
+	    Some(_exit_code) => self.state = SessionState::TearDownReady,
+	    None => (),
+	};
+	Ok(())
+      }
     }
+
   }
 
   //Can only be run once for the session. Must bookend with init()
-  fn tear_down(&mut self) -> Result<(), String> {
+  fn tear_down(&mut self) -> Result<(), &str> {
     self.state = SessionState::PostTearDown;
     info!("Teardown complete");
     Ok(())
   }
 
   //I think this can be our only public function (other than new)
-  pub fn run(&mut self) -> Result<(), String> {
+  pub fn run(&mut self) -> Result<(), &str> {
     info!("Starting session");
     loop {
       match &self.state {

@@ -1,5 +1,6 @@
 pub mod buffer;
 pub mod buffer_provider;
+pub mod buffer_store;
 pub mod command_executor;
 pub mod display;
 pub mod input_handler;
