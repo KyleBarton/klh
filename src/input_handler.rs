@@ -11,6 +11,11 @@ const CHARS: &'static str = "abcdefghijklmnopqrstuvwxyz\" +
 \"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\" +
 \" !@#$%^&*()_-+=\\|[]{}/?.>,<`~;:\n'\"";
 
+// temporary so I can shunt in a receiver. Chars shouldn't be our actual message here
+pub fn translate_char(input: char) -> InputType {
+  InputType::Insert(input)
+}
+
 pub fn await_input_v2<R: TermRead + Read>(input: &mut R) -> Result<InputType, std::io::Error> {
   for keystroke in input.keys() {
     let ks = keystroke.unwrap();

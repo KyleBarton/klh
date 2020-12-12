@@ -1,0 +1,1118 @@
+18:14:33 [INFO] Creating new session
+18:14:33 [INFO] Starting session
+18:14:33 [INFO] Hooks loaded
+18:14:33 [INFO] Config loaded
+18:14:36 [INFO] Keystroke: Char('n')
+18:14:36 [INFO] Input type: Insert('n')
+18:14:36 [INFO] Input maps to BufferInsert('n')
+18:14:36 [INFO] Executing command: BufferInsert('n')
+18:14:36 [INFO] Inserted: n, 110
+18:14:36 [INFO] Command processed, point is at Coordinate { offset: 1, line: 0 }
+18:14:37 [INFO] Keystroke: Char('o')
+18:14:37 [INFO] Input type: Insert('o')
+18:14:37 [INFO] Input maps to BufferInsert('o')
+18:14:37 [INFO] Executing command: BufferInsert('o')
+18:14:37 [INFO] Inserted: o, 111
+18:14:37 [INFO] Command processed, point is at Coordinate { offset: 2, line: 0 }
+18:14:37 [INFO] Keystroke: Char('w')
+18:14:37 [INFO] Input type: Insert('w')
+18:14:37 [INFO] Input maps to BufferInsert('w')
+18:14:37 [INFO] Executing command: BufferInsert('w')
+18:14:37 [INFO] Inserted: w, 119
+18:14:37 [INFO] Command processed, point is at Coordinate { offset: 3, line: 0 }
+18:14:37 [INFO] Keystroke: Char(',')
+18:14:37 [INFO] Input type: Insert(',')
+18:14:37 [INFO] Input maps to BufferInsert(',')
+18:14:37 [INFO] Executing command: BufferInsert(',')
+18:14:37 [INFO] Inserted: ,, 44
+18:14:37 [INFO] Command processed, point is at Coordinate { offset: 4, line: 0 }
+18:14:37 [INFO] Keystroke: Char(' ')
+18:14:37 [INFO] Input type: Insert(' ')
+18:14:37 [INFO] Input maps to BufferInsert(' ')
+18:14:37 [INFO] Executing command: BufferInsert(' ')
+18:14:37 [INFO] Inserted:  , 32
+18:14:37 [INFO] Command processed, point is at Coordinate { offset: 5, line: 0 }
+18:14:38 [INFO] Keystroke: Char('t')
+18:14:38 [INFO] Input type: Insert('t')
+18:14:38 [INFO] Input maps to BufferInsert('t')
+18:14:38 [INFO] Executing command: BufferInsert('t')
+18:14:38 [INFO] Inserted: t, 116
+18:14:38 [INFO] Command processed, point is at Coordinate { offset: 6, line: 0 }
+18:14:38 [INFO] Keystroke: Char('h')
+18:14:38 [INFO] Input type: Insert('h')
+18:14:38 [INFO] Input maps to BufferInsert('h')
+18:14:38 [INFO] Executing command: BufferInsert('h')
+18:14:38 [INFO] Inserted: h, 104
+18:14:38 [INFO] Command processed, point is at Coordinate { offset: 7, line: 0 }
+18:14:38 [INFO] Keystroke: Char('i')
+18:14:38 [INFO] Input type: Insert('i')
+18:14:38 [INFO] Input maps to BufferInsert('i')
+18:14:38 [INFO] Executing command: BufferInsert('i')
+18:14:38 [INFO] Inserted: i, 105
+18:14:38 [INFO] Command processed, point is at Coordinate { offset: 8, line: 0 }
+18:14:38 [INFO] Keystroke: Char('s')
+18:14:38 [INFO] Input type: Insert('s')
+18:14:38 [INFO] Input maps to BufferInsert('s')
+18:14:38 [INFO] Executing command: BufferInsert('s')
+18:14:38 [INFO] Inserted: s, 115
+18:14:38 [INFO] Command processed, point is at Coordinate { offset: 9, line: 0 }
+18:14:38 [INFO] Keystroke: Char(' ')
+18:14:38 [INFO] Input type: Insert(' ')
+18:14:38 [INFO] Input maps to BufferInsert(' ')
+18:14:38 [INFO] Executing command: BufferInsert(' ')
+18:14:38 [INFO] Inserted:  , 32
+18:14:38 [INFO] Command processed, point is at Coordinate { offset: 10, line: 0 }
+18:14:38 [INFO] Keystroke: Char('i')
+18:14:38 [INFO] Input type: Insert('i')
+18:14:38 [INFO] Input maps to BufferInsert('i')
+18:14:38 [INFO] Executing command: BufferInsert('i')
+18:14:38 [INFO] Inserted: i, 105
+18:14:38 [INFO] Command processed, point is at Coordinate { offset: 11, line: 0 }
+18:14:38 [INFO] Keystroke: Char('s')
+18:14:38 [INFO] Input type: Insert('s')
+18:14:38 [INFO] Input maps to BufferInsert('s')
+18:14:38 [INFO] Executing command: BufferInsert('s')
+18:14:38 [INFO] Inserted: s, 115
+18:14:38 [INFO] Command processed, point is at Coordinate { offset: 12, line: 0 }
+18:14:39 [INFO] Keystroke: Char(' ')
+18:14:39 [INFO] Input type: Insert(' ')
+18:14:39 [INFO] Input maps to BufferInsert(' ')
+18:14:39 [INFO] Executing command: BufferInsert(' ')
+18:14:39 [INFO] Inserted:  , 32
+18:14:39 [INFO] Command processed, point is at Coordinate { offset: 13, line: 0 }
+18:14:39 [INFO] Keystroke: Char('a')
+18:14:39 [INFO] Input type: Insert('a')
+18:14:39 [INFO] Input maps to BufferInsert('a')
+18:14:39 [INFO] Executing command: BufferInsert('a')
+18:14:39 [INFO] Inserted: a, 97
+18:14:39 [INFO] Command processed, point is at Coordinate { offset: 14, line: 0 }
+18:14:39 [INFO] Keystroke: Char(' ')
+18:14:39 [INFO] Input type: Insert(' ')
+18:14:39 [INFO] Input maps to BufferInsert(' ')
+18:14:39 [INFO] Executing command: BufferInsert(' ')
+18:14:39 [INFO] Inserted:  , 32
+18:14:39 [INFO] Command processed, point is at Coordinate { offset: 15, line: 0 }
+18:14:39 [INFO] Keystroke: Char('U')
+18:14:39 [INFO] Input type: Insert('U')
+18:14:39 [INFO] Input maps to BufferInsert('U')
+18:14:39 [INFO] Executing command: BufferInsert('U')
+18:14:39 [INFO] Inserted: U, 85
+18:14:39 [INFO] Command processed, point is at Coordinate { offset: 16, line: 0 }
+18:14:39 [INFO] Keystroke: Char('I')
+18:14:39 [INFO] Input type: Insert('I')
+18:14:39 [INFO] Input maps to BufferInsert('I')
+18:14:39 [INFO] Executing command: BufferInsert('I')
+18:14:39 [INFO] Inserted: I, 73
+18:14:39 [INFO] Command processed, point is at Coordinate { offset: 17, line: 0 }
+18:14:39 [INFO] Keystroke: Char(' ')
+18:14:39 [INFO] Input type: Insert(' ')
+18:14:39 [INFO] Input maps to BufferInsert(' ')
+18:14:39 [INFO] Executing command: BufferInsert(' ')
+18:14:39 [INFO] Inserted:  , 32
+18:14:39 [INFO] Command processed, point is at Coordinate { offset: 18, line: 0 }
+18:14:40 [INFO] Keystroke: Char('a')
+18:14:40 [INFO] Input type: Insert('a')
+18:14:40 [INFO] Input maps to BufferInsert('a')
+18:14:40 [INFO] Executing command: BufferInsert('a')
+18:14:40 [INFO] Inserted: a, 97
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 19, line: 0 }
+18:14:40 [INFO] Keystroke: Char('n')
+18:14:40 [INFO] Input type: Insert('n')
+18:14:40 [INFO] Input maps to BufferInsert('n')
+18:14:40 [INFO] Executing command: BufferInsert('n')
+18:14:40 [INFO] Inserted: n, 110
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 20, line: 0 }
+18:14:40 [INFO] Keystroke: Char('d')
+18:14:40 [INFO] Input type: Insert('d')
+18:14:40 [INFO] Input maps to BufferInsert('d')
+18:14:40 [INFO] Executing command: BufferInsert('d')
+18:14:40 [INFO] Inserted: d, 100
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 21, line: 0 }
+18:14:40 [INFO] Keystroke: Char(' ')
+18:14:40 [INFO] Input type: Insert(' ')
+18:14:40 [INFO] Input maps to BufferInsert(' ')
+18:14:40 [INFO] Executing command: BufferInsert(' ')
+18:14:40 [INFO] Inserted:  , 32
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 22, line: 0 }
+18:14:40 [INFO] Keystroke: Char('i')
+18:14:40 [INFO] Input type: Insert('i')
+18:14:40 [INFO] Input maps to BufferInsert('i')
+18:14:40 [INFO] Executing command: BufferInsert('i')
+18:14:40 [INFO] Inserted: i, 105
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 23, line: 0 }
+18:14:40 [INFO] Keystroke: Char('t')
+18:14:40 [INFO] Input type: Insert('t')
+18:14:40 [INFO] Input maps to BufferInsert('t')
+18:14:40 [INFO] Executing command: BufferInsert('t')
+18:14:40 [INFO] Inserted: t, 116
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 24, line: 0 }
+18:14:40 [INFO] Keystroke: Char('\'')
+18:14:40 [INFO] Input type: Insert('\'')
+18:14:40 [INFO] Input maps to BufferInsert('\'')
+18:14:40 [INFO] Executing command: BufferInsert('\'')
+18:14:40 [INFO] Inserted: ', 39
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 25, line: 0 }
+18:14:40 [INFO] Keystroke: Char('s')
+18:14:40 [INFO] Input type: Insert('s')
+18:14:40 [INFO] Input maps to BufferInsert('s')
+18:14:40 [INFO] Executing command: BufferInsert('s')
+18:14:40 [INFO] Inserted: s, 115
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 26, line: 0 }
+18:14:40 [INFO] Keystroke: Char(' ')
+18:14:40 [INFO] Input type: Insert(' ')
+18:14:40 [INFO] Input maps to BufferInsert(' ')
+18:14:40 [INFO] Executing command: BufferInsert(' ')
+18:14:40 [INFO] Inserted:  , 32
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 27, line: 0 }
+18:14:40 [INFO] Keystroke: Char('a')
+18:14:40 [INFO] Input type: Insert('a')
+18:14:40 [INFO] Input maps to BufferInsert('a')
+18:14:40 [INFO] Executing command: BufferInsert('a')
+18:14:40 [INFO] Inserted: a, 97
+18:14:40 [INFO] Command processed, point is at Coordinate { offset: 28, line: 0 }
+18:14:41 [INFO] Keystroke: Char(' ')
+18:14:41 [INFO] Input type: Insert(' ')
+18:14:41 [INFO] Input maps to BufferInsert(' ')
+18:14:41 [INFO] Executing command: BufferInsert(' ')
+18:14:41 [INFO] Inserted:  , 32
+18:14:41 [INFO] Command processed, point is at Coordinate { offset: 29, line: 0 }
+18:14:41 [INFO] Keystroke: Char('r')
+18:14:41 [INFO] Input type: Insert('r')
+18:14:41 [INFO] Input maps to BufferInsert('r')
+18:14:41 [INFO] Executing command: BufferInsert('r')
+18:14:41 [INFO] Inserted: r, 114
+18:14:41 [INFO] Command processed, point is at Coordinate { offset: 30, line: 0 }
+18:14:41 [INFO] Keystroke: Char('e')
+18:14:41 [INFO] Input type: Insert('e')
+18:14:41 [INFO] Input maps to BufferInsert('e')
+18:14:41 [INFO] Executing command: BufferInsert('e')
+18:14:41 [INFO] Inserted: e, 101
+18:14:41 [INFO] Command processed, point is at Coordinate { offset: 31, line: 0 }
+18:14:41 [INFO] Keystroke: Char('a')
+18:14:41 [INFO] Input type: Insert('a')
+18:14:41 [INFO] Input maps to BufferInsert('a')
+18:14:41 [INFO] Executing command: BufferInsert('a')
+18:14:41 [INFO] Inserted: a, 97
+18:14:41 [INFO] Command processed, point is at Coordinate { offset: 32, line: 0 }
+18:14:41 [INFO] Keystroke: Char('l')
+18:14:41 [INFO] Input type: Insert('l')
+18:14:41 [INFO] Input maps to BufferInsert('l')
+18:14:41 [INFO] Executing command: BufferInsert('l')
+18:14:41 [INFO] Inserted: l, 108
+18:14:41 [INFO] Command processed, point is at Coordinate { offset: 33, line: 0 }
+18:14:41 [INFO] Keystroke: Char(' ')
+18:14:41 [INFO] Input type: Insert(' ')
+18:14:41 [INFO] Input maps to BufferInsert(' ')
+18:14:41 [INFO] Executing command: BufferInsert(' ')
+18:14:41 [INFO] Inserted:  , 32
+18:14:41 [INFO] Command processed, point is at Coordinate { offset: 34, line: 0 }
+18:14:41 [INFO] Keystroke: Char('U')
+18:14:41 [INFO] Input type: Insert('U')
+18:14:41 [INFO] Input maps to BufferInsert('U')
+18:14:41 [INFO] Executing command: BufferInsert('U')
+18:14:41 [INFO] Inserted: U, 85
+18:14:41 [INFO] Command processed, point is at Coordinate { offset: 35, line: 0 }
+18:14:41 [INFO] Keystroke: Char('I')
+18:14:41 [INFO] Input type: Insert('I')
+18:14:41 [INFO] Input maps to BufferInsert('I')
+18:14:41 [INFO] Executing command: BufferInsert('I')
+18:14:41 [INFO] Inserted: I, 73
+18:14:41 [INFO] Command processed, point is at Coordinate { offset: 36, line: 0 }
+18:14:42 [INFO] Keystroke: Char(' ')
+18:14:42 [INFO] Input type: Insert(' ')
+18:14:42 [INFO] Input maps to BufferInsert(' ')
+18:14:42 [INFO] Executing command: BufferInsert(' ')
+18:14:42 [INFO] Inserted:  , 32
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 37, line: 0 }
+18:14:42 [INFO] Keystroke: Char('a')
+18:14:42 [INFO] Input type: Insert('a')
+18:14:42 [INFO] Input maps to BufferInsert('a')
+18:14:42 [INFO] Executing command: BufferInsert('a')
+18:14:42 [INFO] Inserted: a, 97
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 38, line: 0 }
+18:14:42 [INFO] Keystroke: Char('n')
+18:14:42 [INFO] Input type: Insert('n')
+18:14:42 [INFO] Input maps to BufferInsert('n')
+18:14:42 [INFO] Executing command: BufferInsert('n')
+18:14:42 [INFO] Inserted: n, 110
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 39, line: 0 }
+18:14:42 [INFO] Keystroke: Char('d')
+18:14:42 [INFO] Input type: Insert('d')
+18:14:42 [INFO] Input maps to BufferInsert('d')
+18:14:42 [INFO] Executing command: BufferInsert('d')
+18:14:42 [INFO] Inserted: d, 100
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 40, line: 0 }
+18:14:42 [INFO] Keystroke: Char(' ')
+18:14:42 [INFO] Input type: Insert(' ')
+18:14:42 [INFO] Input maps to BufferInsert(' ')
+18:14:42 [INFO] Executing command: BufferInsert(' ')
+18:14:42 [INFO] Inserted:  , 32
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 41, line: 0 }
+18:14:42 [INFO] Keystroke: Char('t')
+18:14:42 [INFO] Input type: Insert('t')
+18:14:42 [INFO] Input maps to BufferInsert('t')
+18:14:42 [INFO] Executing command: BufferInsert('t')
+18:14:42 [INFO] Inserted: t, 116
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 42, line: 0 }
+18:14:42 [INFO] Keystroke: Char('h')
+18:14:42 [INFO] Input type: Insert('h')
+18:14:42 [INFO] Input maps to BufferInsert('h')
+18:14:42 [INFO] Executing command: BufferInsert('h')
+18:14:42 [INFO] Inserted: h, 104
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 43, line: 0 }
+18:14:42 [INFO] Keystroke: Char('a')
+18:14:42 [INFO] Input type: Insert('a')
+18:14:42 [INFO] Input maps to BufferInsert('a')
+18:14:42 [INFO] Executing command: BufferInsert('a')
+18:14:42 [INFO] Inserted: a, 97
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 44, line: 0 }
+18:14:42 [INFO] Keystroke: Char('t')
+18:14:42 [INFO] Input type: Insert('t')
+18:14:42 [INFO] Input maps to BufferInsert('t')
+18:14:42 [INFO] Executing command: BufferInsert('t')
+18:14:42 [INFO] Inserted: t, 116
+18:14:42 [INFO] Command processed, point is at Coordinate { offset: 45, line: 0 }
+18:14:43 [INFO] Keystroke: Char('\'')
+18:14:43 [INFO] Input type: Insert('\'')
+18:14:43 [INFO] Input maps to BufferInsert('\'')
+18:14:43 [INFO] Executing command: BufferInsert('\'')
+18:14:43 [INFO] Inserted: ', 39
+18:14:43 [INFO] Command processed, point is at Coordinate { offset: 46, line: 0 }
+18:14:43 [INFO] Keystroke: Char('s')
+18:14:43 [INFO] Input type: Insert('s')
+18:14:43 [INFO] Input maps to BufferInsert('s')
+18:14:43 [INFO] Executing command: BufferInsert('s')
+18:14:43 [INFO] Inserted: s, 115
+18:14:43 [INFO] Command processed, point is at Coordinate { offset: 47, line: 0 }
+18:14:43 [INFO] Keystroke: Char(' ')
+18:14:43 [INFO] Input type: Insert(' ')
+18:14:43 [INFO] Input maps to BufferInsert(' ')
+18:14:43 [INFO] Executing command: BufferInsert(' ')
+18:14:43 [INFO] Inserted:  , 32
+18:14:43 [INFO] Command processed, point is at Coordinate { offset: 48, line: 0 }
+18:14:43 [INFO] Keystroke: Char('j')
+18:14:43 [INFO] Input type: Insert('j')
+18:14:43 [INFO] Input maps to BufferInsert('j')
+18:14:43 [INFO] Executing command: BufferInsert('j')
+18:14:43 [INFO] Inserted: j, 106
+18:14:43 [INFO] Command processed, point is at Coordinate { offset: 49, line: 0 }
+18:14:43 [INFO] Keystroke: Char('u')
+18:14:43 [INFO] Input type: Insert('u')
+18:14:43 [INFO] Input maps to BufferInsert('u')
+18:14:43 [INFO] Executing command: BufferInsert('u')
+18:14:43 [INFO] Inserted: u, 117
+18:14:43 [INFO] Command processed, point is at Coordinate { offset: 50, line: 0 }
+18:14:43 [INFO] Keystroke: Char('s')
+18:14:43 [INFO] Input type: Insert('s')
+18:14:43 [INFO] Input maps to BufferInsert('s')
+18:14:43 [INFO] Executing command: BufferInsert('s')
+18:14:43 [INFO] Inserted: s, 115
+18:14:43 [INFO] Command processed, point is at Coordinate { offset: 51, line: 0 }
+18:14:43 [INFO] Keystroke: Char('t')
+18:14:43 [INFO] Input type: Insert('t')
+18:14:43 [INFO] Input maps to BufferInsert('t')
+18:14:43 [INFO] Executing command: BufferInsert('t')
+18:14:43 [INFO] Inserted: t, 116
+18:14:43 [INFO] Command processed, point is at Coordinate { offset: 52, line: 0 }
+18:14:43 [INFO] Keystroke: Char(' ')
+18:14:43 [INFO] Input type: Insert(' ')
+18:14:43 [INFO] Input maps to BufferInsert(' ')
+18:14:43 [INFO] Executing command: BufferInsert(' ')
+18:14:43 [INFO] Inserted:  , 32
+18:14:43 [INFO] Command processed, point is at Coordinate { offset: 53, line: 0 }
+18:14:44 [INFO] Keystroke: Char('t')
+18:14:44 [INFO] Input type: Insert('t')
+18:14:44 [INFO] Input maps to BufferInsert('t')
+18:14:44 [INFO] Executing command: BufferInsert('t')
+18:14:44 [INFO] Inserted: t, 116
+18:14:44 [INFO] Command processed, point is at Coordinate { offset: 54, line: 0 }
+18:14:44 [INFO] Keystroke: Char('h')
+18:14:44 [INFO] Input type: Insert('h')
+18:14:44 [INFO] Input maps to BufferInsert('h')
+18:14:44 [INFO] Executing command: BufferInsert('h')
+18:14:44 [INFO] Inserted: h, 104
+18:14:44 [INFO] Command processed, point is at Coordinate { offset: 55, line: 0 }
+18:14:44 [INFO] Keystroke: Char('e')
+18:14:44 [INFO] Input type: Insert('e')
+18:14:44 [INFO] Input maps to BufferInsert('e')
+18:14:44 [INFO] Executing command: BufferInsert('e')
+18:14:44 [INFO] Inserted: e, 101
+18:14:44 [INFO] Command processed, point is at Coordinate { offset: 56, line: 0 }
+18:14:44 [INFO] Keystroke: Char(' ')
+18:14:44 [INFO] Input type: Insert(' ')
+18:14:44 [INFO] Input maps to BufferInsert(' ')
+18:14:44 [INFO] Executing command: BufferInsert(' ')
+18:14:44 [INFO] Inserted:  , 32
+18:14:44 [INFO] Command processed, point is at Coordinate { offset: 57, line: 0 }
+18:14:44 [INFO] Keystroke: Char('f')
+18:14:44 [INFO] Input type: Insert('f')
+18:14:44 [INFO] Input maps to BufferInsert('f')
+18:14:44 [INFO] Executing command: BufferInsert('f')
+18:14:44 [INFO] Inserted: f, 102
+18:14:44 [INFO] Command processed, point is at Coordinate { offset: 58, line: 0 }
+18:14:44 [INFO] Keystroke: Char('a')
+18:14:44 [INFO] Input type: Insert('a')
+18:14:44 [INFO] Input maps to BufferInsert('a')
+18:14:44 [INFO] Executing command: BufferInsert('a')
+18:14:44 [INFO] Inserted: a, 97
+18:14:44 [INFO] Command processed, point is at Coordinate { offset: 59, line: 0 }
+18:14:44 [INFO] Keystroke: Char('c')
+18:14:44 [INFO] Input type: Insert('c')
+18:14:44 [INFO] Input maps to BufferInsert('c')
+18:14:44 [INFO] Executing command: BufferInsert('c')
+18:14:45 [INFO] Inserted: c, 99
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 60, line: 0 }
+18:14:45 [INFO] Keystroke: Char('t')
+18:14:45 [INFO] Input type: Insert('t')
+18:14:45 [INFO] Input maps to BufferInsert('t')
+18:14:45 [INFO] Executing command: BufferInsert('t')
+18:14:45 [INFO] Inserted: t, 116
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 61, line: 0 }
+18:14:45 [INFO] Keystroke: Char('s')
+18:14:45 [INFO] Input type: Insert('s')
+18:14:45 [INFO] Input maps to BufferInsert('s')
+18:14:45 [INFO] Executing command: BufferInsert('s')
+18:14:45 [INFO] Inserted: s, 115
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 62, line: 0 }
+18:14:45 [INFO] Keystroke: Char(' ')
+18:14:45 [INFO] Input type: Insert(' ')
+18:14:45 [INFO] Input maps to BufferInsert(' ')
+18:14:45 [INFO] Executing command: BufferInsert(' ')
+18:14:45 [INFO] Inserted:  , 32
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 63, line: 0 }
+18:14:45 [INFO] Keystroke: Char('o')
+18:14:45 [INFO] Input type: Insert('o')
+18:14:45 [INFO] Input maps to BufferInsert('o')
+18:14:45 [INFO] Executing command: BufferInsert('o')
+18:14:45 [INFO] Inserted: o, 111
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 64, line: 0 }
+18:14:45 [INFO] Keystroke: Char('f')
+18:14:45 [INFO] Input type: Insert('f')
+18:14:45 [INFO] Input maps to BufferInsert('f')
+18:14:45 [INFO] Executing command: BufferInsert('f')
+18:14:45 [INFO] Inserted: f, 102
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 65, line: 0 }
+18:14:45 [INFO] Keystroke: Char(' ')
+18:14:45 [INFO] Input type: Insert(' ')
+18:14:45 [INFO] Input maps to BufferInsert(' ')
+18:14:45 [INFO] Executing command: BufferInsert(' ')
+18:14:45 [INFO] Inserted:  , 32
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 66, line: 0 }
+18:14:45 [INFO] Keystroke: Char('l')
+18:14:45 [INFO] Input type: Insert('l')
+18:14:45 [INFO] Input maps to BufferInsert('l')
+18:14:45 [INFO] Executing command: BufferInsert('l')
+18:14:45 [INFO] Inserted: l, 108
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 67, line: 0 }
+18:14:45 [INFO] Keystroke: Char('i')
+18:14:45 [INFO] Input type: Insert('i')
+18:14:45 [INFO] Input maps to BufferInsert('i')
+18:14:45 [INFO] Executing command: BufferInsert('i')
+18:14:45 [INFO] Inserted: i, 105
+18:14:45 [INFO] Command processed, point is at Coordinate { offset: 68, line: 0 }
+18:14:46 [INFO] Keystroke: Char('f')
+18:14:46 [INFO] Input type: Insert('f')
+18:14:46 [INFO] Input maps to BufferInsert('f')
+18:14:46 [INFO] Executing command: BufferInsert('f')
+18:14:46 [INFO] Inserted: f, 102
+18:14:46 [INFO] Command processed, point is at Coordinate { offset: 69, line: 0 }
+18:14:46 [INFO] Keystroke: Char('e')
+18:14:46 [INFO] Input type: Insert('e')
+18:14:46 [INFO] Input maps to BufferInsert('e')
+18:14:46 [INFO] Executing command: BufferInsert('e')
+18:14:46 [INFO] Inserted: e, 101
+18:14:46 [INFO] Command processed, point is at Coordinate { offset: 70, line: 0 }
+18:14:46 [INFO] Keystroke: Char(',')
+18:14:46 [INFO] Input type: Insert(',')
+18:14:46 [INFO] Input maps to BufferInsert(',')
+18:14:46 [INFO] Executing command: BufferInsert(',')
+18:14:46 [INFO] Inserted: ,, 44
+18:14:46 [INFO] Command processed, point is at Coordinate { offset: 71, line: 0 }
+18:14:46 [INFO] Keystroke: Char(' ')
+18:14:46 [INFO] Input type: Insert(' ')
+18:14:46 [INFO] Input maps to BufferInsert(' ')
+18:14:46 [INFO] Executing command: BufferInsert(' ')
+18:14:46 [INFO] Inserted:  , 32
+18:14:46 [INFO] Command processed, point is at Coordinate { offset: 72, line: 0 }
+18:14:46 [INFO] Keystroke: Char('b')
+18:14:46 [INFO] Input type: Insert('b')
+18:14:46 [INFO] Input maps to BufferInsert('b')
+18:14:46 [INFO] Executing command: BufferInsert('b')
+18:14:46 [INFO] Inserted: b, 98
+18:14:46 [INFO] Command processed, point is at Coordinate { offset: 73, line: 0 }
+18:14:47 [INFO] Keystroke: Char('u')
+18:14:47 [INFO] Input type: Insert('u')
+18:14:47 [INFO] Input maps to BufferInsert('u')
+18:14:47 [INFO] Executing command: BufferInsert('u')
+18:14:47 [INFO] Inserted: u, 117
+18:14:47 [INFO] Command processed, point is at Coordinate { offset: 74, line: 0 }
+18:14:47 [INFO] Keystroke: Char('b')
+18:14:47 [INFO] Input type: Insert('b')
+18:14:47 [INFO] Input maps to BufferInsert('b')
+18:14:47 [INFO] Executing command: BufferInsert('b')
+18:14:47 [INFO] Inserted: b, 98
+18:14:47 [INFO] Command processed, point is at Coordinate { offset: 75, line: 0 }
+18:14:47 [INFO] Keystroke: Backspace
+18:14:47 [INFO] Input type: Control(Backspace)
+18:14:47 [INFO] Input maps to BufferDelete
+18:14:47 [INFO] Executing command: BufferDelete
+18:14:47 [INFO] Executed delete at point
+18:14:47 [INFO] Command processed, point is at Coordinate { offset: 74, line: 0 }
+18:14:47 [INFO] Keystroke: Backspace
+18:14:47 [INFO] Input type: Control(Backspace)
+18:14:47 [INFO] Input maps to BufferDelete
+18:14:47 [INFO] Executing command: BufferDelete
+18:14:47 [INFO] Executed delete at point
+18:14:47 [INFO] Command processed, point is at Coordinate { offset: 73, line: 0 }
+18:14:48 [INFO] Keystroke: Backspace
+18:14:48 [INFO] Input type: Control(Backspace)
+18:14:48 [INFO] Input maps to BufferDelete
+18:14:48 [INFO] Executing command: BufferDelete
+18:14:48 [INFO] Executed delete at point
+18:14:48 [INFO] Command processed, point is at Coordinate { offset: 72, line: 0 }
+18:14:48 [INFO] Keystroke: Char('p')
+18:14:48 [INFO] Input type: Insert('p')
+18:14:48 [INFO] Input maps to BufferInsert('p')
+18:14:48 [INFO] Executing command: BufferInsert('p')
+18:14:48 [INFO] Inserted: p, 112
+18:14:48 [INFO] Command processed, point is at Coordinate { offset: 73, line: 0 }
+18:14:49 [INFO] Keystroke: Char('l')
+18:14:49 [INFO] Input type: Insert('l')
+18:14:49 [INFO] Input maps to BufferInsert('l')
+18:14:49 [INFO] Executing command: BufferInsert('l')
+18:14:49 [INFO] Inserted: l, 108
+18:14:49 [INFO] Command processed, point is at Coordinate { offset: 74, line: 0 }
+18:14:49 [INFO] Keystroke: Char('u')
+18:14:49 [INFO] Input type: Insert('u')
+18:14:49 [INFO] Input maps to BufferInsert('u')
+18:14:49 [INFO] Executing command: BufferInsert('u')
+18:14:49 [INFO] Inserted: u, 117
+18:14:49 [INFO] Command processed, point is at Coordinate { offset: 75, line: 0 }
+18:14:49 [INFO] Keystroke: Char('s')
+18:14:49 [INFO] Input type: Insert('s')
+18:14:49 [INFO] Input maps to BufferInsert('s')
+18:14:49 [INFO] Executing command: BufferInsert('s')
+18:14:49 [INFO] Inserted: s, 115
+18:14:49 [INFO] Command processed, point is at Coordinate { offset: 76, line: 0 }
+18:14:49 [INFO] Keystroke: Char(',')
+18:14:49 [INFO] Input type: Insert(',')
+18:14:49 [INFO] Input maps to BufferInsert(',')
+18:14:49 [INFO] Executing command: BufferInsert(',')
+18:14:49 [INFO] Inserted: ,, 44
+18:14:49 [INFO] Command processed, point is at Coordinate { offset: 77, line: 0 }
+18:14:49 [INFO] Keystroke: Char('\n')
+18:14:49 [INFO] Input type: Insert('\n')
+18:14:49 [INFO] Input maps to BufferInsert('\n')
+18:14:49 [INFO] Executing command: BufferInsert('\n')
+18:14:49 [INFO] Inserted: 
+, 10
+18:14:49 [INFO] Command processed, point is at Coordinate { offset: 0, line: 1 }
+18:14:50 [INFO] Keystroke: Char('I')
+18:14:50 [INFO] Input type: Insert('I')
+18:14:50 [INFO] Input maps to BufferInsert('I')
+18:14:50 [INFO] Executing command: BufferInsert('I')
+18:14:50 [INFO] Inserted: I, 73
+18:14:50 [INFO] Command processed, point is at Coordinate { offset: 1, line: 1 }
+18:14:50 [INFO] Keystroke: Char(' ')
+18:14:50 [INFO] Input type: Insert(' ')
+18:14:50 [INFO] Input maps to BufferInsert(' ')
+18:14:50 [INFO] Executing command: BufferInsert(' ')
+18:14:50 [INFO] Inserted:  , 32
+18:14:50 [INFO] Command processed, point is at Coordinate { offset: 2, line: 1 }
+18:14:50 [INFO] Keystroke: Char('c')
+18:14:50 [INFO] Input type: Insert('c')
+18:14:50 [INFO] Input maps to BufferInsert('c')
+18:14:50 [INFO] Executing command: BufferInsert('c')
+18:14:50 [INFO] Inserted: c, 99
+18:14:50 [INFO] Command processed, point is at Coordinate { offset: 3, line: 1 }
+18:14:50 [INFO] Keystroke: Char('a')
+18:14:50 [INFO] Input type: Insert('a')
+18:14:50 [INFO] Input maps to BufferInsert('a')
+18:14:50 [INFO] Executing command: BufferInsert('a')
+18:14:50 [INFO] Inserted: a, 97
+18:14:50 [INFO] Command processed, point is at Coordinate { offset: 4, line: 1 }
+18:14:50 [INFO] Keystroke: Char('n')
+18:14:50 [INFO] Input type: Insert('n')
+18:14:50 [INFO] Input maps to BufferInsert('n')
+18:14:50 [INFO] Executing command: BufferInsert('n')
+18:14:50 [INFO] Inserted: n, 110
+18:14:50 [INFO] Command processed, point is at Coordinate { offset: 5, line: 1 }
+18:14:50 [INFO] Keystroke: Char(' ')
+18:14:50 [INFO] Input type: Insert(' ')
+18:14:50 [INFO] Input maps to BufferInsert(' ')
+18:14:50 [INFO] Executing command: BufferInsert(' ')
+18:14:50 [INFO] Inserted:  , 32
+18:14:50 [INFO] Command processed, point is at Coordinate { offset: 6, line: 1 }
+18:14:51 [INFO] Keystroke: Char('d')
+18:14:51 [INFO] Input type: Insert('d')
+18:14:51 [INFO] Input maps to BufferInsert('d')
+18:14:51 [INFO] Executing command: BufferInsert('d')
+18:14:51 [INFO] Inserted: d, 100
+18:14:51 [INFO] Command processed, point is at Coordinate { offset: 7, line: 1 }
+18:14:51 [INFO] Keystroke: Char('o')
+18:14:51 [INFO] Input type: Insert('o')
+18:14:51 [INFO] Input maps to BufferInsert('o')
+18:14:51 [INFO] Executing command: BufferInsert('o')
+18:14:51 [INFO] Inserted: o, 111
+18:14:51 [INFO] Command processed, point is at Coordinate { offset: 8, line: 1 }
+18:14:51 [INFO] Keystroke: Backspace
+18:14:51 [INFO] Input type: Control(Backspace)
+18:14:51 [INFO] Input maps to BufferDelete
+18:14:51 [INFO] Executing command: BufferDelete
+18:14:51 [INFO] Executed delete at point
+18:14:51 [INFO] Command processed, point is at Coordinate { offset: 7, line: 1 }
+18:14:51 [INFO] Keystroke: Backspace
+18:14:51 [INFO] Input type: Control(Backspace)
+18:14:51 [INFO] Input maps to BufferDelete
+18:14:51 [INFO] Executing command: BufferDelete
+18:14:51 [INFO] Executed delete at point
+18:14:51 [INFO] Command processed, point is at Coordinate { offset: 6, line: 1 }
+18:14:51 [INFO] Keystroke: Backspace
+18:14:51 [INFO] Input type: Control(Backspace)
+18:14:51 [INFO] Input maps to BufferDelete
+18:14:51 [INFO] Executing command: BufferDelete
+18:14:51 [INFO] Executed delete at point
+18:14:51 [INFO] Command processed, point is at Coordinate { offset: 5, line: 1 }
+18:14:52 [INFO] Keystroke: Backspace
+18:14:52 [INFO] Input type: Control(Backspace)
+18:14:52 [INFO] Input maps to BufferDelete
+18:14:52 [INFO] Executing command: BufferDelete
+18:14:52 [INFO] Executed delete at point
+18:14:52 [INFO] Command processed, point is at Coordinate { offset: 4, line: 1 }
+18:14:52 [INFO] Keystroke: Backspace
+18:14:52 [INFO] Input type: Control(Backspace)
+18:14:52 [INFO] Input maps to BufferDelete
+18:14:52 [INFO] Executing command: BufferDelete
+18:14:52 [INFO] Executed delete at point
+18:14:52 [INFO] Command processed, point is at Coordinate { offset: 3, line: 1 }
+18:14:52 [INFO] Keystroke: Backspace
+18:14:52 [INFO] Input type: Control(Backspace)
+18:14:52 [INFO] Input maps to BufferDelete
+18:14:52 [INFO] Executing command: BufferDelete
+18:14:52 [INFO] Executed delete at point
+18:14:52 [INFO] Command processed, point is at Coordinate { offset: 2, line: 1 }
+18:14:52 [INFO] Keystroke: Backspace
+18:14:52 [INFO] Input type: Control(Backspace)
+18:14:52 [INFO] Input maps to BufferDelete
+18:14:52 [INFO] Executing command: BufferDelete
+18:14:52 [INFO] Executed delete at point
+18:14:52 [INFO] Command processed, point is at Coordinate { offset: 1, line: 1 }
+18:14:52 [INFO] Keystroke: Backspace
+18:14:52 [INFO] Input type: Control(Backspace)
+18:14:52 [INFO] Input maps to BufferDelete
+18:14:52 [INFO] Executing command: BufferDelete
+18:14:52 [INFO] Executed delete at point
+18:14:52 [INFO] Command processed, point is at Coordinate { offset: 0, line: 1 }
+18:14:53 [INFO] Keystroke: Backspace
+18:14:53 [INFO] Input type: Control(Backspace)
+18:14:53 [INFO] Input maps to BufferDelete
+18:14:53 [INFO] Executing command: BufferDelete
+18:14:53 [INFO] Executed delete at point
+18:14:53 [INFO] Command processed, point is at Coordinate { offset: 77, line: 0 }
+18:14:53 [INFO] Keystroke: Backspace
+18:14:53 [INFO] Input type: Control(Backspace)
+18:14:53 [INFO] Input maps to BufferDelete
+18:14:53 [INFO] Executing command: BufferDelete
+18:14:53 [INFO] Executed delete at point
+18:14:53 [INFO] Command processed, point is at Coordinate { offset: 76, line: 0 }
+18:14:53 [INFO] Keystroke: Backspace
+18:14:53 [INFO] Input type: Control(Backspace)
+18:14:53 [INFO] Input maps to BufferDelete
+18:14:53 [INFO] Executing command: BufferDelete
+18:14:53 [INFO] Executed delete at point
+18:14:53 [INFO] Command processed, point is at Coordinate { offset: 75, line: 0 }
+18:14:53 [INFO] Keystroke: Backspace
+18:14:53 [INFO] Input type: Control(Backspace)
+18:14:53 [INFO] Input maps to BufferDelete
+18:14:53 [INFO] Executing command: BufferDelete
+18:14:53 [INFO] Executed delete at point
+18:14:53 [INFO] Command processed, point is at Coordinate { offset: 74, line: 0 }
+18:14:55 [INFO] Keystroke: Char('u')
+18:14:55 [INFO] Input type: Insert('u')
+18:14:55 [INFO] Input maps to BufferInsert('u')
+18:14:55 [INFO] Executing command: BufferInsert('u')
+18:14:55 [INFO] Inserted: u, 117
+18:14:55 [INFO] Command processed, point is at Coordinate { offset: 75, line: 0 }
+18:14:55 [INFO] Keystroke: Char('s')
+18:14:55 [INFO] Input type: Insert('s')
+18:14:55 [INFO] Input maps to BufferInsert('s')
+18:14:55 [INFO] Executing command: BufferInsert('s')
+18:14:55 [INFO] Inserted: s, 115
+18:14:55 [INFO] Command processed, point is at Coordinate { offset: 76, line: 0 }
+18:14:56 [INFO] Keystroke: Char(',')
+18:14:56 [INFO] Input type: Insert(',')
+18:14:56 [INFO] Input maps to BufferInsert(',')
+18:14:56 [INFO] Executing command: BufferInsert(',')
+18:14:56 [INFO] Inserted: ,, 44
+18:14:56 [INFO] Command processed, point is at Coordinate { offset: 77, line: 0 }
+18:14:56 [INFO] Keystroke: Char(' ')
+18:14:56 [INFO] Input type: Insert(' ')
+18:14:56 [INFO] Input maps to BufferInsert(' ')
+18:14:56 [INFO] Executing command: BufferInsert(' ')
+18:14:56 [INFO] Inserted:  , 32
+18:14:56 [INFO] Command processed, point is at Coordinate { offset: 78, line: 0 }
+18:14:56 [INFO] Keystroke: Char('I')
+18:14:56 [INFO] Input type: Insert('I')
+18:14:56 [INFO] Input maps to BufferInsert('I')
+18:14:56 [INFO] Executing command: BufferInsert('I')
+18:14:56 [INFO] Inserted: I, 73
+18:14:56 [INFO] Command processed, point is at Coordinate { offset: 79, line: 0 }
+18:14:56 [INFO] Keystroke: Char(' ')
+18:14:56 [INFO] Input type: Insert(' ')
+18:14:56 [INFO] Input maps to BufferInsert(' ')
+18:14:56 [INFO] Executing command: BufferInsert(' ')
+18:14:56 [INFO] Inserted:  , 32
+18:14:56 [INFO] Command processed, point is at Coordinate { offset: 80, line: 0 }
+18:14:56 [INFO] Keystroke: Char('c')
+18:14:56 [INFO] Input type: Insert('c')
+18:14:56 [INFO] Input maps to BufferInsert('c')
+18:14:56 [INFO] Executing command: BufferInsert('c')
+18:14:56 [INFO] Inserted: c, 99
+18:14:56 [INFO] Command processed, point is at Coordinate { offset: 81, line: 0 }
+18:14:56 [INFO] Keystroke: Char('a')
+18:14:56 [INFO] Input type: Insert('a')
+18:14:56 [INFO] Input maps to BufferInsert('a')
+18:14:56 [INFO] Executing command: BufferInsert('a')
+18:14:56 [INFO] Inserted: a, 97
+18:14:56 [INFO] Command processed, point is at Coordinate { offset: 82, line: 0 }
+18:14:56 [INFO] Keystroke: Char('n')
+18:14:56 [INFO] Input type: Insert('n')
+18:14:56 [INFO] Input maps to BufferInsert('n')
+18:14:56 [INFO] Executing command: BufferInsert('n')
+18:14:56 [INFO] Inserted: n, 110
+18:14:56 [INFO] Command processed, point is at Coordinate { offset: 83, line: 0 }
+18:14:57 [INFO] Keystroke: Char(' ')
+18:14:57 [INFO] Input type: Insert(' ')
+18:14:57 [INFO] Input maps to BufferInsert(' ')
+18:14:57 [INFO] Executing command: BufferInsert(' ')
+18:14:57 [INFO] Inserted:  , 32
+18:14:57 [INFO] Command processed, point is at Coordinate { offset: 84, line: 0 }
+18:14:57 [INFO] Keystroke: Char('d')
+18:14:57 [INFO] Input type: Insert('d')
+18:14:57 [INFO] Input maps to BufferInsert('d')
+18:14:57 [INFO] Executing command: BufferInsert('d')
+18:14:57 [INFO] Inserted: d, 100
+18:14:57 [INFO] Command processed, point is at Coordinate { offset: 85, line: 0 }
+18:14:57 [INFO] Keystroke: Char('e')
+18:14:57 [INFO] Input type: Insert('e')
+18:14:57 [INFO] Input maps to BufferInsert('e')
+18:14:57 [INFO] Executing command: BufferInsert('e')
+18:14:57 [INFO] Inserted: e, 101
+18:14:57 [INFO] Command processed, point is at Coordinate { offset: 86, line: 0 }
+18:14:57 [INFO] Keystroke: Char('l')
+18:14:57 [INFO] Input type: Insert('l')
+18:14:57 [INFO] Input maps to BufferInsert('l')
+18:14:57 [INFO] Executing command: BufferInsert('l')
+18:14:57 [INFO] Inserted: l, 108
+18:14:57 [INFO] Command processed, point is at Coordinate { offset: 87, line: 0 }
+18:14:57 [INFO] Keystroke: Char('e')
+18:14:57 [INFO] Input type: Insert('e')
+18:14:57 [INFO] Input maps to BufferInsert('e')
+18:14:57 [INFO] Executing command: BufferInsert('e')
+18:14:57 [INFO] Inserted: e, 101
+18:14:57 [INFO] Command processed, point is at Coordinate { offset: 88, line: 0 }
+18:14:57 [INFO] Keystroke: Char('t')
+18:14:57 [INFO] Input type: Insert('t')
+18:14:57 [INFO] Input maps to BufferInsert('t')
+18:14:57 [INFO] Executing command: BufferInsert('t')
+18:14:57 [INFO] Inserted: t, 116
+18:14:57 [INFO] Command processed, point is at Coordinate { offset: 89, line: 0 }
+18:14:57 [INFO] Keystroke: Char('e')
+18:14:57 [INFO] Input type: Insert('e')
+18:14:57 [INFO] Input maps to BufferInsert('e')
+18:14:57 [INFO] Executing command: BufferInsert('e')
+18:14:57 [INFO] Inserted: e, 101
+18:14:57 [INFO] Command processed, point is at Coordinate { offset: 90, line: 0 }
+18:14:58 [INFO] Keystroke: Char('!')
+18:14:58 [INFO] Input type: Insert('!')
+18:14:58 [INFO] Input maps to BufferInsert('!')
+18:14:58 [INFO] Executing command: BufferInsert('!')
+18:14:58 [INFO] Inserted: !, 33
+18:14:58 [INFO] Command processed, point is at Coordinate { offset: 91, line: 0 }
+18:14:59 [INFO] Keystroke: Char('\n')
+18:14:59 [INFO] Input type: Insert('\n')
+18:14:59 [INFO] Input maps to BufferInsert('\n')
+18:14:59 [INFO] Executing command: BufferInsert('\n')
+18:14:59 [INFO] Inserted: 
+, 10
+18:14:59 [INFO] Command processed, point is at Coordinate { offset: 0, line: 1 }
+18:14:59 [INFO] Keystroke: Char('\n')
+18:14:59 [INFO] Input type: Insert('\n')
+18:14:59 [INFO] Input maps to BufferInsert('\n')
+18:14:59 [INFO] Executing command: BufferInsert('\n')
+18:14:59 [INFO] Inserted: 
+, 10
+18:14:59 [INFO] Command processed, point is at Coordinate { offset: 0, line: 2 }
+18:14:59 [INFO] Keystroke: Char('\n')
+18:14:59 [INFO] Input type: Insert('\n')
+18:14:59 [INFO] Input maps to BufferInsert('\n')
+18:14:59 [INFO] Executing command: BufferInsert('\n')
+18:14:59 [INFO] Inserted: 
+, 10
+18:14:59 [INFO] Command processed, point is at Coordinate { offset: 0, line: 3 }
+18:15:01 [INFO] Keystroke: Char('W')
+18:15:01 [INFO] Input type: Insert('W')
+18:15:01 [INFO] Input maps to BufferInsert('W')
+18:15:01 [INFO] Executing command: BufferInsert('W')
+18:15:01 [INFO] Inserted: W, 87
+18:15:01 [INFO] Command processed, point is at Coordinate { offset: 1, line: 3 }
+18:15:04 [INFO] Keystroke: Char('W')
+18:15:04 [INFO] Input type: Insert('W')
+18:15:04 [INFO] Input maps to BufferInsert('W')
+18:15:04 [INFO] Executing command: BufferInsert('W')
+18:15:04 [INFO] Inserted: W, 87
+18:15:04 [INFO] Command processed, point is at Coordinate { offset: 2, line: 3 }
+18:15:04 [INFO] Keystroke: Char('h')
+18:15:04 [INFO] Input type: Insert('h')
+18:15:04 [INFO] Input maps to BufferInsert('h')
+18:15:04 [INFO] Executing command: BufferInsert('h')
+18:15:04 [INFO] Inserted: h, 104
+18:15:04 [INFO] Command processed, point is at Coordinate { offset: 3, line: 3 }
+18:15:05 [INFO] Keystroke: Char('o')
+18:15:05 [INFO] Input type: Insert('o')
+18:15:05 [INFO] Input maps to BufferInsert('o')
+18:15:05 [INFO] Executing command: BufferInsert('o')
+18:15:05 [INFO] Inserted: o, 111
+18:15:05 [INFO] Command processed, point is at Coordinate { offset: 4, line: 3 }
+18:15:05 [INFO] Keystroke: Char('o')
+18:15:05 [INFO] Input type: Insert('o')
+18:15:05 [INFO] Input maps to BufferInsert('o')
+18:15:05 [INFO] Executing command: BufferInsert('o')
+18:15:05 [INFO] Inserted: o, 111
+18:15:05 [INFO] Command processed, point is at Coordinate { offset: 5, line: 3 }
+18:15:05 [INFO] Keystroke: Char('p')
+18:15:05 [INFO] Input type: Insert('p')
+18:15:05 [INFO] Input maps to BufferInsert('p')
+18:15:05 [INFO] Executing command: BufferInsert('p')
+18:15:05 [INFO] Inserted: p, 112
+18:15:05 [INFO] Command processed, point is at Coordinate { offset: 6, line: 3 }
+18:15:05 [INFO] Keystroke: Char('s')
+18:15:05 [INFO] Input type: Insert('s')
+18:15:05 [INFO] Input maps to BufferInsert('s')
+18:15:05 [INFO] Executing command: BufferInsert('s')
+18:15:05 [INFO] Inserted: s, 115
+18:15:05 [INFO] Command processed, point is at Coordinate { offset: 7, line: 3 }
+18:15:11 [INFO] Keystroke: Char(' ')
+18:15:11 [INFO] Input type: Insert(' ')
+18:15:11 [INFO] Input maps to BufferInsert(' ')
+18:15:11 [INFO] Executing command: BufferInsert(' ')
+18:15:11 [INFO] Inserted:  , 32
+18:15:11 [INFO] Command processed, point is at Coordinate { offset: 8, line: 3 }
+18:15:12 [INFO] Keystroke: Char('l')
+18:15:12 [INFO] Input type: Insert('l')
+18:15:12 [INFO] Input maps to BufferInsert('l')
+18:15:12 [INFO] Executing command: BufferInsert('l')
+18:15:12 [INFO] Inserted: l, 108
+18:15:12 [INFO] Command processed, point is at Coordinate { offset: 9, line: 3 }
+18:15:12 [INFO] Keystroke: Char('o')
+18:15:12 [INFO] Input type: Insert('o')
+18:15:12 [INFO] Input maps to BufferInsert('o')
+18:15:12 [INFO] Executing command: BufferInsert('o')
+18:15:12 [INFO] Inserted: o, 111
+18:15:12 [INFO] Command processed, point is at Coordinate { offset: 10, line: 3 }
+18:15:12 [INFO] Keystroke: Char('o')
+18:15:12 [INFO] Input type: Insert('o')
+18:15:12 [INFO] Input maps to BufferInsert('o')
+18:15:12 [INFO] Executing command: BufferInsert('o')
+18:15:12 [INFO] Inserted: o, 111
+18:15:12 [INFO] Command processed, point is at Coordinate { offset: 11, line: 3 }
+18:15:12 [INFO] Keystroke: Char('k')
+18:15:12 [INFO] Input type: Insert('k')
+18:15:12 [INFO] Input maps to BufferInsert('k')
+18:15:12 [INFO] Executing command: BufferInsert('k')
+18:15:12 [INFO] Inserted: k, 107
+18:15:12 [INFO] Command processed, point is at Coordinate { offset: 12, line: 3 }
+18:15:12 [INFO] Keystroke: Char('s')
+18:15:12 [INFO] Input type: Insert('s')
+18:15:12 [INFO] Input maps to BufferInsert('s')
+18:15:12 [INFO] Executing command: BufferInsert('s')
+18:15:12 [INFO] Inserted: s, 115
+18:15:12 [INFO] Command processed, point is at Coordinate { offset: 13, line: 3 }
+18:15:12 [INFO] Keystroke: Char(' ')
+18:15:12 [INFO] Input type: Insert(' ')
+18:15:12 [INFO] Input maps to BufferInsert(' ')
+18:15:12 [INFO] Executing command: BufferInsert(' ')
+18:15:12 [INFO] Inserted:  , 32
+18:15:12 [INFO] Command processed, point is at Coordinate { offset: 14, line: 3 }
+18:15:13 [INFO] Keystroke: Char('l')
+18:15:13 [INFO] Input type: Insert('l')
+18:15:13 [INFO] Input maps to BufferInsert('l')
+18:15:13 [INFO] Executing command: BufferInsert('l')
+18:15:13 [INFO] Inserted: l, 108
+18:15:13 [INFO] Command processed, point is at Coordinate { offset: 15, line: 3 }
+18:15:13 [INFO] Keystroke: Char('i')
+18:15:13 [INFO] Input type: Insert('i')
+18:15:13 [INFO] Input maps to BufferInsert('i')
+18:15:13 [INFO] Executing command: BufferInsert('i')
+18:15:13 [INFO] Inserted: i, 105
+18:15:13 [INFO] Command processed, point is at Coordinate { offset: 16, line: 3 }
+18:15:13 [INFO] Keystroke: Char('k')
+18:15:13 [INFO] Input type: Insert('k')
+18:15:13 [INFO] Input maps to BufferInsert('k')
+18:15:13 [INFO] Executing command: BufferInsert('k')
+18:15:13 [INFO] Inserted: k, 107
+18:15:13 [INFO] Command processed, point is at Coordinate { offset: 17, line: 3 }
+18:15:13 [INFO] Keystroke: Char('e')
+18:15:13 [INFO] Input type: Insert('e')
+18:15:13 [INFO] Input maps to BufferInsert('e')
+18:15:13 [INFO] Executing command: BufferInsert('e')
+18:15:13 [INFO] Inserted: e, 101
+18:15:13 [INFO] Command processed, point is at Coordinate { offset: 18, line: 3 }
+18:15:13 [INFO] Keystroke: Char(' ')
+18:15:13 [INFO] Input type: Insert(' ')
+18:15:13 [INFO] Input maps to BufferInsert(' ')
+18:15:13 [INFO] Executing command: BufferInsert(' ')
+18:15:13 [INFO] Inserted:  , 32
+18:15:13 [INFO] Command processed, point is at Coordinate { offset: 19, line: 3 }
+18:15:13 [INFO] Keystroke: Char('i')
+18:15:13 [INFO] Input type: Insert('i')
+18:15:13 [INFO] Input maps to BufferInsert('i')
+18:15:13 [INFO] Executing command: BufferInsert('i')
+18:15:13 [INFO] Inserted: i, 105
+18:15:13 [INFO] Command processed, point is at Coordinate { offset: 20, line: 3 }
+18:15:13 [INFO] Keystroke: Char('\'')
+18:15:13 [INFO] Input type: Insert('\'')
+18:15:13 [INFO] Input maps to BufferInsert('\'')
+18:15:13 [INFO] Executing command: BufferInsert('\'')
+18:15:13 [INFO] Inserted: ', 39
+18:15:13 [INFO] Command processed, point is at Coordinate { offset: 21, line: 3 }
+18:15:13 [INFO] Keystroke: Char('m')
+18:15:13 [INFO] Input type: Insert('m')
+18:15:13 [INFO] Input maps to BufferInsert('m')
+18:15:13 [INFO] Executing command: BufferInsert('m')
+18:15:13 [INFO] Inserted: m, 109
+18:15:13 [INFO] Command processed, point is at Coordinate { offset: 22, line: 3 }
+18:15:14 [INFO] Keystroke: Char(' ')
+18:15:14 [INFO] Input type: Insert(' ')
+18:15:14 [INFO] Input maps to BufferInsert(' ')
+18:15:14 [INFO] Executing command: BufferInsert(' ')
+18:15:14 [INFO] Inserted:  , 32
+18:15:14 [INFO] Command processed, point is at Coordinate { offset: 23, line: 3 }
+18:15:14 [INFO] Keystroke: Char('n')
+18:15:14 [INFO] Input type: Insert('n')
+18:15:14 [INFO] Input maps to BufferInsert('n')
+18:15:14 [INFO] Executing command: BufferInsert('n')
+18:15:14 [INFO] Inserted: n, 110
+18:15:14 [INFO] Command processed, point is at Coordinate { offset: 24, line: 3 }
+18:15:14 [INFO] Keystroke: Char('o')
+18:15:14 [INFO] Input type: Insert('o')
+18:15:14 [INFO] Input maps to BufferInsert('o')
+18:15:14 [INFO] Executing command: BufferInsert('o')
+18:15:14 [INFO] Inserted: o, 111
+18:15:14 [INFO] Command processed, point is at Coordinate { offset: 25, line: 3 }
+18:15:14 [INFO] Keystroke: Char('t')
+18:15:14 [INFO] Input type: Insert('t')
+18:15:14 [INFO] Input maps to BufferInsert('t')
+18:15:14 [INFO] Executing command: BufferInsert('t')
+18:15:14 [INFO] Inserted: t, 116
+18:15:14 [INFO] Command processed, point is at Coordinate { offset: 26, line: 3 }
+18:15:14 [INFO] Keystroke: Char(' ')
+18:15:14 [INFO] Input type: Insert(' ')
+18:15:14 [INFO] Input maps to BufferInsert(' ')
+18:15:14 [INFO] Executing command: BufferInsert(' ')
+18:15:14 [INFO] Inserted:  , 32
+18:15:14 [INFO] Command processed, point is at Coordinate { offset: 27, line: 3 }
+18:15:15 [INFO] Keystroke: Char('r')
+18:15:15 [INFO] Input type: Insert('r')
+18:15:15 [INFO] Input maps to BufferInsert('r')
+18:15:15 [INFO] Executing command: BufferInsert('r')
+18:15:15 [INFO] Inserted: r, 114
+18:15:15 [INFO] Command processed, point is at Coordinate { offset: 28, line: 3 }
+18:15:15 [INFO] Keystroke: Char('e')
+18:15:15 [INFO] Input type: Insert('e')
+18:15:15 [INFO] Input maps to BufferInsert('e')
+18:15:15 [INFO] Executing command: BufferInsert('e')
+18:15:15 [INFO] Inserted: e, 101
+18:15:15 [INFO] Command processed, point is at Coordinate { offset: 29, line: 3 }
+18:15:15 [INFO] Keystroke: Char('s')
+18:15:15 [INFO] Input type: Insert('s')
+18:15:15 [INFO] Input maps to BufferInsert('s')
+18:15:15 [INFO] Executing command: BufferInsert('s')
+18:15:15 [INFO] Inserted: s, 115
+18:15:15 [INFO] Command processed, point is at Coordinate { offset: 30, line: 3 }
+18:15:15 [INFO] Keystroke: Char('p')
+18:15:15 [INFO] Input type: Insert('p')
+18:15:15 [INFO] Input maps to BufferInsert('p')
+18:15:15 [INFO] Executing command: BufferInsert('p')
+18:15:15 [INFO] Inserted: p, 112
+18:15:15 [INFO] Command processed, point is at Coordinate { offset: 31, line: 3 }
+18:15:15 [INFO] Keystroke: Char('e')
+18:15:15 [INFO] Input type: Insert('e')
+18:15:15 [INFO] Input maps to BufferInsert('e')
+18:15:15 [INFO] Executing command: BufferInsert('e')
+18:15:15 [INFO] Inserted: e, 101
+18:15:15 [INFO] Command processed, point is at Coordinate { offset: 32, line: 3 }
+18:15:15 [INFO] Keystroke: Char('c')
+18:15:15 [INFO] Input type: Insert('c')
+18:15:15 [INFO] Input maps to BufferInsert('c')
+18:15:15 [INFO] Executing command: BufferInsert('c')
+18:15:15 [INFO] Inserted: c, 99
+18:15:15 [INFO] Command processed, point is at Coordinate { offset: 33, line: 3 }
+18:15:16 [INFO] Keystroke: Char('t')
+18:15:16 [INFO] Input type: Insert('t')
+18:15:16 [INFO] Input maps to BufferInsert('t')
+18:15:16 [INFO] Executing command: BufferInsert('t')
+18:15:16 [INFO] Inserted: t, 116
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 34, line: 3 }
+18:15:16 [INFO] Keystroke: Char('i')
+18:15:16 [INFO] Input type: Insert('i')
+18:15:16 [INFO] Input maps to BufferInsert('i')
+18:15:16 [INFO] Executing command: BufferInsert('i')
+18:15:16 [INFO] Inserted: i, 105
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 35, line: 3 }
+18:15:16 [INFO] Keystroke: Char('n')
+18:15:16 [INFO] Input type: Insert('n')
+18:15:16 [INFO] Input maps to BufferInsert('n')
+18:15:16 [INFO] Executing command: BufferInsert('n')
+18:15:16 [INFO] Inserted: n, 110
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 36, line: 3 }
+18:15:16 [INFO] Keystroke: Char('g')
+18:15:16 [INFO] Input type: Insert('g')
+18:15:16 [INFO] Input maps to BufferInsert('g')
+18:15:16 [INFO] Executing command: BufferInsert('g')
+18:15:16 [INFO] Inserted: g, 103
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 37, line: 3 }
+18:15:16 [INFO] Keystroke: Char(' ')
+18:15:16 [INFO] Input type: Insert(' ')
+18:15:16 [INFO] Input maps to BufferInsert(' ')
+18:15:16 [INFO] Executing command: BufferInsert(' ')
+18:15:16 [INFO] Inserted:  , 32
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 38, line: 3 }
+18:15:16 [INFO] Keystroke: Char('l')
+18:15:16 [INFO] Input type: Insert('l')
+18:15:16 [INFO] Input maps to BufferInsert('l')
+18:15:16 [INFO] Executing command: BufferInsert('l')
+18:15:16 [INFO] Inserted: l, 108
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 39, line: 3 }
+18:15:16 [INFO] Keystroke: Char('i')
+18:15:16 [INFO] Input type: Insert('i')
+18:15:16 [INFO] Input maps to BufferInsert('i')
+18:15:16 [INFO] Executing command: BufferInsert('i')
+18:15:16 [INFO] Inserted: i, 105
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 40, line: 3 }
+18:15:16 [INFO] Keystroke: Char('n')
+18:15:16 [INFO] Input type: Insert('n')
+18:15:16 [INFO] Input maps to BufferInsert('n')
+18:15:16 [INFO] Executing command: BufferInsert('n')
+18:15:16 [INFO] Inserted: n, 110
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 41, line: 3 }
+18:15:16 [INFO] Keystroke: Char('e')
+18:15:16 [INFO] Input type: Insert('e')
+18:15:16 [INFO] Input maps to BufferInsert('e')
+18:15:16 [INFO] Executing command: BufferInsert('e')
+18:15:16 [INFO] Inserted: e, 101
+18:15:16 [INFO] Command processed, point is at Coordinate { offset: 42, line: 3 }
+18:15:17 [INFO] Keystroke: Char(' ')
+18:15:17 [INFO] Input type: Insert(' ')
+18:15:17 [INFO] Input maps to BufferInsert(' ')
+18:15:17 [INFO] Executing command: BufferInsert(' ')
+18:15:17 [INFO] Inserted:  , 32
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 43, line: 3 }
+18:15:17 [INFO] Keystroke: Char('b')
+18:15:17 [INFO] Input type: Insert('b')
+18:15:17 [INFO] Input maps to BufferInsert('b')
+18:15:17 [INFO] Executing command: BufferInsert('b')
+18:15:17 [INFO] Inserted: b, 98
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 44, line: 3 }
+18:15:17 [INFO] Keystroke: Char('r')
+18:15:17 [INFO] Input type: Insert('r')
+18:15:17 [INFO] Input maps to BufferInsert('r')
+18:15:17 [INFO] Executing command: BufferInsert('r')
+18:15:17 [INFO] Inserted: r, 114
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 45, line: 3 }
+18:15:17 [INFO] Keystroke: Char('e')
+18:15:17 [INFO] Input type: Insert('e')
+18:15:17 [INFO] Input maps to BufferInsert('e')
+18:15:17 [INFO] Executing command: BufferInsert('e')
+18:15:17 [INFO] Inserted: e, 101
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 46, line: 3 }
+18:15:17 [INFO] Keystroke: Char('a')
+18:15:17 [INFO] Input type: Insert('a')
+18:15:17 [INFO] Input maps to BufferInsert('a')
+18:15:17 [INFO] Executing command: BufferInsert('a')
+18:15:17 [INFO] Inserted: a, 97
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 47, line: 3 }
+18:15:17 [INFO] Keystroke: Char('k')
+18:15:17 [INFO] Input type: Insert('k')
+18:15:17 [INFO] Input maps to BufferInsert('k')
+18:15:17 [INFO] Executing command: BufferInsert('k')
+18:15:17 [INFO] Inserted: k, 107
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 48, line: 3 }
+18:15:17 [INFO] Keystroke: Char('s')
+18:15:17 [INFO] Input type: Insert('s')
+18:15:17 [INFO] Input maps to BufferInsert('s')
+18:15:17 [INFO] Executing command: BufferInsert('s')
+18:15:17 [INFO] Inserted: s, 115
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 49, line: 3 }
+18:15:17 [INFO] Keystroke: Char(' ')
+18:15:17 [INFO] Input type: Insert(' ')
+18:15:17 [INFO] Input maps to BufferInsert(' ')
+18:15:17 [INFO] Executing command: BufferInsert(' ')
+18:15:17 [INFO] Inserted:  , 32
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 50, line: 3 }
+18:15:17 [INFO] Keystroke: Char('o')
+18:15:17 [INFO] Input type: Insert('o')
+18:15:17 [INFO] Input maps to BufferInsert('o')
+18:15:17 [INFO] Executing command: BufferInsert('o')
+18:15:17 [INFO] Inserted: o, 111
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 51, line: 3 }
+18:15:17 [INFO] Keystroke: Char('n')
+18:15:17 [INFO] Input type: Insert('n')
+18:15:17 [INFO] Input maps to BufferInsert('n')
+18:15:17 [INFO] Executing command: BufferInsert('n')
+18:15:17 [INFO] Inserted: n, 110
+18:15:17 [INFO] Command processed, point is at Coordinate { offset: 52, line: 3 }
+18:15:18 [INFO] Keystroke: Char(' ')
+18:15:18 [INFO] Input type: Insert(' ')
+18:15:18 [INFO] Input maps to BufferInsert(' ')
+18:15:18 [INFO] Executing command: BufferInsert(' ')
+18:15:18 [INFO] Inserted:  , 32
+18:15:18 [INFO] Command processed, point is at Coordinate { offset: 53, line: 3 }
+18:15:18 [INFO] Keystroke: Char('d')
+18:15:18 [INFO] Input type: Insert('d')
+18:15:18 [INFO] Input maps to BufferInsert('d')
+18:15:18 [INFO] Executing command: BufferInsert('d')
+18:15:18 [INFO] Inserted: d, 100
+18:15:18 [INFO] Command processed, point is at Coordinate { offset: 54, line: 3 }
+18:15:18 [INFO] Keystroke: Char('e')
+18:15:18 [INFO] Input type: Insert('e')
+18:15:18 [INFO] Input maps to BufferInsert('e')
+18:15:18 [INFO] Executing command: BufferInsert('e')
+18:15:18 [INFO] Inserted: e, 101
+18:15:18 [INFO] Command processed, point is at Coordinate { offset: 55, line: 3 }
+18:15:18 [INFO] Keystroke: Char('l')
+18:15:18 [INFO] Input type: Insert('l')
+18:15:18 [INFO] Input maps to BufferInsert('l')
+18:15:18 [INFO] Executing command: BufferInsert('l')
+18:15:18 [INFO] Inserted: l, 108
+18:15:18 [INFO] Command processed, point is at Coordinate { offset: 56, line: 3 }
+18:15:18 [INFO] Keystroke: Char('e')
+18:15:18 [INFO] Input type: Insert('e')
+18:15:18 [INFO] Input maps to BufferInsert('e')
+18:15:18 [INFO] Executing command: BufferInsert('e')
+18:15:18 [INFO] Inserted: e, 101
+18:15:18 [INFO] Command processed, point is at Coordinate { offset: 57, line: 3 }
+18:15:18 [INFO] Keystroke: Char('t')
+18:15:18 [INFO] Input type: Insert('t')
+18:15:18 [INFO] Input maps to BufferInsert('t')
+18:15:18 [INFO] Executing command: BufferInsert('t')
+18:15:18 [INFO] Inserted: t, 116
+18:15:18 [INFO] Command processed, point is at Coordinate { offset: 58, line: 3 }
+18:15:18 [INFO] Keystroke: Char('e')
+18:15:18 [INFO] Input type: Insert('e')
+18:15:18 [INFO] Input maps to BufferInsert('e')
+18:15:18 [INFO] Executing command: BufferInsert('e')
+18:15:18 [INFO] Inserted: e, 101
+18:15:18 [INFO] Command processed, point is at Coordinate { offset: 59, line: 3 }
+18:15:31 [INFO] Keystroke: Char('q')
+18:15:31 [INFO] Input type: Insert('q')
+18:15:31 [INFO] Input maps to BufferInsert('q')
+18:15:31 [INFO] Executing command: BufferInsert('q')
+18:15:31 [INFO] Inserted: q, 113
+18:15:31 [INFO] Command processed, point is at Coordinate { offset: 60, line: 3 }
+18:15:32 [INFO] Keystroke: Esc
+18:15:32 [INFO] Input type: Control(Escape)
+18:15:32 [INFO] Input maps to Quit
+18:15:32 [INFO] Executing command: Quit
+18:15:32 [INFO] Exiting command executor on quit command
+18:15:32 [INFO] Teardown complete

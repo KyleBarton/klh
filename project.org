@@ -232,6 +232,22 @@ CLOSED: [2020-07-08 Wed 22:28]
 Basically, it's =world= from /Craft/, but I'd still like it to be more modular
 **** TODO implement a better UI
 Look at Iced: https://github.com/hecrj/iced
+Ok, so Iced looks like a good option. Architecture:
+- UI runs as an Application in its own thread
+- It creates a subscription to a "sessionClient", which somehow receives input from the session
+- It sends user updates through a channel to the session, which is listening on the other side
+Should sessionClient then control both directions of changes? I think maybe so.
+So:
+- From main.rs, new-up a session
+- From main.rs, new-up a session-client, injecting the session
+- session-client news-up a UI application in its own thread, giving it:
+  - One receiving channel, for which to subscribe
+    - Some confusion here
+    - UI _subscribes_ to session for updates -- does this need to be done with channels?
+  - One transmitting channel, for which to send messages on update
+STILL NEEDED (12/12/2020):
+- Get modifier keys working
+- Redisplay (subscription, channels)
 **** TODO implement an echo area
 Good for debugging, otherwise this is going to be slow going
 *** Bugs/Cleanup

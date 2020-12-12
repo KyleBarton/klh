@@ -2,43 +2,31 @@ use klh::session;
 use klh::startup::StartupArgs;
 use simplelog;
 use std::fs;
-use std::io;
-use termios::*;
+use iced::{self, Application, };
+use klh::ui::{Flags, EditorUi};
+use std::thread;
+use crossbeam_channel;
 
-fn main() -> io::Result<()> {
-  /*setting up some logging*/
-  simplelog::CombinedLogger::init(vec![simplelog::WriteLogger::new(
-    simplelog::LevelFilter::Info,
-    simplelog::Config::default(),
-    fs::File::create("klh.log").unwrap(),
-  )])
-  .unwrap();
-  /*end*/
-  let std_fd = libc::STDIN_FILENO;
-  /*These two lines have to stay together*/
-  let given_termios = Termios::from_fd(std_fd).unwrap();
-  let mut new_termios = given_termios.clone();
-  set_term_raw(&mut new_termios, std_fd).unwrap();
-  /*END*/
-
+fn main() -> iced::Result {
   let args: StartupArgs = StartupArgs::from_cli();
 
-  let mut session: session::Session = session::Session::new(args);
+  let (session_tx, session_rx) = crossbeam_channel::unbounded();
 
-  session.run().unwrap();
+  thread::spawn(move || {
+    /*setting up some logging*/
+    simplelog::CombinedLogger::init(vec![simplelog::WriteLogger::new(
+      simplelog::LevelFilter::Info,
+      simplelog::Config::default(),
+      fs::File::create("klh.log").unwrap(),
+    )])
+    .unwrap();
+    /*end*/
+    let mut session: session::Session = session::Session::new(args, session_rx);
+    session.run().unwrap();
+  });
 
-  reset_term(given_termios, std_fd);
-
-  Ok(())
-}
-
-fn set_term_raw(mut term: &mut Termios, fd: i32) -> Result<(), String> {
-  termios::cfmakeraw(&mut term);
-  //we're not doing anything fancy with display yet, we just need raw input
-  term.c_oflag |= OPOST;
-  Ok(tcsetattr(fd, TCSANOW, &term).unwrap())
-}
-
-fn reset_term(term: Termios, fd: i32) {
-  tcsetattr(fd, TCSANOW, &term).unwrap();
+  
+  EditorUi::run(iced::Settings::with_flags(
+    Flags::new(session_tx)
+  ))
 }

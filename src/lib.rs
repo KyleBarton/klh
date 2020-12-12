@@ -7,3 +7,4 @@ pub mod input_handler;
 pub mod models;
 pub mod session;
 pub mod startup;
+pub mod ui;

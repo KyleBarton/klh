@@ -1,13 +1,9 @@
-use crate::buffer;
 use crate::buffer_provider;
 use crate::command_executor;
-use crate::display;
 use crate::input_handler;
-use crate::models::Command;
+use crate::models::{InputType, Command};
 use crate::{buffer_store::{BufferStoreArgs, BufferStore}, startup};
 use log::*;
-
-use termion::screen;
 
 #[derive(Copy, Clone)]
 enum SessionState {
@@ -23,49 +19,35 @@ enum SessionState {
   PostTearDown,
 }
 
-//thin wrapper over screen for now. Eventually should be the port to a proper display
-pub struct SessionScreen {
-  screen: screen::AlternateScreen<std::io::Stdout>,
-}
-
-impl SessionScreen {
-  pub fn new() -> Result<SessionScreen, String> {
-    //ugh the coupling here
-    let screen = screen::AlternateScreen::from(std::io::stdout());
-    Ok(SessionScreen { screen })
-  }
-
-  pub fn display(&mut self, buffer: &Box<dyn buffer::Buffer>) -> Result<(), String> {
-    display::display_buffer_v2(buffer, &mut self.screen);
-    Ok(())
-  }
-}
+//thin wrapper over screen for now. Eventually should be the port to a
+// proper display TODO at some point, I need an internal
+// representation of the screen instead of just letting iced work
+pub struct SessionScreen;
 
 pub struct Session {
   startup_args: startup::StartupArgs,
   buffer_store: BufferStore,
   state: SessionState,
-  screen: SessionScreen,
-  reader: std::io::Stdin, //todo eeeewww
+  receiver: crossbeam_channel::Receiver<InputType>,
 }
 
 impl Session {
-  pub fn new(args: startup::StartupArgs) -> Session {
+  pub fn new(
+    args: startup::StartupArgs,
+    receiver: crossbeam_channel::Receiver<InputType>
+  ) -> Session {
     info!("Creating new session");
     Session {
       startup_args: args,
       buffer_store: BufferStore::new(),
       state: SessionState::New,
-      screen: SessionScreen::new().unwrap(),
-      reader: std::io::stdin(),
+      receiver,
     }
   }
 
   //TODO this is where you would new-up the buffer store
   //Should only ever be run once for the session. Must bookend with a tear_down call
   fn init(&mut self) -> Result<(), &str> {
-    self.screen = SessionScreen::new().unwrap();
-    self.reader = std::io::stdin();
     self.state = SessionState::PostInit;
 
     match self.startup_args.get_file_name() {
@@ -103,8 +85,7 @@ impl Session {
     match self.buffer_store.get_current_mut() {
       Err(message) => Err(message),
       Ok(b) => {
-	self.screen.display(b).unwrap();
-	let input = input_handler::await_input_v2(&mut self.reader).unwrap();
+	let input = self.receiver.recv().unwrap();
 	let command: Command = input_handler::process_input_v2(input).unwrap();
 	match command_executor::execute_command_v2(&command, b) {
 	    Some(_exit_code) => self.state = SessionState::TearDownReady,
