@@ -2,23 +2,55 @@ use iced_native::{keyboard, layout, text, text_input, event, Widget,
 		  Hasher, Layout, Point, Clipboard, Length,
 		  Rectangle, Color, HorizontalAlignment, VerticalAlignment};
 use iced::{Application, Element, Column, Container, Align, executor, Command};
-use crate::{input_handler, models::InputType};
+use crate::models::{ControlType, InputType};
 // A UI, written as an Iced widget!
+
+// Hopefully we can just extend this method from now on to interpret key inputs
+// TODO controlType is leaky, "save" should not be known to the UI
+// This is a leftover from when we were using termion::Key for the actual input
+pub fn to_outbound_message(event: event::Event, modifiers: keyboard::Modifiers) -> Option<UiMessage> {
+  if modifiers.control {
+    match event {
+      event::Event::Keyboard(keyboard::Event::KeyPressed { key_code, ..}) => {
+	match key_code {
+	  keyboard::KeyCode::S => Some(UiMessage::Outbound(InputType::Control(ControlType::Save))),
+	  _ => None,
+	}
+      },
+      _ => None,
+    }
+  }
+  else {
+    match event {
+      event::Event::Keyboard(keyboard::Event::CharacterReceived(c)) => {
+	Some(UiMessage::Outbound(InputType::Insert(c)))
+      },
+      _ => None,
+    }
+  }
+}
 
 pub struct BufferInput<Message>{
   content: String,
-  on_change: fn(char) -> Message,
+  modifiers: keyboard::Modifiers,
+  to_message: fn(event::Event, keyboard::Modifiers) -> Option<Message>,
 } 
 
-impl BufferInput<InputType> {
+impl BufferInput<UiMessage> {
   fn new(
     content: &str,
-    on_change: fn(char) -> InputType,
+    on_change: fn(event::Event, keyboard::Modifiers) -> Option<UiMessage>,
   ) -> Self
   {
     Self {
       content: content.to_string(),
-      on_change,
+      modifiers: keyboard::Modifiers {
+	shift: false,
+	control: false,
+	alt: false,
+	logo: false,
+      },
+      to_message: on_change,
     }
   }
 }
@@ -62,14 +94,16 @@ where Renderer: text::Renderer
 	  _renderer: &Renderer,
 	  _clipboard: Option<&dyn Clipboard>,
   ) -> event::Status {
-    // We're gonna have to key-press/key-release thing to get modifiers figured out
     match event {
-      event::Event::Keyboard(keyboard::Event::CharacterReceived(c)) => {
-	let message: Message = (self.on_change)(c);
-	messages.push(message);
+      event::Event::Keyboard(keyboard::Event::ModifiersChanged(mods)) => {
+	self.modifiers = mods;
       },
       _ => {
-	// IDK
+	match (self.to_message)(
+	  event, self.modifiers) {
+	  Some(msg) => messages.push(msg),
+	  None => (),
+	};
       }
     }
     event::Status::Ignored
@@ -124,8 +158,20 @@ impl Flags {
   }
 }
 
+// Probably oversimplified right now
+#[derive(Debug)]
+pub enum UiUpdate {
+  ContentRedisplay
+}
+
+#[derive(Debug)]
+pub enum UiMessage {
+  Outbound(InputType),
+  Inbound(UiUpdate),
+}
+
 impl Application for EditorUi {
-  type Message = InputType;
+  type Message = UiMessage;
   type Flags = Flags;
   type Executor = executor::Default;
 
@@ -145,15 +191,20 @@ impl Application for EditorUi {
 
   fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
     match message {
-      InputType::Insert(c) => {
-	// TODO should probably use a subscription instead of directly pushing
-	self.content.push(c);
-      }
-      _ => {
-	();
-      }
+      UiMessage::Outbound(input_type) => {
+	match input_type {
+	  InputType::Insert(c) => {
+	    // TODO should probably use a subscription instead of directly pushing
+	    self.content.push(c);
+	  }
+	  _ => {
+	    ();
+	  }
+	}
+	self.session_tx.send(input_type).unwrap();
+      },
+      _ => (),
     };
-    self.session_tx.send(message).unwrap();
     Command::none()
   }
 
@@ -165,7 +216,7 @@ impl Application for EditorUi {
       .align_items(Align::Center)
       .push(BufferInput::new(
 	&self.content,
-	input_handler::translate_char,
+	to_outbound_message,
       ));
 
     Container::new(content)
