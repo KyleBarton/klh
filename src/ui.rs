@@ -1,10 +1,53 @@
 use iced_native::{keyboard, layout, text, text_input, event, Widget,
 		  Hasher, Layout, Point, Clipboard, Length,
 		  Rectangle, Color, HorizontalAlignment, VerticalAlignment};
-use iced::{Application, Element, Column, Container, Align, executor, Command};
+// use iced_futures::futures;
+use iced::{Application, Element, Column, Container, Align, executor, Command, futures, Subscription};
 use crate::models::{ControlType, InputType};
 // A UI, written as an Iced widget!
 
+//TODO rename
+pub struct IncomingEventProcessor {
+  receiver: crossbeam_channel::Receiver<UiUpdate>,
+}
+
+pub enum ReceiverState {
+  Open(crossbeam_channel::Receiver<UiUpdate>),
+  Closed
+}
+
+impl<H,I> iced_native::subscription::Recipe<H,I> for IncomingEventProcessor
+where H: std::hash::Hasher
+{
+  type Output = UiUpdate;
+  //TODO not sure what to do with this
+  fn hash(&self, state: &mut H) {
+        use std::hash::Hash;
+
+        std::any::TypeId::of::<Self>().hash(state);
+        // self.url.hash(state);
+  }
+
+  fn stream(
+    self: Box<Self>,
+    _input: futures::stream::BoxStream<'static, I>
+  ) -> futures::stream::BoxStream<'static, Self::Output> {
+    // let receiver_clone = self.receiver.clone();
+    Box::pin(futures::stream::unfold(
+      ReceiverState::Open(self.receiver.clone()),
+      |state| async move {
+	match state {
+	  ReceiverState::Closed => None,
+	  ReceiverState::Open(rx) => {
+	    // TODO error handling should be better here
+	    let update = rx.recv().unwrap();
+	    Some((update, ReceiverState::Open(rx.clone())))
+	  }
+	}
+      }
+    ))
+  }
+}
 // Hopefully we can just extend this method from now on to interpret key inputs
 // TODO controlType is leaky, "save" should not be known to the UI
 // This is a leftover from when we were using termion::Key for the actual input
@@ -143,17 +186,23 @@ Message: 'a,
 pub struct EditorUi {
   content: String,
   session_tx: crossbeam_channel::Sender<InputType>,
+  ui_rx: crossbeam_channel::Receiver<UiUpdate>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Flags {
   session_tx: crossbeam_channel::Sender<InputType>,
+  ui_rx: crossbeam_channel::Receiver<UiUpdate>,
 }
 
 impl Flags {
-  pub fn new(session_tx: crossbeam_channel::Sender<InputType>) -> Self {
+  pub fn new(
+    session_tx: crossbeam_channel::Sender<InputType>,
+    ui_rx: crossbeam_channel::Receiver<UiUpdate>
+  ) -> Self {
     Flags {
       session_tx,
+      ui_rx,
     }
   }
 }
@@ -161,7 +210,8 @@ impl Flags {
 // Probably oversimplified right now
 #[derive(Debug)]
 pub enum UiUpdate {
-  ContentRedisplay
+  ContentRedisplay(String),
+  Waiting,
 }
 
 #[derive(Debug)]
@@ -180,6 +230,7 @@ impl Application for EditorUi {
       EditorUi {
 	content: String::from("contents! Let there be contents!"),
 	session_tx: flags.session_tx,
+	ui_rx: flags.ui_rx,
       },
       Command::none()
     )
@@ -189,13 +240,20 @@ impl Application for EditorUi {
     String::from("What are you doing fix this")
   }
 
+  fn subscription(&self) -> Subscription<Self::Message> {
+    Subscription::from_recipe(IncomingEventProcessor {
+      receiver: self.ui_rx.clone(),
+    }).map(UiMessage::Inbound)
+  }
+
   fn update(&mut self, message: Self::Message) -> Command<Self::Message> {
     match message {
       UiMessage::Outbound(input_type) => {
 	match input_type {
 	  InputType::Insert(c) => {
 	    // TODO should probably use a subscription instead of directly pushing
-	    self.content.push(c);
+	    // self.content.push(c);
+	    ();
 	  }
 	  _ => {
 	    ();
@@ -203,6 +261,14 @@ impl Application for EditorUi {
 	}
 	self.session_tx.send(input_type).unwrap();
       },
+      UiMessage::Inbound(ui_update) => {
+	match ui_update {
+	  UiUpdate::ContentRedisplay(conts) => {
+	    self.content = conts;
+	  },
+	  UiUpdate::Waiting => (),
+	}
+      }
       _ => (),
     };
     Command::none()

@@ -2,7 +2,7 @@ use crate::buffer_provider;
 use crate::command_executor;
 use crate::input_handler;
 use crate::models::{InputType, Command};
-use crate::{buffer_store::{BufferStoreArgs, BufferStore}, startup};
+use crate::{buffer_store::{BufferStoreArgs, BufferStore}, startup, ui::UiUpdate};
 use log::*;
 
 #[derive(Copy, Clone)]
@@ -29,12 +29,14 @@ pub struct Session {
   buffer_store: BufferStore,
   state: SessionState,
   receiver: crossbeam_channel::Receiver<InputType>,
+  ui_tx: crossbeam_channel::Sender<UiUpdate>,
 }
 
 impl Session {
   pub fn new(
     args: startup::StartupArgs,
-    receiver: crossbeam_channel::Receiver<InputType>
+    receiver: crossbeam_channel::Receiver<InputType>,
+    ui_tx: crossbeam_channel::Sender<UiUpdate>,
   ) -> Session {
     info!("Creating new session");
     Session {
@@ -42,6 +44,7 @@ impl Session {
       buffer_store: BufferStore::new(),
       state: SessionState::New,
       receiver,
+      ui_tx,
     }
   }
 
@@ -85,6 +88,8 @@ impl Session {
     match self.buffer_store.get_current_mut() {
       Err(message) => Err(message),
       Ok(b) => {
+	let content: String = b.get_chars().unwrap();
+	self.ui_tx.send(UiUpdate::ContentRedisplay(content)).unwrap();
 	let input = self.receiver.recv().unwrap();
 	let command: Command = input_handler::process_input_v2(input).unwrap();
 	match command_executor::execute_command_v2(&command, b) {

@@ -11,6 +11,7 @@ fn main() -> iced::Result {
   let args: StartupArgs = StartupArgs::from_cli();
 
   let (session_tx, session_rx) = crossbeam_channel::unbounded();
+  let (ui_tx, ui_rx) = crossbeam_channel::unbounded();
 
   thread::spawn(move || {
     /*setting up some logging*/
@@ -21,12 +22,16 @@ fn main() -> iced::Result {
     )])
     .unwrap();
     /*end*/
-    let mut session: session::Session = session::Session::new(args, session_rx);
+    let mut session: session::Session = session::Session::new(
+      args,
+      session_rx,
+      ui_tx
+    );
     session.run().unwrap();
   });
 
   
   EditorUi::run(iced::Settings::with_flags(
-    Flags::new(session_tx)
+    Flags::new(session_tx, ui_rx)
   ))
 }
