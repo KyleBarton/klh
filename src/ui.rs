@@ -1,10 +1,9 @@
-use iced_native::{keyboard, layout, text, text_input, event, Widget,
+use iced_native::{keyboard, layout, text_input, event, Widget,
 		  Hasher, Layout, Point, Clipboard, Length,
-		  Rectangle, Color, HorizontalAlignment, VerticalAlignment};
-// use iced_futures::futures;
+		  Rectangle};
 use iced::{Application, Element, Column, Container, Align, executor, Command, futures, Subscription};
 use crate::models::{ControlType, InputType};
-// A UI, written as an Iced widget!
+use text_input::{State, Value};
 
 //TODO rename
 pub struct IncomingEventProcessor {
@@ -68,6 +67,13 @@ pub fn to_outbound_message(event: event::Event, modifiers: keyboard::Modifiers) 
       event::Event::Keyboard(keyboard::Event::CharacterReceived(c)) => {
 	Some(UiMessage::Outbound(InputType::Insert(c)))
       },
+      event::Event::Keyboard(keyboard::Event::KeyPressed { key_code, ..}) => {
+	match key_code {
+	  keyboard::KeyCode::Left => Some(UiMessage::Outbound(InputType::Control(ControlType::ArrowLeft))),
+	  keyboard::KeyCode::Right => Some(UiMessage::Outbound(InputType::Control(ControlType::ArrowRight))),
+	  _ => None,
+	}
+      }
       _ => None,
     }
   }
@@ -99,7 +105,7 @@ impl BufferInput<UiMessage> {
 }
 
 impl<Message, Renderer> Widget<Message, Renderer> for BufferInput<Message>
-where Renderer: text::Renderer
+where Renderer: text_input::Renderer
 {
   // Just cover the entire space for now
   fn width(&self) -> Length {
@@ -155,23 +161,25 @@ where Renderer: text::Renderer
   fn draw(
     &self,
     renderer: &mut Renderer,
-    defaults: &Renderer::Defaults,
+    _defaults: &Renderer::Defaults,
     layout: Layout<'_>,
-    _cursor_position: Point,
+    cursor_position: Point,
     _viewport: &Rectangle,) -> Renderer::Output {
-    Renderer::draw(
+    let mut state = State::focused();
+    state.move_cursor_to_end();
+    text_input::Renderer::draw(
       renderer,
-      defaults,
       layout.bounds(),
-      &self.content,
-      renderer.default_size(),
+      layout.bounds(),
+      cursor_position,
       Renderer::Font::default(),
-      Some(Color::BLACK),
-      HorizontalAlignment::Left,
-      VerticalAlignment::Top,
+      renderer.default_size(),
+      "",
+      &Value::new(&self.content),
+      &state, //TODO should be a field
+      &Renderer::Style::default(),
     )
   }
-  
 }
 
 impl<'a, Message, Renderer> Into<iced_native::Element<'a, Message, Renderer>> for BufferInput<Message>
@@ -269,7 +277,6 @@ impl Application for EditorUi {
 	  UiUpdate::Waiting => (),
 	}
       }
-      _ => (),
     };
     Command::none()
   }

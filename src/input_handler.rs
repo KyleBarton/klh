@@ -10,6 +10,7 @@ use crate::models::*;
 const CHARS: &'static str = "abcdefghijklmnopqrstuvwxyz\" +
 \"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\" +
 \" !@#$%^&*()_-+=\\|[]{}/?.>,<`~;:\n'\"";
+const DEL: char = '\u{7f}';
 
 // temporary so I can shunt in a receiver. Chars shouldn't be our actual message here
 pub fn translate_char(input: char) -> InputType {
@@ -54,6 +55,7 @@ pub fn process_input_v2(input_type: InputType) -> Result<Command, std::io::Error
   for c in CHARS.chars() {
     input_command_map.insert(InputType::Insert(c), Command::BufferInsert(c));
   }
+  input_command_map.insert(InputType::Insert(DEL), Command::BufferDelete);
   input_command_map.insert(InputType::Control(ControlType::Escape), Command::Quit);
   input_command_map.insert(
     InputType::Control(ControlType::Backspace),
