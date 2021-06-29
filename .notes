@@ -1,0 +1,18 @@
+* Tasks
+** DONE 
+CLOSED: [2020-06-17 Wed 18:55]
+  [2020-06-15 Mon]
+  [[file:~/Documents/Development/klh/src/lib.rs:://TODO this needs to be user_input or something. These are keystrokes not commands]]
+** DONE 
+CLOSED: [2020-06-15 Mon 19:22]
+  [2020-06-15 Mon]
+  [[file:~/Documents/Development/klh/src/lib.rs:://TODO we should really change the nomenclature: these are user-inputs. They]]
+** TODO 
+  [2020-06-15 Mon]
+  [[file:~/Documents/Development/klh/src/lib.rs::TODO Dynamic function lookup in rust]]
+** TODO 
+  [2020-06-17 Wed]
+  [[file:~/Documents/Development/klh/src/command_executor.rs:://TODO this is not performing correctly when point is not at the end of the buffer]]
+** TODO 
+  [2020-06-17 Wed]
+  [[file:~/Documents/Development/klh/src/command_executor.rs:://TODO when Buffer_Editor gets implemented, we need to model point as a position _between_ chars]]

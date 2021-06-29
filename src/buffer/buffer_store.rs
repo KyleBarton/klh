@@ -1,5 +1,5 @@
 use crate::buffer;
-use crate::buffer_provider;
+use crate::buffer::buffer_provider;
 
 pub struct BufferStoreArgs {
     buffer_type: buffer_provider::BufferType,

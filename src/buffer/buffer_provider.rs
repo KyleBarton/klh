@@ -3,7 +3,7 @@ use std::fs::File;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
-use crate::buffer::{Buffer, LineBuffer};
+use crate::buffer::buffer::{Buffer, LineBuffer};
 
 #[derive(Debug)]
 pub enum BufferType {

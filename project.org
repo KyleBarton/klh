@@ -257,3 +257,164 @@ Note that arrow keys send multiple characters to the screen -> <ESC>+A|B|C|D
 **** TODO Cleanup access control across project
 **** DONE restore the screen
 CLOSED: [2020-06-14 Sun 22:12]
+** 06/19/2021 - It's Time for a Rewrite
+Ok, so you've taken your current implementation as far as it's going
+to go. You've learned a ton of things along the way:
+- How to read stdin literally, char-by-char
+- A viable GUI library (Iced)
+- Multi-threading using channels
+
+That's great! These will likely all come in handy in the future
+design. Unfortunately, learning all of these concepts meant
+prototyping, and layering prototypes on prototypes has made the
+current codebase a tightly-coupled monster:
+- UI & core logic are mixed together
+- A poorly-defined "session" abstraction is taking on more and more responsibility
+- UI has to run on the main thread, which is making initialization logic messy
+
+So, it's time to start from scratch. You need to sit down for 3+ hours
+to do this properly, and it needs to happen after you get some initial
+design down. Let's get a first draft of the design down now.
+*** Goals of the new design
+**** Decoupled
+Clear separation of components is key. IO-related concerns in
+particular need to stay away from the core design of the editor. A
+"window" can keep a logical representation of what should be displayed
+visually, but the mechanics of this are out of scope.
+**** Testable
+It's ok to spend some time on flyweight clients which can demonstrate
+or test the editor. It's a good check in-and-of itself that the editor
+can be integrated with once it is time to build a GUI.
+**** Non-blocking
+Asynchronous and multi-threaded processing is an absolute must,
+because inputs will come from different places:
+- The user
+- An lsp server
+- System updates from the editor itself
+*** Components
+**** Buffer
+The basics of the current design are pretty good, and it's the one
+part of the current implementation that has a pretty solid test suite
+attached to it. This should be broken out into its own module. It can
+stay as one rust file for now, but it really is a dedicated, and core
+piece of logic, and it will likely expand.
+
+There probably needs to be a subcomponent, *BufferMetadata* or
+something of that ilk. This would contain, for instance,
+subscriptions/publications to the buffer's file, if one exists.
+
+Needs an *Editor* abstraction
+
+Does *Buffer* handle the asynchronous interface? Or *BufferStore*? Or
+a distinct abstraction? Nope, it's gotta be the *Session*.
+**** BufferStore
+We do still need a store of active buffers which can be managed.
+The current design is a mess though, and little needs to be salvaged.
+BufferStore needs to be its own complete module, and ideally keeps
+a pretty abstract concept of buffers. Furthermore, file handling logic
+should not be present here.
+**** Window
+A window is a logical unit of display. It has awareness of its own
+size, *but not its position on the screen*. It contains data about the
+content that it should be displaying (often, that will be the visual
+portion of the buffer), as well as any actions-at-positions
+(hyperlinking, auto-fill, etc). Most importantly, I want to make a key
+design decision about buffers and windows: +*a window keeps its own+
++list of buffers*. This is distinct from the emacs approach of having a+
++single pool of buffers that can be displayed on various+
++windows. Instead, a window will have a ring of open buffers, and when+
++all buffers in the window are closed, the window will close. This+
++means that /windowA/ and /windowB/ might have buffers pointing at the+
++same file, which will cause some duplication in memory. Therefore it's+
++important that buffers stay cheap to produce and maintain. There also+
++needs to be first-class functionality around moving a buffer from one+
++window to another.++
+
+Slight change. *A window keeps a list of pointers at active
+buffers*. So, while buffers are not duplicated in the system, the
+window is aware of which buffers it has opened. When all buffers to
+which the window points have been closed, then the window disappears.
+**** WindowManager
+Maintains the positioning and management of the windows. Initiates
+window resizing commands, and needs some way of telling *Window*
+so that it can handle that. Has no concept of buffers.
+**** FileHandler
+There are a couple of ways to handle file descriptors. The *buffer*
+could hold a reference to the file, or it could hold a pointer to the
+FDs managed by FileHandler. I think keeping a centralized file
+handler, perhaps running on its own thread, will allow multiple
+processes to edit the file. On the other hand, perhaps *buffer* should
+handle the async input, and act as an exclusive client to FileHandler.
+If the latter strategy is taken... is it better to just let *buffer*
+hold the reference?
+**** Session
+Central thread and front-door of the application. Contains the logic
+necessary to "dispatch" commands and queries to their appropriate
+plugins. Handles plugin registration and pub-sub logic as
+well. Contains DAG validation to prevent looping events. Finally, some
+special logic at bootstrap will exist to ensure that "required"
+plugins are registered (primarily, display, and buffers)
+
+***** Dispatch
+Module that delegates commands & queries to specific plugins
+****** EventHandler
+mpsc-fronted task to process & delegate events
+****** Plugins
+List of mpsc-configured connectors to which events are sent. These are
+abstract to their actual processing components, which could be simple
+tasks, or full threads.
+**** Event
+The unit of communication of klh. Can be broadcast to multiple
+plugins. Fundamentally, there are two types of events:
+#+BEGIN_SRC
+#[derive(Copy)]
+enum Event {
+  Command {
+    Id: String,
+    Data: impl CommandData,
+  },
+  Query {
+    Id: String,
+    PluginId: Sring,
+    Responder: impl QueryResponder,
+  },
+}
+#+END_SRC
+***** Commands
+Events that are meant to request mutation. They are fire & forget.
+***** Queries
+Events that are intended to retrieve a piece of information. They
+should come with a one-shot responder to which the query will
+respond. Queries have an associated PluginId, which is where the
+dispatcher will send them. (TODO: can other plugins subscribe to
+queries? Maybe as watchers only.  but that means we need to implement
+an access control system for the QueryResponder).
+**** Plugin:
+A worker that manages a piece of logic for klh. Includes an
+asynchronous "event handler" which handles subscribed events. Also
+includes registration logic that dispatch can call in order to record
+which events to send the plugin's way. There are a few required
+plugins (for now):
+- DisplayManager
+- BufferManager
+***** EventHandler
+mpsc-fronted handler that takes subsribed events
+**** Plugins
+***** BufferManager
+Handles all buffers and mutations of them. Additionally, handles files (maybe. For now).
+***** DisplayManager
+Handles all display logic that a GUI would need in order to represent
+a session of KLH.
+- Windows
+- Frames
+- Overlays
+***** GUI
+We'll get there
+***** TestClient
+Probably something I'll need to gin up just to test the system out.
+** [Cynical] Why don't you build something useful?
+This could perhaps be transformed into my terminal-free shell idea. It
+would still work really well with the pub-sub design that the rewrite
+is supposed to use. Commands from the cli could be mapped to "pages"
+representing their output. Build as an API so that extensions can be
+built via emacs & such.

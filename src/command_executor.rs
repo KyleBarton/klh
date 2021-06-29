@@ -1,5 +1,4 @@
 use crate::buffer;
-use crate::buffer_provider;
 use crate::models::Command;
 use log::info;
 
@@ -28,7 +27,7 @@ pub fn execute_command_v2(command: &Command, buffer: &mut Box<dyn buffer::Buffer
       info!("Retreated point");
     }
     Command::Save => {
-      buffer_provider::save(buffer).unwrap();
+      buffer::buffer_provider::save(buffer).unwrap();
       info!("Successfully saved to {}", &buffer.get_name().unwrap());
     }
     _ => {
