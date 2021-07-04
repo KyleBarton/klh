@@ -6,8 +6,6 @@
 [workspace]
 
 members = [
-  "klh_core"
+  "klh_core",
+  "klh_test_client"
 ]
-
-# [dependencies]
-# tokio = { version = "1", features = ["full"] }

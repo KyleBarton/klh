@@ -52,6 +52,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "klh_test_client"
+version = "0.1.0"
+dependencies = [
+ "klh_core",
+ "tokio",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"

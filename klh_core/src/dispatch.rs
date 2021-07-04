@@ -2,10 +2,12 @@ use tokio::sync::mpsc;
 
 
 // TODO Placeholder. This needs to be thought out better.
-#[derive(Copy, Clone, Debug)]
-pub struct DispatchInput;
+#[derive(Clone, Debug)]
+pub enum DispatchInput{
+  Test(String),
+}
 
-pub(crate) struct Dispatch;
+pub(crate) struct Dispatcher;
 
 // TODO Impl an async "send" api
 pub(crate) struct DispatchClient {
@@ -40,6 +42,19 @@ impl DispatchOptions {
       None => false,
     }
   }
+
+  // A special clone that takes the receiver
+  pub(crate) fn clone_once(&mut self) -> Self {
+    let input_receiver = match self.input_receiver.take() {
+      Some(r) => Some(r),
+      None => panic!("Cannot clone a clone"),
+    };
+    self.input_receiver = None;
+    Self {
+      input_receiver,
+      input_transmitter: self.input_transmitter.clone()
+    }
+  }
 }
 
 impl Clone for DispatchOptions {
@@ -53,18 +68,19 @@ impl Clone for DispatchOptions {
 
 
 // Needs to be its own file/module. Pure functional
-impl Dispatch {
+impl Dispatcher {
 
   pub(crate) async fn start_listener(options: DispatchOptions) -> Result<(), String> {
     let mut receiver = match options.input_receiver {
       Some(r) => r,
       None => return Err(String::from("Sender not authorized to start listener"))
     };
-    tokio::spawn(async move {
-      while let Some(input) = receiver.recv().await {
-	println!("Received input {:?}!", input);
-      }
-    });
+    while let Some(input) = receiver.recv().await {
+      tokio::spawn(async move {
+	println!("Received input {:?}!", input)
+      });
+    }
+
     Ok(())
   }
 
