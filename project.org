@@ -1,0 +1,25 @@
+* Design
+#+attr_html: :width 1000px
+#+attr_latex: :width 1000px
+#+attr_html: :height 1000px
+#+attr_latex: :height 1000px
+[[./assets/high_level_design.jpg]]
+
+* Journal
+** 05/30/2022
+Created "event" struct, instead of the clunkier "SessionInput", which
+was always supposed to be a sort of placeholder anyway. Updated the
+test client, and created a basic way to issue a command that's
+basically an echo.
+
+I also added a design image for documentation, see above.
+
+I think from here it's best to drive the API from a plugin's
+perspective. I think we should start with `Buffer` and `Diagnostics`,
+which should be easy to get started and also both will be needed. The
+Command issuance that I've included in this basic Event implementation
+should be destined for the `Diagnostics` plugin, once that's
+implemented.
+
+Starting this will also force you to start thinking about listener
+registration, authentication, & priority
