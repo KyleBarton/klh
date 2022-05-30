@@ -1,6 +1,5 @@
-use std::str;
-
-use crate::dispatch::{Dispatcher, DispatchClient, DispatchInput, DispatchOptions};
+use crate::dispatch::{Dispatcher, DispatchClient, DispatchOptions};
+use crate::event::Event;
 
 #[derive(Clone)]
 pub struct SessionOptions {
@@ -11,20 +10,6 @@ impl SessionOptions {
   pub fn new() -> Self {
     Self {
       dispatch_options: DispatchOptions::new(),
-    }
-  }
-}
-
-// TODO Placeholder we need to figure out the whole command structure
-#[derive(Clone, Debug)]
-pub struct SessionInput {
-  input: DispatchInput,
-}
-
-impl SessionInput {
-  pub fn from(msg: &str) -> Self {
-    Self {
-      input: DispatchInput::Test(String::from(msg)),
     }
   }
 }
@@ -40,8 +25,8 @@ pub struct SessionClient{
 
 // Needs so much work
 impl SessionClient {
-  pub async fn send(&mut self, input: SessionInput) {
-    self.dispatch_client.send(input.input).await.unwrap()
+  pub async fn send(&mut self, event: Event) {
+    self.dispatch_client.send(event).await.unwrap()
   }
 }
 

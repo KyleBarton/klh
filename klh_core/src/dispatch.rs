@@ -2,30 +2,32 @@ use tokio::sync::mpsc;
 
 
 // TODO Placeholder. This needs to be thought out better.
-#[derive(Clone, Debug)]
-pub enum DispatchInput{
-  Test(String),
-}
+// Let's replace this with event
+// #[derive(Clone, Debug)]
+// pub enum DispatchInput{
+//   Test(String),
+// }
+use crate::event::Event;
 
 pub(crate) struct Dispatcher;
 
 // TODO Impl an async "send" api
 pub(crate) struct DispatchClient {
-  transmitter: mpsc::Sender<DispatchInput>,
+  transmitter: mpsc::Sender<Event>,
 }
 
 
 // Needs work
 impl DispatchClient {
-  pub(crate) async fn send(&self, input: DispatchInput) -> Result<(), mpsc::error::SendError<DispatchInput>> {
-    self.transmitter.send(input).await
+  pub(crate) async fn send(&self, event: Event) -> Result<(), mpsc::error::SendError<Event>> {
+    self.transmitter.send(event).await
   }
 }
 
 // Needs its own file/module. Needs to implement clone/copy? At least Clone.
 pub(crate) struct DispatchOptions {
-  input_receiver: Option<mpsc::Receiver<DispatchInput>>,
-  input_transmitter: mpsc::Sender<DispatchInput>,
+  input_receiver: Option<mpsc::Receiver<Event>>,
+  input_transmitter: mpsc::Sender<Event>,
 }
 
 impl DispatchOptions {

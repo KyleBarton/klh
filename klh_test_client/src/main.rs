@@ -1,5 +1,6 @@
 use std::thread;
-use klh_core::session::{Session, SessionClient, SessionInput, SessionOptions};
+use klh_core::session::{Session, SessionClient, SessionOptions};
+use klh_core::event::Event;
 use tokio::runtime::Runtime;
 
 /* WOOHOO, we have a first client here. I think we have a couple of learnings to take away:
@@ -28,8 +29,7 @@ async fn main() {
   });
 
   println!("Sending a message from the client");
-  // GAH I need to fix this
-  client.send(SessionInput::from("First message")).await;
+  client.send(Event::command_from("This message has been sent")).await;
 
   t1.join().unwrap();
 
