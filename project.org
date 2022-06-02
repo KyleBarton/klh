@@ -23,3 +23,16 @@ implemented.
 
 Starting this will also force you to start thinking about listener
 registration, authentication, & priority
+
+** 06/02/2022
+I've added a core module called `plugin` which contains a plugin
+registrar, a plugin listener type, and a plugin trait for
+extensibility. It's probably time to try to incorporate it into
+session & dispatch. Then I should create a diagnostics plugin to
+verify that the whole thing works as expected. Code is getting pretty
+messy (albeit still pretty modular), so a cleanup would probably be
+warrented soon:
+- Use Result and Option return types appropriately to handle errors
+- Make sure Async is working through the system
+- Generally, just make dispatch better? Idk, it's driving me a little
+  crazy at the moment. This might get fixed as I address the above.
