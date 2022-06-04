@@ -1,18 +1,11 @@
 use tokio::sync::mpsc;
 
-
-// TODO Placeholder. This needs to be thought out better.
-// Let's replace this with event
-// #[derive(Clone, Debug)]
-// pub enum DispatchInput{
-//   Test(String),
-// }
-use crate::event::Event;
+use crate::{event::Event, plugin::{PluginRegistrar, Plugin}};
 
 pub(crate) struct Dispatcher;
 
 // TODO Impl an async "send" api
-pub(crate) struct DispatchClient {
+pub struct DispatchClient {
   transmitter: mpsc::Sender<Event>,
 }
 
@@ -25,17 +18,20 @@ impl DispatchClient {
 }
 
 // Needs its own file/module. Needs to implement clone/copy? At least Clone.
-pub(crate) struct DispatchOptions {
+pub(crate) struct Dispatch {
   input_receiver: Option<mpsc::Receiver<Event>>,
   input_transmitter: mpsc::Sender<Event>,
+  plugin_registrar: PluginRegistrar,
 }
 
-impl DispatchOptions {
+// TODO this is where all the real stuff happens. Maybe just call this Dispatch?
+impl Dispatch {
   pub(crate) fn new() -> Self {
     let (tx, rx) = mpsc::channel(128);
     Self {
       input_receiver: Some(rx),
       input_transmitter: tx,
+      plugin_registrar: PluginRegistrar::new(),
     }
   }
   pub(crate) fn is_uncloned(&self) -> bool {
@@ -54,39 +50,65 @@ impl DispatchOptions {
     self.input_receiver = None;
     Self {
       input_receiver,
-      input_transmitter: self.input_transmitter.clone()
+      input_transmitter: self.input_transmitter.clone(),
+      plugin_registrar: self.plugin_registrar.clone(),
     }
+  }
+
+  pub(crate) fn register_plugin(&mut self, plugin: impl Plugin) -> Result<(), String> {
+    match self.plugin_registrar.register_plugin(plugin) {
+      Err(msg) => Err(msg),
+      Ok(_) => Ok(()),
+    }
+  }
+
+  pub(crate) fn get_client(&self) -> Result<DispatchClient, String> {
+    Ok(DispatchClient{
+      transmitter: self.input_transmitter.clone(),
+    })
+  }
+
+  // TODO error handling
+  pub(crate) async fn dispatch_to_plugin(&self, event: Event) -> Result<(), String> {
+    self.plugin_registrar.send_to_plugin(event).await;
+    Ok(())
   }
 }
 
-impl Clone for DispatchOptions {
+impl Clone for Dispatch {
     fn clone(&self) -> Self {
       Self {
 	input_receiver: None,
 	input_transmitter: self.input_transmitter.clone(),
+	plugin_registrar: self.plugin_registrar.clone(),
       }
     }
 }
 
-
 // Needs to be its own file/module. Pure functional
 impl Dispatcher {
 
-  pub(crate) async fn start_listener(options: DispatchOptions) -> Result<(), String> {
-    let mut receiver = match options.input_receiver {
+  pub(crate) async fn start_listener(mut options: Dispatch) -> Result<(), String> {
+    let mut receiver = match options.input_receiver.take() {
       Some(r) => r,
       None => return Err(String::from("Sender not authorized to start listener"))
     };
     while let Some(input) = receiver.recv().await {
+      let thread_options = options.clone();
       tokio::spawn(async move {
-	println!("Received input {:?}!", input)
+	println!("Received input {:?}!", input);
+	match thread_options.dispatch_to_plugin(input).await {
+	  Ok(_) => Ok(()),
+	  Err(msg) => Err(msg)
+	}
       });
     }
 
     Ok(())
   }
 
-  pub(crate) fn get_client(options: DispatchOptions) -> Result<DispatchClient, String> {
+  pub(crate) fn get_client(options: Dispatch) -> Result<DispatchClient, String> {
+    // TODO I can just use clone() here right?
     Ok(DispatchClient{
       transmitter: options.input_transmitter.clone(),
     })

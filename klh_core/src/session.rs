@@ -1,15 +1,17 @@
-use crate::dispatch::{Dispatcher, DispatchClient, DispatchOptions};
+use crate::dispatch::{Dispatcher, DispatchClient, Dispatch};
 use crate::event::Event;
+use crate::plugin::Plugin;
+use crate::plugins::diagnostics::Diagnostics;
 
 #[derive(Clone)]
 pub struct SessionOptions {
-  dispatch_options: DispatchOptions,
+  dispatch_options: Dispatch,
 }
 
 impl SessionOptions {
   pub fn new() -> Self {
     Self {
-      dispatch_options: DispatchOptions::new(),
+      dispatch_options: Dispatch::new(),
     }
   }
 }
@@ -36,6 +38,21 @@ impl Session {
     Session{
       options,
     }
+  }
+
+  // Meant as a place that can locate plugins at a given startup spot,
+  // as well as load the core functional plugins. For now, core
+  // functional plugins are hard-coded. Dynamic memory appropriate
+  // here as we are dealing with variou plugins at runtime here.
+  fn discover_plugins(&mut self) {
+    // Ugh I need to just create a plugin
+    // let plugins : [impl Plugin] = [];
+
+    let diagnostics_plugin : Diagnostics = Diagnostics::new();
+    
+    diagnostics_plugin.receive_client(self.options.dispatch_options.get_client().unwrap());
+
+    self.options.dispatch_options.register_plugin(diagnostics_plugin).unwrap();
   }
 
   // TODO Clean up result signature
