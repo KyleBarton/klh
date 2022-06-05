@@ -88,16 +88,16 @@ impl Clone for Dispatch {
 // Needs to be its own file/module. Pure functional
 impl Dispatcher {
 
-  pub(crate) async fn start_listener(mut options: Dispatch) -> Result<(), String> {
-    let mut receiver = match options.input_receiver.take() {
+  pub(crate) async fn start_listener(mut dispatch: Dispatch) -> Result<(), String> {
+    let mut receiver = match dispatch.input_receiver.take() {
       Some(r) => r,
       None => return Err(String::from("Sender not authorized to start listener"))
     };
     while let Some(input) = receiver.recv().await {
-      let thread_options = options.clone();
+      let thread_dispatch = dispatch.clone();
       tokio::spawn(async move {
 	println!("Received input {:?}!", input);
-	match thread_options.dispatch_to_plugin(input).await {
+	match thread_dispatch.dispatch_to_plugin(input).await {
 	  Ok(_) => Ok(()),
 	  Err(msg) => Err(msg)
 	}

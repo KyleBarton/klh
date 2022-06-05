@@ -33,7 +33,7 @@ impl Event {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct CommandData {
-  docs: String
+  pub docs: String
 }
 
 

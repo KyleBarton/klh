@@ -36,3 +36,25 @@ warrented soon:
 - Make sure Async is working through the system
 - Generally, just make dispatch better? Idk, it's driving me a little
   crazy at the moment. This might get fixed as I address the above.
+
+** 06/04/2022
+Significantly more refactoring as I try to make the Plugin trait work
+for an actual instance (Diagnostics). I'm running into the issue of
+how to actually "start" a plugin on listening for events. First, async
+functions aren't allowed in traits, so that will limit a plugin impl's
+ability to control that async multithreading. It's all probably not
+the plugin's job to do it anyway. I've got two responsbilities that I
+need to decouple from each other:
+
+- An async listener/receiver for the plugin. This is common
+  functionality and need not be a trait
+- A trait with an "accept event" interface that actually does the
+  plugin-specific logic
+
+
+These two concerns are baked into the same object right now, and they
+shouldn't be. Future work should be to pull them out.
+
+Hopefully, this is the last major change that will be needed before I
+have it working end to end. At that point, a bunch of this code needs
+to be really cleaned up!

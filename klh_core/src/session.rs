@@ -5,13 +5,13 @@ use crate::plugins::diagnostics::Diagnostics;
 
 #[derive(Clone)]
 pub struct SessionOptions {
-  dispatch_options: Dispatch,
+  dispatch: Dispatch,
 }
 
 impl SessionOptions {
   pub fn new() -> Self {
     Self {
-      dispatch_options: Dispatch::new(),
+      dispatch: Dispatch::new(),
     }
   }
 }
@@ -48,33 +48,33 @@ impl Session {
     // Ugh I need to just create a plugin
     // let plugins : [impl Plugin] = [];
 
-    let diagnostics_plugin : Diagnostics = Diagnostics::new();
+    let mut diagnostics_plugin : Diagnostics = Diagnostics::new();
     
-    diagnostics_plugin.receive_client(self.options.dispatch_options.get_client().unwrap());
+    diagnostics_plugin.receive_client(self.options.dispatch.get_client().unwrap());
 
-    self.options.dispatch_options.register_plugin(diagnostics_plugin).unwrap();
+    self.options.dispatch.register_plugin(diagnostics_plugin).unwrap();
   }
 
   // TODO Clean up result signature
   // Starts the async runtime
   pub async fn run(&mut self) -> Result<(), String> {
-    let readonly_dispatch_options = if self.options.dispatch_options.is_uncloned() {
-      self.options.dispatch_options.clone()
+    let readonly_dispatch_options = if self.options.dispatch.is_uncloned() {
+      self.options.dispatch.clone()
     } else {
       return Err(String::from("Cannot call session run more than once"));
     };
 
     
-    Dispatcher::start_listener(self.options.dispatch_options.clone_once()).await.unwrap();
+    Dispatcher::start_listener(self.options.dispatch.clone_once()).await.unwrap();
 
-    self.options.dispatch_options = readonly_dispatch_options;
+    self.options.dispatch = readonly_dispatch_options;
 
     Ok(())
   }
 
   pub fn get_client(&self) -> Result<SessionClient, String> {
     Ok(SessionClient{
-      dispatch_client: Dispatcher::get_client(self.options.dispatch_options.clone()).unwrap(),
+      dispatch_client: Dispatcher::get_client(self.options.dispatch.clone()).unwrap(),
     })
   }
 }
