@@ -58,3 +58,8 @@ shouldn't be. Future work should be to pull them out.
 Hopefully, this is the last major change that will be needed before I
 have it working end to end. At that point, a bunch of this code needs
 to be really cleaned up!
+
+** 06/06/2022
+
+I'm realizing that I may not have my local git config working
+properly. Changing that now, and testing with a commit.
