@@ -30,6 +30,7 @@ impl PluginChannel {
 
   pub async fn start(&mut self) -> Result<(), String> {
     while let Some(event) = self.listener.receive().await {
+      println!("Received event for plugin on the PluginChannel: {:?}", event);
       self.plugin.accept_event(event).unwrap();
     }
     Ok(())
@@ -60,7 +61,11 @@ pub struct PluginTransmitter {
 impl PluginTransmitter {
   
   async fn send_event(&self, event: Event) {
-    self.event_transmitter.send(event).await.unwrap()
+    // self.event_transmitter.send(event).await.unwrap();
+    match self.event_transmitter.send(event).await {
+      Ok(_) => println!("Sent event!"),
+      Err(err) => println!("Couldn't send event, received error {:?}", err),
+    }
   }
 
   fn get_events(&self) -> Vec<Event> {
@@ -94,26 +99,25 @@ impl PluginRegistrar {
 
   pub(crate) fn register_plugin_events(&mut self, plugin_transmitter: PluginTransmitter) -> Result<(), String> {
     for event in plugin_transmitter.get_events().iter() {
+      println!("Registering event {:?}", event);
       self.plugins.insert(Event::from(event), plugin_transmitter.clone());
     }
     Ok(())
   }
-  // pub(crate) fn register_plugin(&mut self, plugin: impl Plugin) -> Result<(), String> {
-  //   for plugin_event in plugin.list_events().iter() {
-  //     match plugin.clone_transmitter() {
-  // 	Ok(listener) => self.plugins.insert(Event::from(plugin_event), listener),
-  // 	Err(_) => return Err(String::from("Something went wrong cloning the plugin listener"))
-  //     };
-  //   }
-
-  //   Ok(())
-  // }
 
   pub(crate) async fn send_to_plugin(&self, event: Event) {
+    println!("Trying to find event {:?}", event);
+    println!("In events: ");
+    for event in self.plugins.keys() {
+      println!("{:?}", event);
+    }
     match self.plugins.get(&event) {
-      Some(listener) => listener.send_event(Event::from(&event)).await,
+      Some(listener) => {
+	println!("Registrar found the event. Forwarding to plugin");
+	listener.send_event(Event::from(&event)).await
+      },
       None => {
-	println!("Could not find a plugin for this event");
+	println!("Could not find a plugin for this event: {:?}", event);
 	()
       },
     }

@@ -44,7 +44,7 @@ impl Session {
   // as well as load the core functional plugins. For now, core
   // functional plugins are hard-coded. Dynamic memory appropriate
   // here as we are dealing with variou plugins at runtime here.
-  fn discover_plugins(&mut self) {
+  async fn discover_plugins(&mut self) {
     // Ugh I need to just create a plugin
     // let plugins : [impl Plugin] = [];
 
@@ -52,16 +52,21 @@ impl Session {
     
     diagnostics_plugin.receive_client(self.options.dispatch.get_client().unwrap());
 
-    let plugin_channel: PluginChannel = PluginChannel::new(Box::new(diagnostics_plugin));
+    let mut plugin_channel: PluginChannel = PluginChannel::new(Box::new(diagnostics_plugin));
 
     self.options.dispatch.register_plugin(plugin_channel.get_transmitter().unwrap()).unwrap();
 
-    println!("Diagnostics plugin registered");
+    // TODO need to figure out the borrowing for a different function to run the plugins
+    // self.channels.push(plugin_channel);
+    // plugin_channel.start().await.unwrap();
+
+    println!("Diagnostics plugin registered, and started");
   }
 
   // TODO Clean up result signature
   // Starts the async runtime
   pub async fn run(&mut self) -> Result<(), String> {
+    self.discover_plugins().await;
     let readonly_dispatch_options = if self.options.dispatch.is_uncloned() {
       self.options.dispatch.clone()
     } else {
@@ -71,7 +76,9 @@ impl Session {
     
     Dispatcher::start_listener(self.options.dispatch.clone_once()).await.unwrap();
 
+
     self.options.dispatch = readonly_dispatch_options;
+
 
     Ok(())
   }

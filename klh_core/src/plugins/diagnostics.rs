@@ -20,7 +20,7 @@ impl Diagnostics {
     });
 
     Diagnostics{
-      events: Vec::new(),
+      events,
       dispatch_client: None,
     }
   }
@@ -47,12 +47,12 @@ impl Plugin for Diagnostics {
       }
     }
 
-    fn list_events(&self) -> Vec<Event> {
-        self.events.clone()
-    }
+  fn list_events(&self) -> Vec<Event> {
+    self.events.clone()
+  }
 
-    fn receive_client(&mut self, dispatch_client: DispatchClient) {
-        self.dispatch_client = Some(dispatch_client);
-    }
+  fn receive_client(&mut self, dispatch_client: DispatchClient) {
+    self.dispatch_client = Some(dispatch_client);
+  }
 }
 

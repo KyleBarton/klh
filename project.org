@@ -73,3 +73,7 @@ through the client. That's likely because I've made the event
 structure too complicated for the equality that I'm trying to
 achieve. I could potentially use an "event Id" to do all the matching,
 or I could override equality on the event.
+
+Ok, I've solved for matching events by just overriding Eq and
+Hash. However, I now need to figure out how to actually start the
+plugin channel. Doing so inside session seems to be problematic.
