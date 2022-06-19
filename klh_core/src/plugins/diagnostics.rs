@@ -3,7 +3,6 @@ use crate::{plugin::{Plugin, PluginTransmitter, PluginChannel}, event::{Event, C
 pub(crate) struct Diagnostics {
   events: Vec<Event>,
   dispatch_client: Option<DispatchClient>,
-  plugin_channel: PluginChannel,
 }
 
 impl Diagnostics {
@@ -23,7 +22,6 @@ impl Diagnostics {
     Diagnostics{
       events: Vec::new(),
       dispatch_client: None,
-      plugin_channel: PluginChannel::new(),
     }
   }
 }
@@ -47,10 +45,6 @@ impl Plugin for Diagnostics {
 	  plugin_id
 	} => Err(String::from("No queries defined for plugin")),
       }
-    }
-
-    fn clone_transmitter(&self) -> Result<PluginTransmitter, String> {
-        Ok(self.plugin_channel.transmitter.clone())
     }
 
     fn list_events(&self) -> Vec<Event> {

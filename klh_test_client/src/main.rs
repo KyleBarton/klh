@@ -1,6 +1,6 @@
 use std::thread;
 use klh_core::session::{Session, SessionClient, SessionOptions};
-use klh_core::event::Event;
+use klh_core::event::{Event, CommandData};
 use tokio::runtime::Runtime;
 
 /* WOOHOO, we have a first client here. I think we have a couple of learnings to take away:
@@ -30,6 +30,15 @@ async fn main() {
 
   println!("Sending a message from the client");
   client.send(Event::command_from("This message has been sent")).await;
+
+  // Try sending something to diagnostics
+  // Not working because my event matching is not solid.
+  client.send(Event::Command {
+    id: String::from("diagnostics::log_event"),
+    data: CommandData {
+        docs: String::from("This is the details of my log event"),
+    }
+  }).await;
 
   t1.join().unwrap();
 

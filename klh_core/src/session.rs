@@ -1,6 +1,6 @@
 use crate::dispatch::{Dispatcher, DispatchClient, Dispatch};
 use crate::event::Event;
-use crate::plugin::Plugin;
+use crate::plugin::{Plugin, PluginChannel};
 use crate::plugins::diagnostics::Diagnostics;
 
 #[derive(Clone)]
@@ -52,7 +52,11 @@ impl Session {
     
     diagnostics_plugin.receive_client(self.options.dispatch.get_client().unwrap());
 
-    self.options.dispatch.register_plugin(diagnostics_plugin).unwrap();
+    let plugin_channel: PluginChannel = PluginChannel::new(Box::new(diagnostics_plugin));
+
+    self.options.dispatch.register_plugin(plugin_channel.get_transmitter().unwrap()).unwrap();
+
+    println!("Diagnostics plugin registered");
   }
 
   // TODO Clean up result signature

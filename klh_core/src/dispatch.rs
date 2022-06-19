@@ -1,6 +1,6 @@
 use tokio::sync::mpsc;
 
-use crate::{event::Event, plugin::{PluginRegistrar, Plugin}};
+use crate::{event::Event, plugin::{PluginRegistrar, Plugin, PluginTransmitter}};
 
 pub(crate) struct Dispatcher;
 
@@ -55,8 +55,8 @@ impl Dispatch {
     }
   }
 
-  pub(crate) fn register_plugin(&mut self, plugin: impl Plugin) -> Result<(), String> {
-    match self.plugin_registrar.register_plugin(plugin) {
+  pub(crate) fn register_plugin(&mut self, plugin_transmitter: PluginTransmitter) -> Result<(), String> {
+    match self.plugin_registrar.register_plugin_events(plugin_transmitter) {
       Err(msg) => Err(msg),
       Ok(_) => Ok(()),
     }
