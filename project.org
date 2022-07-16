@@ -77,3 +77,34 @@ or I could override equality on the event.
 Ok, I've solved for matching events by just overriding Eq and
 Hash. However, I now need to figure out how to actually start the
 plugin channel. Doing so inside session seems to be problematic.
+
+** 07/16/2022
+We've made it to bad async behavior!
+
+Code runs without error, but plugin events are /sometimes/ routed, but
+often they are dropped on the floor. Sometimes, it doesn't seem like
+the sender is even sending them. I need to debug through the various
+tokio threads I've spawned, but memory management is working correctly
+at this point, so that's a win!
+
+Definitely due for a larger refactor.
+
+An example of what a "correct" output looks like:
+
+#+BEGIN_SRC sh
+Plugins started. Starting session
+Starting plugins
+Registering event Command { id: "diagnostics::log_event", data: CommandData { docs: "Sends a message to Diagnostics plugin" } }
+Session started
+Starting plugin!
+Trying to find event Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my log event" } }
+Registrar found the event. Forwarding to plugin
+Received event for plugin on the PluginChannel: Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my log event" } }
+Diagnostics received event Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my log event" } }
+Trying to find event Command { id: "simple_message", data: CommandData { docs: "This message has been sent" } }
+Could not find a plugin for this event: Command { id: "simple_message", data: CommandData { docs: "This message has been sent" } }
+#+END_SRC
+
+Note that the `match`ing on the diagnostics plugin isn't working
+either, but that's a different (and well-encapsulated) problem to
+solve.

@@ -28,6 +28,7 @@ impl Diagnostics {
 
 impl Plugin for Diagnostics {
     fn accept_event(&self, event: Event) -> Result<(), String> {
+      println!("Diagnostics received event {:?}", event);
       match event {
 	Event::Command {
 	  id,
@@ -51,6 +52,7 @@ impl Plugin for Diagnostics {
     self.events.clone()
   }
 
+  // TODO do I actually need the client for diagnostics?
   fn receive_client(&mut self, dispatch_client: DispatchClient) {
     self.dispatch_client = Some(dispatch_client);
   }

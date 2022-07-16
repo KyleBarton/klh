@@ -96,7 +96,6 @@ impl Dispatcher {
     while let Some(input) = receiver.recv().await {
       let thread_dispatch = dispatch.clone();
       tokio::spawn(async move {
-	println!("Received input {:?}!", input);
 	match thread_dispatch.dispatch_to_plugin(input).await {
 	  Ok(_) => Ok(()),
 	  Err(msg) => Err(msg)
