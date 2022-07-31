@@ -77,3 +77,284 @@ or I could override equality on the event.
 Ok, I've solved for matching events by just overriding Eq and
 Hash. However, I now need to figure out how to actually start the
 plugin channel. Doing so inside session seems to be problematic.
+
+** 07/16/2022
+We've made it to bad async behavior!
+
+Code runs without error, but plugin events are /sometimes/ routed, but
+often they are dropped on the floor. Sometimes, it doesn't seem like
+the sender is even sending them. I need to debug through the various
+tokio threads I've spawned, but memory management is working correctly
+at this point, so that's a win!
+
+Definitely due for a larger refactor.
+
+An example of what a "correct" output looks like:
+
+#+BEGIN_SRC sh
+Plugins started. Starting session
+Starting plugins
+Registering event Command { id: "diagnostics::log_event", data: CommandData { docs: "Sends a message to Diagnostics plugin" } }
+Session started
+Starting plugin!
+Trying to find event Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my log event" } }
+Registrar found the event. Forwarding to plugin
+Received event for plugin on the PluginChannel: Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my log event" } }
+Diagnostics received event Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my log event" } }
+Trying to find event Command { id: "simple_message", data: CommandData { docs: "This message has been sent" } }
+Could not find a plugin for this event: Command { id: "simple_message", data: CommandData { docs: "This message has been sent" } }
+#+END_SRC
+
+Note that the `match`ing on the diagnostics plugin isn't working
+either, but that's a different (and well-encapsulated) problem to
+solve.
+
+** 07/17/2022
+Most useful stacktrace so far:
+
+#+BEGIN_SRC sh
+Plugins started. Starting session
+Starting plugins
+Registering event Command { id: "diagnostics::log_event", data: CommandData { docs: "Sends a message to Diagnostics plugin" } }
+Session started
+Starting plugin!
+Trying to find event Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my log event" } }
+Registrar found the event. Forwarding to plugin
+Trying to find event Command { id: "simple_message", data: CommandData { docs: "This message has been sent" } }
+Could not find a plugin for this event: Command { id: "simple_message", data: CommandData { docs: "This message has been sent" } }
+thread 'Trying to find event Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my second log event" } }
+Registrar found the event. Forwarding to plugin
+tokio-runtime-worker' panicked at 'called `Result::unwrap()` on an `Err` value: SendError(Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my log event" } })', /Users/kylebarton/Source/Personal/klh/klh_core/src/plugin.rs:115:52
+thread 'tokio-runtime-worker' panicked at 'called `Result::unwrap()` on an `Err` value: SendError(Command { id: "diagnostics::log_event", data: CommandData { docs: "This is the details of my second log event" } })', /Users/kylebarton/Source/Personal/klh/klh_core/src/plugin.rs:115:52
+stack backtrace:
+   0: rust_begin_unwind
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:584:5
+   1: core::panicking::panic_fmt
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/panicking.rs:143:14
+   2: core::result::unwrap_failed
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/result.rs:1749:5
+   3: core::result::Result<T,E>::unwrap
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/result.rs:1065:23
+   4: klh_core::plugin::PluginRegistrar::send_to_plugin::{{closure}}
+             at ./klh_core/src/plugin.rs:115:2
+   5: <core::future::from_generator::GenFuture<T> as core::future::future::Future>::poll
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/future/mod.rs:84:19
+   6: klh_core::dispatch::Dispatch::dispatch_to_plugin::{{closure}}
+             at ./klh_core/src/dispatch.rs:73:48
+   7: <core::future::from_generator::GenFuture<T> as core::future::future::Future>::poll
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/future/mod.rs:84:19
+   8: klh_core::dispatch::Dispatcher::start_listener::{{closure}}::{{closure}}
+             at ./klh_core/src/dispatch.rs:99:49
+   9: <core::future::from_generator::GenFuture<T> as core::future::future::Future>::poll
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/future/mod.rs:84:19
+  10: tokio::runtime::task::core::CoreStage<T>::poll::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/core.rs:243:17
+  11: tokio::loom::std::unsafe_cell::UnsafeCell<T>::with_mut
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/loom/std/unsafe_cell.rs:14:9
+  12: tokio::runtime::task::core::CoreStage<T>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/core.rs:233:13
+  13: tokio::runtime::task::harness::poll_future::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:427:23
+  14: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/panic/unwind_safe.rs:271:9
+  15: std::panicking::try::do_call
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:492:40
+  16: ___rust_try
+  17: std::panicking::try
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:456:19
+  18: std::panic::catch_unwind
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panic.rs:137:14
+  19: tokio::runtime::task::harness::poll_future
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:414:19
+  20: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:89:9
+  21: tokio::runtime::task::harness::Harness<T,S>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:59:15
+  22: tokio::runtime::task::raw::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/raw.rs:104:5
+  23: tokio::runtime::task::raw::RawTask::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/raw.rs:66:18
+  24: tokio::runtime::task::Notified<S>::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/mod.rs:171:9
+  25: tokio::runtime::thread_pool::worker::Context::run_task::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:370:21
+  26: tokio::coop::with_budget::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/coop.rs:106:9
+  27: std::thread::local::LocalKey<T>::try_with
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/thread/local.rs:413:16
+  28: std::thread::local::LocalKey<T>::with
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/thread/local.rs:389:9
+  29: tokio::coop::with_budget
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/coop.rs:99:5
+  30: tokio::coop::budget
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/coop.rs:76:5
+  31: tokio::runtime::thread_pool::worker::Context::run_task
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:348:9
+  32: tokio::runtime::thread_pool::worker::Context::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:318:24
+  33: tokio::runtime::thread_pool::worker::run::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:303:17
+  34: tokio::macros::scoped_tls::ScopedKey<T>::set
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/macros/scoped_tls.rs:61:9
+  35: tokio::runtime::thread_pool::worker::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:300:5
+  36: tokio::runtime::thread_pool::worker::Launch::launch::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:279:45
+  37: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/blocking/task.rs:42:21
+  38: tokio::runtime::task::core::CoreStage<T>::poll::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/core.rs:243:17
+  39: tokio::loom::std::unsafe_cell::UnsafeCell<T>::with_mut
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/loom/std/unsafe_cell.rs:14:9
+  40: tokio::runtime::task::core::CoreStage<T>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/core.rs:233:13
+  41: tokio::runtime::task::harness::poll_future::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:427:23
+  42: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/panic/unwind_safe.rs:271:9
+  43: std::panicking::try::do_call
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:492:40
+  44: ___rust_try
+  45: std::panicking::try
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:456:19
+  46: std::panic::catch_unwind
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panic.rs:137:14
+  47: tokio::runtime::task::harness::poll_future
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:414:19
+  48: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:89:9
+  49: tokio::runtime::task::harness::Harness<T,S>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:59:15
+  50: tokio::runtime::task::raw::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/raw.rs:104:5
+  51: tokio::runtime::task::raw::RawTask::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/raw.rs:66:18
+  52: tokio::runtime::task::Notified<S>::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/mod.rs:171:9
+  53: tokio::runtime::blocking::pool::Inner::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/blocking/pool.rs:265:17
+  54: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/blocking/pool.rs:245:17
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+stack backtrace:
+   0: rust_begin_unwind
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:584:5
+   1: core::panicking::panic_fmt
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/panicking.rs:143:14
+   2: core::result::unwrap_failed
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/result.rs:1749:5
+   3: core::result::Result<T,E>::unwrap
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/result.rs:1065:23
+   4: klh_core::plugin::PluginRegistrar::send_to_plugin::{{closure}}
+             at ./klh_core/src/plugin.rs:115:2
+   5: <core::future::from_generator::GenFuture<T> as core::future::future::Future>::poll
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/future/mod.rs:84:19
+   6: klh_core::dispatch::Dispatch::dispatch_to_plugin::{{closure}}
+             at ./klh_core/src/dispatch.rs:73:48
+   7: <core::future::from_generator::GenFuture<T> as core::future::future::Future>::poll
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/future/mod.rs:84:19
+   8: klh_core::dispatch::Dispatcher::start_listener::{{closure}}::{{closure}}
+             at ./klh_core/src/dispatch.rs:99:49
+   9: <core::future::from_generator::GenFuture<T> as core::future::future::Future>::poll
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/future/mod.rs:84:19
+  10: tokio::runtime::task::core::CoreStage<T>::poll::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/core.rs:243:17
+  11: tokio::loom::std::unsafe_cell::UnsafeCell<T>::with_mut
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/loom/std/unsafe_cell.rs:14:9
+  12: tokio::runtime::task::core::CoreStage<T>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/core.rs:233:13
+  13: tokio::runtime::task::harness::poll_future::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:427:23
+  14: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/panic/unwind_safe.rs:271:9
+  15: std::panicking::try::do_call
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:492:40
+  16: ___rust_try
+  17: std::panicking::try
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:456:19
+  18: std::panic::catch_unwind
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panic.rs:137:14
+  19: tokio::runtime::task::harness::poll_future
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:414:19
+  20: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:89:9
+  21: tokio::runtime::task::harness::Harness<T,S>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:59:15
+  22: tokio::runtime::task::raw::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/raw.rs:104:5
+  23: tokio::runtime::task::raw::RawTask::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/raw.rs:66:18
+  24: tokio::runtime::task::Notified<S>::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/mod.rs:171:9
+  25: tokio::runtime::thread_pool::worker::Context::run_task::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:349:13
+  26: tokio::coop::with_budget::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/coop.rs:106:9
+  27: std::thread::local::LocalKey<T>::try_with
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/thread/local.rs:413:16
+  28: std::thread::local::LocalKey<T>::with
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/thread/local.rs:389:9
+  29: tokio::coop::with_budget
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/coop.rs:99:5
+  30: tokio::coop::budget
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/coop.rs:76:5
+  31: tokio::runtime::thread_pool::worker::Context::run_task
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:348:9
+  32: tokio::runtime::thread_pool::worker::Context::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:325:24
+  33: tokio::runtime::thread_pool::worker::run::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:303:17
+  34: tokio::macros::scoped_tls::ScopedKey<T>::set
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/macros/scoped_tls.rs:61:9
+  35: tokio::runtime::thread_pool::worker::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:300:5
+  36: tokio::runtime::thread_pool::worker::Launch::launch::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/thread_pool/worker.rs:279:45
+  37: <tokio::runtime::blocking::task::BlockingTask<T> as core::future::future::Future>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/blocking/task.rs:42:21
+  38: tokio::runtime::task::core::CoreStage<T>::poll::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/core.rs:243:17
+  39: tokio::loom::std::unsafe_cell::UnsafeCell<T>::with_mut
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/loom/std/unsafe_cell.rs:14:9
+  40: tokio::runtime::task::core::CoreStage<T>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/core.rs:233:13
+  41: tokio::runtime::task::harness::poll_future::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:427:23
+  42: <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/core/src/panic/unwind_safe.rs:271:9
+  43: std::panicking::try::do_call
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:492:40
+  44: ___rust_try
+  45: std::panicking::try
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panicking.rs:456:19
+  46: std::panic::catch_unwind
+             at /rustc/7737e0b5c4103216d6fd8cf941b7ab9bdbaace7c/library/std/src/panic.rs:137:14
+  47: tokio::runtime::task::harness::poll_future
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:414:19
+  48: tokio::runtime::task::harness::Harness<T,S>::poll_inner
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:89:9
+  49: tokio::runtime::task::harness::Harness<T,S>::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/harness.rs:59:15
+  50: tokio::runtime::task::raw::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/raw.rs:104:5
+  51: tokio::runtime::task::raw::RawTask::poll
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/raw.rs:66:18
+  52: tokio::runtime::task::Notified<S>::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/task/mod.rs:171:9
+  53: tokio::runtime::blocking::pool::Inner::run
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/blocking/pool.rs:265:17
+  54: tokio::runtime::blocking::pool::Spawner::spawn_thread::{{closure}}
+             at /Users/kylebarton/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.7.1/src/runtime/blocking/pool.rs:245:17
+note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+#+END_SRC
+
+** 07/30/2022
+I've realized I can ignore this problem entirely for now. KLH is meant
+to run as a REPL, and with today's change, I can show that as long as
+input is being prompted for, we're good to go. Even better, I added a
+"slow bomb" in the diagnostics plugin that shows that plugins don't
+block the main thread while they are working on something
+computational. End-to-end testing here is pretty rough, but forms a
+great basis for what we're trying to accomplish with this async
+stuff. I think it's probably time to add the beginnings of a buffer
+plugin (yay!) and then opt for some code cleanup.

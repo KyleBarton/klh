@@ -17,7 +17,7 @@ impl SessionOptions {
 }
 
 pub struct Session {
-  options: SessionOptions, // TODO lifetime?
+  options: SessionOptions,
 }
 
 // TODO impl client commands
@@ -27,8 +27,11 @@ pub struct SessionClient{
 
 // Needs so much work
 impl SessionClient {
-  pub async fn send(&mut self, event: Event) {
-    self.dispatch_client.send(event).await.unwrap()
+  pub async fn send(&mut self, event: Event) -> Result<(), String> {
+    match self.dispatch_client.send(event).await {
+      Err(_) => Err("issue sending event to session".to_string()),
+      Ok(_) => Ok(())
+    }
   }
 }
 
@@ -44,10 +47,7 @@ impl Session {
   // as well as load the core functional plugins. For now, core
   // functional plugins are hard-coded. Dynamic memory appropriate
   // here as we are dealing with variou plugins at runtime here.
-  async fn discover_plugins(&mut self) {
-    // Ugh I need to just create a plugin
-    // let plugins : [impl Plugin] = [];
-
+  pub(crate) async fn discover_plugins(&mut self) {
     let mut diagnostics_plugin : Diagnostics = Diagnostics::new();
     
     diagnostics_plugin.receive_client(self.options.dispatch.get_client().unwrap());
@@ -56,16 +56,15 @@ impl Session {
 
     self.options.dispatch.register_plugin(plugin_channel.get_transmitter().unwrap()).unwrap();
 
-    // TODO need to figure out the borrowing for a different function to run the plugins
-    // self.channels.push(plugin_channel);
-    // plugin_channel.start().await.unwrap();
 
-    println!("Diagnostics plugin registered, and started");
+    tokio::spawn(async move {
+      plugin_channel.start().await
+    });
+
   }
 
-  // TODO Clean up result signature
-  // Starts the async runtime
   pub async fn run(&mut self) -> Result<(), String> {
+    println!("Starting plugins");
     self.discover_plugins().await;
     let readonly_dispatch_options = if self.options.dispatch.is_uncloned() {
       self.options.dispatch.clone()
@@ -73,12 +72,14 @@ impl Session {
       return Err(String::from("Cannot call session run more than once"));
     };
 
+    let listener_dispatch = self.options.dispatch.clone_once();
     
-    Dispatcher::start_listener(self.options.dispatch.clone_once()).await.unwrap();
+    tokio::spawn( async move {
+      Dispatcher::start_listener(listener_dispatch).await.unwrap()
+    });
 
 
     self.options.dispatch = readonly_dispatch_options;
-
 
     Ok(())
   }

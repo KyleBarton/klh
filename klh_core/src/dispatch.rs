@@ -1,10 +1,9 @@
 use tokio::sync::mpsc;
 
-use crate::{event::Event, plugin::{PluginRegistrar, Plugin, PluginTransmitter}};
+use crate::{event::Event, plugin::{PluginRegistrar, PluginTransmitter}};
 
 pub(crate) struct Dispatcher;
 
-// TODO Impl an async "send" api
 pub struct DispatchClient {
   transmitter: mpsc::Sender<Event>,
 }
@@ -24,7 +23,6 @@ pub(crate) struct Dispatch {
   plugin_registrar: PluginRegistrar,
 }
 
-// TODO this is where all the real stuff happens. Maybe just call this Dispatch?
 impl Dispatch {
   pub(crate) fn new() -> Self {
     let (tx, rx) = mpsc::channel(128);
@@ -96,7 +94,6 @@ impl Dispatcher {
     while let Some(input) = receiver.recv().await {
       let thread_dispatch = dispatch.clone();
       tokio::spawn(async move {
-	println!("Received input {:?}!", input);
 	match thread_dispatch.dispatch_to_plugin(input).await {
 	  Ok(_) => Ok(()),
 	  Err(msg) => Err(msg)
@@ -108,7 +105,6 @@ impl Dispatcher {
   }
 
   pub(crate) fn get_client(options: Dispatch) -> Result<DispatchClient, String> {
-    // TODO I can just use clone() here right?
     Ok(DispatchClient{
       transmitter: options.input_transmitter.clone(),
     })

@@ -1,7 +1,6 @@
-use std::thread;
-use klh_core::session::{Session, SessionClient, SessionOptions};
+use klh_core::klh::{Klh, KlhClient};
 use klh_core::event::{Event, CommandData};
-use tokio::runtime::Runtime;
+use std::io;
 
 /* WOOHOO, we have a first client here. I think we have a couple of learnings to take away:
 
@@ -10,36 +9,90 @@ use tokio::runtime::Runtime;
 - Let's add some interactivity to this client so we can send a bunch of messages at once.
  */
 
+async fn prompt_and_read(
+  mut client: KlhClient,
+  known_event: Event,
+  bad_event: Event,
+  expensive_event: Event,
+) {
+  // Let's see if the readline helps the race condition.
+
+
+  loop {
+
+    let mut input: String = String::new();
+    println!("Enter a 1 or a 2 or a 3");
+
+    match io::stdin().read_line(&mut input) {
+      Ok(_n) => {
+	match input.as_str().trim() {
+	  "1" => {
+	    println!("Sending known message");
+	    client.send(known_event.clone()).await.unwrap();
+	  },
+	  "2" => {
+	    println!("Sending bogus message");
+	    client.send(bad_event.clone()).await.unwrap();
+	  },
+	  "3" => {
+	    println!("Sending a slow-bomb");
+	    client.send(expensive_event.clone()).await.unwrap();
+	  }
+	  "e" => {
+	    println!("e for exit");
+	    break;
+	  }
+	  _ => {
+	    println!("read the instructions dummy");
+	  }
+	}
+      },
+      Err(err) => {
+	println!("Error: {err}");
+	break;
+      },
+    }
+  };
+}
+
+// What if you wanted it to actually follow the public interface
 #[tokio::main]
 async fn main() {
-  let session_opts: SessionOptions = SessionOptions::new();
-  let mut session: Session = Session::new(session_opts);
-  println!("Created session");
+  let mut klh = Klh::new();
 
-  let mut client: SessionClient = session.get_client().unwrap();
-  println!("I have my client");
+  klh.start().await;
 
-  let t1 = thread::spawn(move || {
-    println!("Started the server thread!");
-    let rt = Runtime::new().unwrap();
-    rt.spawn(async move {
-      println!("Awaiting commands on the server thread runtime");
-      session.run().await.unwrap();
-    });
-  });
+  let client : KlhClient = klh.get_client().unwrap();
 
-  println!("Sending a message from the client");
-  client.send(Event::command_from("This message has been sent")).await;
 
-  // Try sending something to diagnostics
-  // Not working because my event matching is not solid.
-  client.send(Event::Command {
+  let diagnostics_command = Event::Command {
     id: String::from("diagnostics::log_event"),
     data: CommandData {
         docs: String::from("This is the details of my log event"),
     }
-  }).await;
+  };
 
-  t1.join().unwrap();
+  let expensive_command = Event::Command {
+    id: String::from("diagnostics::slow_bomb"),
+    data: CommandData {
+      // TODO This means we should change "docs" to "json" and make
+      // docs invariant with Id
+      docs: String::from("{time_seconds: 10}"),
+    }
+  };
 
+  let unknown_event = Event::Command {
+    id: String::from("unknown world"),
+    data: CommandData { docs: "No docs".to_string() }
+  };
+
+  prompt_and_read(
+    client,
+    diagnostics_command,
+    unknown_event,
+    expensive_command).await;
 }
+
+
+
+

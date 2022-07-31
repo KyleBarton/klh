@@ -1,20 +1,19 @@
-// plugin.rs.
-
 use std::collections::HashMap;
 
 use tokio::sync::mpsc;
 
 use crate::{event::Event, dispatch::DispatchClient};
 
-// Plugin only handles sync logic. PluginChannel handles all async stuff.
+
 pub struct PluginChannel {
   pub listener: PluginListener,
   pub transmitter: PluginTransmitter,
-  pub plugin: Box<dyn Plugin>,
+  // Long term: Figure out how to encapsulate Send
+  pub plugin: Box<dyn Plugin + Send>,
 }
 
 impl PluginChannel {
-  pub fn new(plugin: Box<dyn Plugin>) -> Self {
+  pub fn new(plugin: Box<dyn Plugin + Send>) -> Self {
     let (tx, rx) = mpsc::channel(128);
     Self {
       listener: PluginListener {
@@ -28,12 +27,13 @@ impl PluginChannel {
     }
   }
 
-  pub async fn start(&mut self) -> Result<(), String> {
+  pub async fn start(&mut self) {
     while let Some(event) = self.listener.receive().await {
       println!("Received event for plugin on the PluginChannel: {:?}", event);
       self.plugin.accept_event(event).unwrap();
+      
     }
-    Ok(())
+    println!("Plugin stopped listening");
   }
 
   pub fn get_transmitter(&self) -> Result<PluginTransmitter, String> {
@@ -57,15 +57,10 @@ pub struct PluginTransmitter {
   event_transmitter: mpsc::Sender<Event>,
 }
 
-// TODO needs cleanup
 impl PluginTransmitter {
   
-  async fn send_event(&self, event: Event) {
-    // self.event_transmitter.send(event).await.unwrap();
-    match self.event_transmitter.send(event).await {
-      Ok(_) => println!("Sent event!"),
-      Err(err) => println!("Couldn't send event, received error {:?}", err),
-    }
+  async fn send_event(&self, event: Event) -> Result<(), mpsc::error::SendError<Event>> {
+    self.event_transmitter.send(event).await
   }
 
   fn get_events(&self) -> Vec<Event> {
@@ -107,14 +102,10 @@ impl PluginRegistrar {
 
   pub(crate) async fn send_to_plugin(&self, event: Event) {
     println!("Trying to find event {:?}", event);
-    println!("In events: ");
-    for event in self.plugins.keys() {
-      println!("{:?}", event);
-    }
     match self.plugins.get(&event) {
       Some(listener) => {
-	println!("Registrar found the event. Forwarding to plugin");
-	listener.send_event(Event::from(&event)).await
+	println!("Found plugin, sending along");
+	listener.send_event(Event::from(&event)).await.unwrap();
       },
       None => {
 	println!("Could not find a plugin for this event: {:?}", event);

@@ -37,10 +37,12 @@ impl PartialEq for Event {
     match self {
       Event::Command {
         id,
-        data,
+        data: _,
       } => {
 	match other {
-	  Event::Query { id, plugin_id } => false,
+	  Event::Query {
+	    id: _,
+	    plugin_id: _ } => false,
 	  Event::Command {
 	    id: other_id,
 	    data: _,
@@ -49,10 +51,13 @@ impl PartialEq for Event {
       },
       Event::Query {
 	id,
-	plugin_id,
+	plugin_id: _,
       } => {
 	match other {
-	  Event::Command { id, data } => false,
+	  Event::Command {
+	    id: _,
+	    data: _
+	  } => false,
 	  Event::Query {
 	    id: other_id, plugin_id: _
 	  } => id == other_id
@@ -67,8 +72,8 @@ impl Eq for Event {}
 impl Hash for Event {
   fn hash<H: Hasher>(&self, state: &mut H) {
     match self {
-      Event::Command { id, data,} => id.hash(state),
-      Event::Query { id, plugin_id, } => id.hash(state),
+      Event::Command { id, data: _,} => id.hash(state),
+      Event::Query { id, plugin_id: _, } => id.hash(state),
     }
   }
 }
