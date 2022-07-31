@@ -1,10 +1,6 @@
-use std::thread;
-
-use tokio::runtime::{Runtime, self};
-
 use crate::dispatch::{Dispatcher, DispatchClient, Dispatch};
 use crate::event::Event;
-use crate::plugin::{Plugin, PluginChannel, PluginStarter};
+use crate::plugin::{Plugin, PluginChannel};
 use crate::plugins::diagnostics::Diagnostics;
 
 #[derive(Clone)]
@@ -65,31 +61,13 @@ impl Session {
       plugin_channel.start().await
     });
 
-    // TODO need to figure out the borrowing for a different function to run the plugins
-    // self.channels.push(plugin_channel);
-
-    // Start the plugin channel on another thread.
-    // TODO join?
-
-    // let plugin_listener = plugin_channel.listener;
-    
-    // let plugin_thread = thread::spawn(move || {
-    //   let runtime = Runtime::new().unwrap();
-    //   runtime.spawn(async move {
-    // 	println!("Diagnostics plugin registered, and started");
-    // 	PluginStarter::start_plugin(plugin_channel).await.unwrap();
-    //   })
-    // });
-
   }
 
   // TODO Clean up result signature
   // Starts the async runtime
   pub async fn run(&mut self) -> Result<(), String> {
     println!("Starting plugins");
-    // TODO probably don't need to make these async, since the thread runtimes handle it
     self.discover_plugins().await;
-    // self.discover_plugins().await;
     let readonly_dispatch_options = if self.options.dispatch.is_uncloned() {
       self.options.dispatch.clone()
     } else {
@@ -98,14 +76,6 @@ impl Session {
 
     let listener_dispatch = self.options.dispatch.clone_once();
     
-    // TODO join?
-    // let session_thread = thread::spawn(move || {
-    //   let runtime = Runtime::new().unwrap();
-    //   runtime.spawn(async move {
-    // 	println!("Dispatcher awaiting commands to the session");
-    // 	Dispatcher::start_listener(listener_dispatch).await.unwrap();
-    //   })
-    // });
     tokio::spawn( async move {
       Dispatcher::start_listener(listener_dispatch).await.unwrap()
     });

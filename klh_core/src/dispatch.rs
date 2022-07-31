@@ -1,6 +1,6 @@
 use tokio::sync::mpsc;
 
-use crate::{event::Event, plugin::{PluginRegistrar, Plugin, PluginTransmitter}};
+use crate::{event::Event, plugin::{PluginRegistrar, PluginTransmitter}};
 
 pub(crate) struct Dispatcher;
 

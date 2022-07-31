@@ -1,4 +1,6 @@
-use crate::{plugin::{Plugin, PluginTransmitter, PluginChannel}, event::{Event, CommandData}, dispatch::DispatchClient};
+use std::{thread, time};
+
+use crate::{plugin::Plugin, event::{Event, CommandData}, dispatch::DispatchClient};
 
 pub(crate) struct Diagnostics {
   events: Vec<Event>,
@@ -18,6 +20,13 @@ impl Diagnostics {
 	docs: String::from("Sends a message to Diagnostics plugin")
       }
     });
+    // A diagnostic slow bomb to verify async integrity
+    events.push(Event::Command {
+      id: String::from("diagnostics::slow_bomb"),
+      data: CommandData {
+	docs: String::from("I really need json()"),
+      }
+    });
 
     Diagnostics{
       events,
@@ -28,22 +37,35 @@ impl Diagnostics {
 
 impl Plugin for Diagnostics {
     fn accept_event(&self, event: Event) -> Result<(), String> {
-      println!("Diagnostics received event {:?}", event);
+      println!("[DIAGNOSTICS] Diagnostics received event {:?}", event);
       match event {
 	Event::Command {
 	  id,
-	  data
+	  data: _data
 	} => {
-	  if (id.eq("diagnostics::log_event")) {
-	    Ok(())
-	  } else {
-	    println!("Diagnostics plugin received a log event.");
-	    Ok(())
-	  }
+	  match id.as_str() {
+	    "diagnostics::log_event" => {
+	      println!("[DIAGNOSTICS] Diagnostics plugin received a log event.");
+	      Ok(())
+	    }
+	    "diagnostics::slow_bomb" => {
+	      println!("[DIAGNOSTICS] Diagnostics processing a slow bomb for 10 seconds.");
+	      // Ok let's go faster
+	      thread::sleep(time::Duration::from_secs(10));
+	      println!("Finished waiting for 10 seconds");
+	      // TODO all this needs to be replaced
+	      // let stuff : String = data.docs.clone();
+	      // Ok(())
+	      Ok(())
+	    }
+	    _ => {
+	      Ok(())
+	    }
+	  } 
 	},
 	Event::Query {
-	  id,
-	  plugin_id
+	  id: _,
+	  plugin_id: _
 	} => Err(String::from("No queries defined for plugin")),
       }
     }
