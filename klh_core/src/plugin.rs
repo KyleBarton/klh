@@ -1,5 +1,3 @@
-// plugin.rs.
-
 use std::collections::HashMap;
 
 use tokio::sync::mpsc;
@@ -7,11 +5,10 @@ use tokio::sync::mpsc;
 use crate::{event::Event, dispatch::DispatchClient};
 
 
-// Plugin only handles sync logic. PluginChannel handles all async stuff.
 pub struct PluginChannel {
   pub listener: PluginListener,
   pub transmitter: PluginTransmitter,
-  // TODO Figure out how to encapsulate Send
+  // Long term: Figure out how to encapsulate Send
   pub plugin: Box<dyn Plugin + Send>,
 }
 
@@ -33,12 +30,10 @@ impl PluginChannel {
   pub async fn start(&mut self) {
     while let Some(event) = self.listener.receive().await {
       println!("Received event for plugin on the PluginChannel: {:?}", event);
-      // Because of the damn plugin!
       self.plugin.accept_event(event).unwrap();
       
     }
     println!("Plugin stopped listening");
-    // Ok(())
   }
 
   pub fn get_transmitter(&self) -> Result<PluginTransmitter, String> {
@@ -62,7 +57,6 @@ pub struct PluginTransmitter {
   event_transmitter: mpsc::Sender<Event>,
 }
 
-// TODO needs cleanup
 impl PluginTransmitter {
   
   async fn send_event(&self, event: Event) -> Result<(), mpsc::error::SendError<Event>> {
@@ -110,6 +104,7 @@ impl PluginRegistrar {
     println!("Trying to find event {:?}", event);
     match self.plugins.get(&event) {
       Some(listener) => {
+	println!("Found plugin, sending along");
 	listener.send_event(Event::from(&event)).await.unwrap();
       },
       None => {

@@ -1,6 +1,5 @@
 use crate::{event::Event, session::{SessionOptions, Session, SessionClient}};
 
-//klh.rs.
 pub struct KlhClient {
   session_client: SessionClient,
 }
@@ -29,12 +28,7 @@ impl Klh {
     }
   }
 
-  // TODO probably don't need to make these async, since the thread runtimes handle it
   pub async fn start(&mut self) {
-    // println!("Starting plugins");
-    // // TODO probably don't need to make these async, since the thread runtimes handle it
-    // self.session.discover_plugins().await;
-    println!("Plugins started. Starting session");
     self.session.run().await.unwrap();
     println!("Session started");
     

@@ -17,7 +17,7 @@ impl SessionOptions {
 }
 
 pub struct Session {
-  options: SessionOptions, // TODO lifetime?
+  options: SessionOptions,
 }
 
 // TODO impl client commands
@@ -63,8 +63,6 @@ impl Session {
 
   }
 
-  // TODO Clean up result signature
-  // Starts the async runtime
   pub async fn run(&mut self) -> Result<(), String> {
     println!("Starting plugins");
     self.discover_plugins().await;
@@ -82,9 +80,6 @@ impl Session {
 
 
     self.options.dispatch = readonly_dispatch_options;
-
-    // TODO probably needs to be done in an "end" function
-    // session_thread.join().unwrap();
 
     Ok(())
   }
