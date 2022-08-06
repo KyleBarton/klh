@@ -65,7 +65,6 @@ impl Plugin for Diagnostics {
 	},
 	Event::Query {
 	  id: _,
-	  plugin_id: _
 	} => Err(String::from("No queries defined for plugin")),
       }
     }

@@ -358,3 +358,15 @@ computational. End-to-end testing here is pretty rough, but forms a
 great basis for what we're trying to accomplish with this async
 stuff. I think it's probably time to add the beginnings of a buffer
 plugin (yay!) and then opt for some code cleanup.
+
+** 08/05/2022
+I've gotten two plugins up and running (!!) with the addition of
+`buffer`. This proves out the fact that the asynchronous approach here
+will work - the slow bomb on `diagnostics` does not block `buffer`
+commands.
+
+However, it's time to really nail down queries. Commands are in an
+"ok" state (they still need a better "data" serialization approach),
+but the query has the unique need to asynchronously respond.
+
+The next few commits should be dedicated to clearing this up.

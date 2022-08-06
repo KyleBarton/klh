@@ -1,6 +1,7 @@
 use crate::dispatch::{Dispatcher, DispatchClient, Dispatch};
 use crate::event::Event;
 use crate::plugin::{Plugin, PluginChannel};
+use crate::plugins::buffers::Buffers;
 use crate::plugins::diagnostics::Diagnostics;
 
 #[derive(Clone)]
@@ -48,19 +49,31 @@ impl Session {
   // functional plugins are hard-coded. Dynamic memory appropriate
   // here as we are dealing with variou plugins at runtime here.
   pub(crate) async fn discover_plugins(&mut self) {
+    // Diagnostics
     let mut diagnostics_plugin : Diagnostics = Diagnostics::new();
     
     diagnostics_plugin.receive_client(self.options.dispatch.get_client().unwrap());
 
-    let mut plugin_channel: PluginChannel = PluginChannel::new(Box::new(diagnostics_plugin));
+    let mut diagnostics_channel: PluginChannel = PluginChannel::new(Box::new(diagnostics_plugin));
 
-    self.options.dispatch.register_plugin(plugin_channel.get_transmitter().unwrap()).unwrap();
+    self.options.dispatch.register_plugin(diagnostics_channel.get_transmitter().unwrap()).unwrap();
 
+
+    // Buffers
+    let mut buffers_plugin : Buffers = Buffers::new();
+
+    buffers_plugin.receive_client(self.options.dispatch.get_client().unwrap());
+
+    let mut buffers_channel: PluginChannel = PluginChannel::new(Box::new(buffers_plugin));
+
+    self.options.dispatch.register_plugin(buffers_channel.get_transmitter().unwrap()).unwrap();
 
     tokio::spawn(async move {
-      plugin_channel.start().await
+      diagnostics_channel.start().await
     });
-
+    tokio::spawn(async move {
+      buffers_channel.start().await
+    });
   }
 
   pub async fn run(&mut self) -> Result<(), String> {

@@ -14,6 +14,8 @@ async fn prompt_and_read(
   known_event: Event,
   bad_event: Event,
   expensive_event: Event,
+  create_buffer_event: Event,
+  list_buffers_event: Event,
 ) {
   // Let's see if the readline helps the race condition.
 
@@ -37,6 +39,14 @@ async fn prompt_and_read(
 	  "3" => {
 	    println!("Sending a slow-bomb");
 	    client.send(expensive_event.clone()).await.unwrap();
+	  },
+	  "bc" => {
+	    println!("Creating a buffer");
+	    client.send(create_buffer_event.clone()).await.unwrap();
+	  },
+	  "bl" => {
+	    println!("Asking for a buffers list");
+	    client.send(list_buffers_event.clone()).await.unwrap();
 	  }
 	  "e" => {
 	    println!("e for exit");
@@ -86,11 +96,25 @@ async fn main() {
     data: CommandData { docs: "No docs".to_string() }
   };
 
+  let create_buffer_command = Event::Command {
+    id: String::from("buffers::create_buffer"),
+    data: CommandData {
+      docs: String::from("Create a buffer"),
+    },
+  };
+
+  let list_buffer_query = Event::Query {
+    id: String::from("buffers::list_buffers"),
+  };
+
   prompt_and_read(
     client,
     diagnostics_command,
     unknown_event,
-    expensive_command).await;
+    expensive_command,
+    create_buffer_command,
+    list_buffer_query,
+  ).await;
 }
 
 

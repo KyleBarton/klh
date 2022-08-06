@@ -8,16 +8,15 @@ pub enum Event {
   },
   Query {
     id: String,
-    plugin_id: String,
-    // Responder: impl QueryResponder,
   },
 }
 
+// TODO needed? clean up
 impl Event {
   pub fn from(event: &Event) -> Self {
     match event {
       Event::Command { id, data } => Event::Command { id: id.clone(), data: data.clone() },
-      Event::Query { id, plugin_id } => Event::Query { id: id.clone(), plugin_id: plugin_id.clone() }
+      Event::Query { id } => Event::Query { id: id.clone(), },
     }
   }
 
@@ -41,8 +40,7 @@ impl PartialEq for Event {
       } => {
 	match other {
 	  Event::Query {
-	    id: _,
-	    plugin_id: _ } => false,
+	    id: _, } => false,
 	  Event::Command {
 	    id: other_id,
 	    data: _,
@@ -51,7 +49,6 @@ impl PartialEq for Event {
       },
       Event::Query {
 	id,
-	plugin_id: _,
       } => {
 	match other {
 	  Event::Command {
@@ -59,7 +56,7 @@ impl PartialEq for Event {
 	    data: _
 	  } => false,
 	  Event::Query {
-	    id: other_id, plugin_id: _
+	    id: other_id,
 	  } => id == other_id
 	}
       },
@@ -73,7 +70,7 @@ impl Hash for Event {
   fn hash<H: Hasher>(&self, state: &mut H) {
     match self {
       Event::Command { id, data: _,} => id.hash(state),
-      Event::Query { id, plugin_id: _, } => id.hash(state),
+      Event::Query { id, } => id.hash(state),
     }
   }
 }
