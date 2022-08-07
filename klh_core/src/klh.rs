@@ -1,4 +1,4 @@
-use crate::{event::Event, session::{SessionOptions, Session, SessionClient}};
+use crate::{event::EventMessage, session::{SessionOptions, Session, SessionClient}};
 
 pub struct KlhClient {
   session_client: SessionClient,
@@ -10,8 +10,9 @@ impl KlhClient {
       session_client,
     }
   }
-  pub async fn send(&mut self, event: Event) -> Result<(), String> {
-    self.session_client.send(event).await
+
+  pub async fn send(&mut self, event_message: EventMessage) -> Result<(), String> {
+    self.session_client.send(event_message).await
   }
 }
 

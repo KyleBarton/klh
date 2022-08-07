@@ -1,42 +1,77 @@
 use klh_core::klh::{Klh, KlhClient};
-use klh_core::event::{Event, CommandData};
+pub(crate) use klh_core::event::{Query, Command};
 use std::io;
-
-/* WOOHOO, we have a first client here. I think we have a couple of learnings to take away:
-
-- Remember that it doesn't matter if this client is messy. It's just a way to exercise klh_core. Use this to drive quality in the other crate
-- We need to figure out the 'Command' module, or whatever you want to call it, sooner rather than later. SessionInput/DispatchInput is awful
-- Let's add some interactivity to this client so we can send a bunch of messages at once.
- */
 
 async fn prompt_and_read(
   mut client: KlhClient,
-  known_event: Event,
-  bad_event: Event,
-  expensive_event: Event,
 ) {
-  // Let's see if the readline helps the race condition.
-
-
   loop {
 
     let mut input: String = String::new();
-    println!("Enter a 1 or a 2 or a 3");
+    println!("Enter any of the following:
+bl: List Buffers
+bc: Create Buffer
+dl: Send a log event to diagnostics
+db: Send a slow bomb to diagnostics
+bad_query: Send an unknown query through the client
+bad_command: Send an unknown command through the client
+e: exit
+    ");
 
     match io::stdin().read_line(&mut input) {
       Ok(_n) => {
 	match input.as_str().trim() {
-	  "1" => {
-	    println!("Sending known message");
-	    client.send(known_event.clone()).await.unwrap();
+	  "bad_query" => {
+	    println!("Sending bogus query");
+	    let mut bad_query = Query::from_id("NoSuchId");
+	    client.send(bad_query.get_event_message().unwrap()).await.unwrap();
 	  },
-	  "2" => {
-	    println!("Sending bogus message");
-	    client.send(bad_event.clone()).await.unwrap();
+	  "bad_command" => {
+	    println!("Sending bogus command");
+	    let mut bad_command = Command::from_id("NoSuchId", "nocontent".to_string());
+	    client.send(bad_command.get_event_message().unwrap()).await.unwrap();
+	  }
+	  "dl" => {
+	    println!("Sending a diagnostics log");
+	    let mut diagnostics_log_command : Command = Command::from_id(
+	      "diagnostics::log_event",
+	      "This is some content".to_string(),
+	    );
+	    client.send(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
 	  },
-	  "3" => {
-	    println!("Sending a slow-bomb");
-	    client.send(expensive_event.clone()).await.unwrap();
+	  "db" => {
+	    println!("Sending a slow bomb");
+	    let mut diagnostics_log_command = Command::from_id(
+	      "diagnostics::slow_bomb",
+	      // An example of what content should be doing
+	      "{wait_time: 10}".to_string(),
+	    );
+	    client.send(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
+	  }
+	  "bc" => {
+	    println!("Creating a buffer");
+	    let mut create_buffer_command = Command::from_id(
+	      "buffers::create_buffer",
+	      "specialbuffer".to_string(),
+	    );
+	    client.send(create_buffer_command.get_event_message().unwrap()).await.unwrap();
+	  },
+	  "bl" => {
+	    println!("Asking for a buffers list");
+
+	    let mut list_buffer_query = Query::from_id("buffers::list_buffers");
+
+	    let mut list_buffer_handler = list_buffer_query.get_handler().unwrap();
+
+	    client.send(list_buffer_query.get_event_message().unwrap()).await.unwrap();
+
+	    match list_buffer_handler.handle_response().await {
+	      Ok(response) => {
+		println!("Buffer plugin responded");
+		println!("Active buffers: {}", response.content);
+	      },
+	      Err(msg) => println!("Sender dropped probably: {}", &msg),
+	    };
 	  }
 	  "e" => {
 	    println!("e for exit");
@@ -64,33 +99,9 @@ async fn main() {
 
   let client : KlhClient = klh.get_client().unwrap();
 
-
-  let diagnostics_command = Event::Command {
-    id: String::from("diagnostics::log_event"),
-    data: CommandData {
-        docs: String::from("This is the details of my log event"),
-    }
-  };
-
-  let expensive_command = Event::Command {
-    id: String::from("diagnostics::slow_bomb"),
-    data: CommandData {
-      // TODO This means we should change "docs" to "json" and make
-      // docs invariant with Id
-      docs: String::from("{time_seconds: 10}"),
-    }
-  };
-
-  let unknown_event = Event::Command {
-    id: String::from("unknown world"),
-    data: CommandData { docs: "No docs".to_string() }
-  };
-
   prompt_and_read(
     client,
-    diagnostics_command,
-    unknown_event,
-    expensive_command).await;
+  ).await;
 }
 
 

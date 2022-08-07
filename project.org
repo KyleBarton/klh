@@ -358,3 +358,56 @@ computational. End-to-end testing here is pretty rough, but forms a
 great basis for what we're trying to accomplish with this async
 stuff. I think it's probably time to add the beginnings of a buffer
 plugin (yay!) and then opt for some code cleanup.
+
+** 08/05/2022
+I've gotten two plugins up and running (!!) with the addition of
+`buffer`. This proves out the fact that the asynchronous approach here
+will work - the slow bomb on `diagnostics` does not block `buffer`
+commands.
+
+However, it's time to really nail down queries. Commands are in an
+"ok" state (they still need a better "data" serialization approach),
+but the query has the unique need to asynchronously respond.
+
+The next few commits should be dedicated to clearing this up.
+
+** 08/06/2022
+I've officially run into the limits of my current event structure. At
+the crux of the problem: the /type/ of the event and the /data/ of the
+event are wrapped into one enum. They need to be separated, which is
+work I've started:
+
+`EventType` should define the type of the event, and can probably
+remain an enum. It is this that will be used to register with the
+plugin registrar, and for equality matching.
+
+`Event`, or `EventMessage`, or `Message` (naming TBD) should define
+the actual data being dispatched through the klh session. It has an
+`EventType` for equality matching, but it contains more data (for
+instance, a responder for queries). This object need not implement
+`Clone` like `EventType`, as it should be borrowed, not replicated.
+** 08/07/2022
+Migration completed, we now have a more complex event environment:
+
+Queries: Own handling logic needed for queries
+Command: Have "Content" for specifying the command.
+
+Both /have/ event types (enum with an underlying id in bytes)
+
+Both /produce/ event messages, which are built to carry the data off
+to where they should in the async brokerage. Right now, event messages
+can only be produced by the command or query once, and the messages
+themselves can only be sent & handled once. A way to repeat the
+message may be needed later, but for now this is an ok rule to
+follow. Since the way we "burn" these messages is with options, we
+could potentialy extend a more passive "broadcast"-style event that
+just keeps empty options for all the one-time use stuff. This can all
+be figured out later.
+
+At this point, serious refactoring and testing is needed. The codebase
+has grown significantly, and keeping a bunch of rust structs in one
+file has really started to cause pain. Additionally, there's no great
+testing, and everything is verified E2E. Fine for the early days, but
+at this point, I need to start making the needed tests because I'm
+getting into more concrete and less conceptual territory.
+

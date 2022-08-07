@@ -1,25 +1,37 @@
+use core::panic;
+
 use tokio::sync::mpsc;
 
-use crate::{event::Event, plugin::{PluginRegistrar, PluginTransmitter}};
+use crate::{event::EventMessage, plugin::{PluginRegistrar, PluginTransmitter}};
 
 pub(crate) struct Dispatcher;
 
-pub struct DispatchClient {
-  transmitter: mpsc::Sender<Event>,
+pub(crate) struct DispatchClient {
+  transmitter: mpsc::Sender<EventMessage>,
+}
+
+impl DispatchClient {
+  pub(crate) fn new(transmitter: mpsc::Sender<EventMessage>) -> Self {
+    Self {
+      transmitter,
+    }
+  }
 }
 
 
 // Needs work
 impl DispatchClient {
-  pub(crate) async fn send(&self, event: Event) -> Result<(), mpsc::error::SendError<Event>> {
-    self.transmitter.send(event).await
+
+  pub(crate) async fn send(&self, event_message: EventMessage) -> Result<(), mpsc::error::SendError<EventMessage>> {
+    println!("Sending event message: {}", event_message);
+    self.transmitter.send(event_message).await
   }
 }
 
 // Needs its own file/module. Needs to implement clone/copy? At least Clone.
 pub(crate) struct Dispatch {
-  input_receiver: Option<mpsc::Receiver<Event>>,
-  input_transmitter: mpsc::Sender<Event>,
+  input_receiver: Option<mpsc::Receiver<EventMessage>>,
+  input_transmitter: mpsc::Sender<EventMessage>,
   plugin_registrar: PluginRegistrar,
 }
 
@@ -46,6 +58,7 @@ impl Dispatch {
       None => panic!("Cannot clone a clone"),
     };
     self.input_receiver = None;
+
     Self {
       input_receiver,
       input_transmitter: self.input_transmitter.clone(),
@@ -54,21 +67,19 @@ impl Dispatch {
   }
 
   pub(crate) fn register_plugin(&mut self, plugin_transmitter: PluginTransmitter) -> Result<(), String> {
-    match self.plugin_registrar.register_plugin_events(plugin_transmitter) {
+    match self.plugin_registrar.register_plugin_event_types(plugin_transmitter) {
       Err(msg) => Err(msg),
       Ok(_) => Ok(()),
     }
   }
 
   pub(crate) fn get_client(&self) -> Result<DispatchClient, String> {
-    Ok(DispatchClient{
-      transmitter: self.input_transmitter.clone(),
-    })
+    Ok(DispatchClient::new(self.input_transmitter.clone()))
   }
 
   // TODO error handling
-  pub(crate) async fn dispatch_to_plugin(&self, event: Event) -> Result<(), String> {
-    self.plugin_registrar.send_to_plugin(event).await;
+  pub(crate) async fn dispatch_to_plugin(&self, event_message: EventMessage) -> Result<(), String> {
+    self.plugin_registrar.send_to_plugin(event_message).await;
     Ok(())
   }
 }
@@ -102,11 +113,5 @@ impl Dispatcher {
     }
 
     Ok(())
-  }
-
-  pub(crate) fn get_client(options: Dispatch) -> Result<DispatchClient, String> {
-    Ok(DispatchClient{
-      transmitter: options.input_transmitter.clone(),
-    })
   }
 }

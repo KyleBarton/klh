@@ -1,82 +1,58 @@
 use std::{thread, time};
 
-use crate::{plugin::Plugin, event::{Event, CommandData}, dispatch::DispatchClient};
+use crate::{plugin::Plugin, event::{EventType, EventMessage}, session::SessionClient};
 
 pub(crate) struct Diagnostics {
-  events: Vec<Event>,
-  dispatch_client: Option<DispatchClient>,
+  event_types: Vec<EventType>,
+  session_client: Option<SessionClient>,
 }
 
 impl Diagnostics {
   pub(crate) fn new() -> Self {
 
     //TODO ugly place for this
-    let mut events: Vec<Event> = Vec::new();
+    let mut event_types: Vec<EventType> = Vec::new();
 
-    // Log message
-    events.push(Event::Command {
-      id: String::from("diagnostics::log_event"),
-      data: CommandData {
-	docs: String::from("Sends a message to Diagnostics plugin")
-      }
-    });
-    // A diagnostic slow bomb to verify async integrity
-    events.push(Event::Command {
-      id: String::from("diagnostics::slow_bomb"),
-      data: CommandData {
-	docs: String::from("I really need json()"),
-      }
-    });
+    event_types.push(EventType::command_from_str("diagnostics::log_event"));
+    event_types.push(EventType::command_from_str("diagnostics::slow_bomb"));
 
     Diagnostics{
-      events,
-      dispatch_client: None,
+      event_types,
+      session_client: None,
     }
   }
 }
 
 impl Plugin for Diagnostics {
-    fn accept_event(&self, event: Event) -> Result<(), String> {
-      println!("[DIAGNOSTICS] Diagnostics received event {:?}", event);
-      match event {
-	Event::Command {
-	  id,
-	  data: _data
-	} => {
-	  match id.as_str() {
-	    "diagnostics::log_event" => {
-	      println!("[DIAGNOSTICS] Diagnostics plugin received a log event.");
-	      Ok(())
-	    }
-	    "diagnostics::slow_bomb" => {
-	      println!("[DIAGNOSTICS] Diagnostics processing a slow bomb for 10 seconds.");
-	      // Ok let's go faster
-	      thread::sleep(time::Duration::from_secs(10));
-	      println!("Finished waiting for 10 seconds");
-	      // TODO all this needs to be replaced
-	      // let stuff : String = data.docs.clone();
-	      // Ok(())
-	      Ok(())
-	    }
-	    _ => {
-	      Ok(())
-	    }
-	  } 
-	},
-	Event::Query {
-	  id: _,
-	  plugin_id: _
-	} => Err(String::from("No queries defined for plugin")),
+
+  fn accept_event(&mut self, event_message: EventMessage) -> Result<(), String> {
+    println!("[DIAGNOSTICS] Diagnostics received event");
+    match event_message.get_event_type() {
+      EventType::Query(_) => {
+	println!("[DIAGNOSTICS] don't know this event");
+	Ok(())
+      },
+      EventType::Command(id) => {
+	if &id[0.."diagnostics::log_event".len()] == "diagnostics::log_event".as_bytes() {
+	  println!("[DIAGNOSTICS] Diagnostics plugin received a (new) log event.");
+	}
+	if &id[0.."diagnostics::slow_bomb".len()] == "diagnostics::slow_bomb".as_bytes() {
+	  println!("[DIAGNOSTICS] Diagnostics processing a (new) slow bomb for 10 seconds.");
+	  thread::sleep(time::Duration::from_secs(10));
+	  println!("Finished waiting for 10 seconds");
+	}
+	Ok(())
       }
     }
+  }
 
-  fn list_events(&self) -> Vec<Event> {
-    self.events.clone()
+  fn list_event_types(&self) -> Vec<EventType> {
+    self.event_types.clone()
   }
 
   // TODO do I actually need the client for diagnostics?
-  fn receive_client(&mut self, dispatch_client: DispatchClient) {
-    self.dispatch_client = Some(dispatch_client);
+  fn receive_client(&mut self, session_client: SessionClient) {
+    self.session_client = Some(session_client);
   }
 }
 
