@@ -1,52 +1,79 @@
 use klh_core::klh::{Klh, KlhClient};
-use klh_core::event::{Event, CommandData};
+pub(crate) use klh_core::event::{BetterQuery, BetterCommand};
 use std::io;
-
-/* WOOHOO, we have a first client here. I think we have a couple of learnings to take away:
-
-- Remember that it doesn't matter if this client is messy. It's just a way to exercise klh_core. Use this to drive quality in the other crate
-- We need to figure out the 'Command' module, or whatever you want to call it, sooner rather than later. SessionInput/DispatchInput is awful
-- Let's add some interactivity to this client so we can send a bunch of messages at once.
- */
 
 async fn prompt_and_read(
   mut client: KlhClient,
-  known_event: Event,
-  bad_event: Event,
-  expensive_event: Event,
-  create_buffer_event: Event,
-  list_buffers_event: Event,
 ) {
-  // Let's see if the readline helps the race condition.
-
-
   loop {
 
     let mut input: String = String::new();
-    println!("Enter a 1 or a 2 or a 3");
+    println!("Enter any of the following:
+bl: List Buffers
+bc: Create Buffer
+dl: Send a log event to diagnostics
+db: Send a slow bomb to diagnostics
+bad_query: Send an unknown query through the client
+bad_command: Send an unknown command through the client
+e: exit
+    ");
 
     match io::stdin().read_line(&mut input) {
       Ok(_n) => {
 	match input.as_str().trim() {
-	  "1" => {
-	    println!("Sending known message");
-	    client.send(known_event.clone()).await.unwrap();
+	  "bad_query" => {
+	    println!("Sending bogus query");
+	    let mut bad_query = BetterQuery::from_id("NoSuchId");
+	    client.send_v2(bad_query.get_event_message().unwrap()).await.unwrap();
+	    // client.send(bad_event.clone()).await.unwrap();
 	  },
-	  "2" => {
-	    println!("Sending bogus message");
-	    client.send(bad_event.clone()).await.unwrap();
+	  "bad_command" => {
+	    println!("Sending bogus command");
+	    let mut bad_command = BetterCommand::from_id("NoSuchId", "nocontent".to_string());
+	    client.send_v2(bad_command.get_event_message().unwrap()).await.unwrap();
+	  }
+	  "dl" => {
+	    println!("Sending a diagnostics log the new way");
+	    let mut diagnostics_log_command : BetterCommand = BetterCommand::from_id(
+	      "diagnostics::log_event",
+	      "This is some content".to_string(),
+	    );
+	    client.send_v2(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
 	  },
-	  "3" => {
-	    println!("Sending a slow-bomb");
-	    client.send(expensive_event.clone()).await.unwrap();
-	  },
+	  "db" => {
+	    println!("Sending a slow bomb the new way");
+	    let mut diagnostics_log_command = BetterCommand::from_id(
+	      "diagnostics::slow_bomb",
+	      // An example of what content should be doing
+	      "{wait_time: 10}".to_string(),
+	    );
+	    client.send_v2(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
+	  }
 	  "bc" => {
 	    println!("Creating a buffer");
-	    client.send(create_buffer_event.clone()).await.unwrap();
+	    // client.send(create_buffer_event.clone()).await.unwrap();
+	    let mut create_buffer_command = BetterCommand::from_id(
+	      "buffers::create_buffer",
+	      "specialbuffer".to_string(),
+	    );
+	    client.send_v2(create_buffer_command.get_event_message().unwrap()).await.unwrap();
 	  },
 	  "bl" => {
 	    println!("Asking for a buffers list");
-	    client.send(list_buffers_event.clone()).await.unwrap();
+
+	    let mut list_buffer_query_v2 = BetterQuery::from_id("buffers::list_buffers");
+
+	    let mut list_buffer_handler = list_buffer_query_v2.get_handler().unwrap();
+
+	    client.send_v2(list_buffer_query_v2.get_event_message().unwrap()).await.unwrap();
+
+	    match list_buffer_handler.handle_response().await {
+	      Ok(response) => {
+		println!("Buffer plugin responded");
+		println!("Active buffers: {}", response.content);
+	      },
+	      Err(msg) => println!("Sender dropped probably: {}", &msg),
+	    };
 	  }
 	  "e" => {
 	    println!("e for exit");
@@ -74,46 +101,8 @@ async fn main() {
 
   let client : KlhClient = klh.get_client().unwrap();
 
-
-  let diagnostics_command = Event::Command {
-    id: String::from("diagnostics::log_event"),
-    data: CommandData {
-        docs: String::from("This is the details of my log event"),
-    }
-  };
-
-  let expensive_command = Event::Command {
-    id: String::from("diagnostics::slow_bomb"),
-    data: CommandData {
-      // TODO This means we should change "docs" to "json" and make
-      // docs invariant with Id
-      docs: String::from("{time_seconds: 10}"),
-    }
-  };
-
-  let unknown_event = Event::Command {
-    id: String::from("unknown world"),
-    data: CommandData { docs: "No docs".to_string() }
-  };
-
-  let create_buffer_command = Event::Command {
-    id: String::from("buffers::create_buffer"),
-    data: CommandData {
-      docs: String::from("Create a buffer"),
-    },
-  };
-
-  let list_buffer_query = Event::Query {
-    id: String::from("buffers::list_buffers"),
-  };
-
   prompt_and_read(
     client,
-    diagnostics_command,
-    unknown_event,
-    expensive_command,
-    create_buffer_command,
-    list_buffer_query,
   ).await;
 }
 

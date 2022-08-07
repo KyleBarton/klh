@@ -1,5 +1,5 @@
 use crate::dispatch::{Dispatcher, DispatchClient, Dispatch};
-use crate::event::Event;
+use crate::event::EventMessage;
 use crate::plugin::{Plugin, PluginChannel};
 use crate::plugins::buffers::Buffers;
 use crate::plugins::diagnostics::Diagnostics;
@@ -28,9 +28,10 @@ pub struct SessionClient{
 
 // Needs so much work
 impl SessionClient {
-  pub async fn send(&mut self, event: Event) -> Result<(), String> {
-    match self.dispatch_client.send(event).await {
-      Err(_) => Err("issue sending event to session".to_string()),
+
+  pub async fn send_v2(&mut self, event_message: EventMessage) -> Result<(), String> {
+    match self.dispatch_client.send_v2(event_message).await {
+      Err(_) => Err("Issue sending event message to session".to_string()),
       Ok(_) => Ok(())
     }
   }
@@ -52,7 +53,7 @@ impl Session {
     // Diagnostics
     let mut diagnostics_plugin : Diagnostics = Diagnostics::new();
     
-    diagnostics_plugin.receive_client(self.options.dispatch.get_client().unwrap());
+    diagnostics_plugin.receive_client(self.get_client().unwrap());
 
     let mut diagnostics_channel: PluginChannel = PluginChannel::new(Box::new(diagnostics_plugin));
 
@@ -62,7 +63,7 @@ impl Session {
     // Buffers
     let mut buffers_plugin : Buffers = Buffers::new();
 
-    buffers_plugin.receive_client(self.options.dispatch.get_client().unwrap());
+    buffers_plugin.receive_client(self.get_client().unwrap());
 
     let mut buffers_channel: PluginChannel = PluginChannel::new(Box::new(buffers_plugin));
 
@@ -99,7 +100,7 @@ impl Session {
 
   pub fn get_client(&self) -> Result<SessionClient, String> {
     Ok(SessionClient{
-      dispatch_client: Dispatcher::get_client(self.options.dispatch.clone()).unwrap(),
+      dispatch_client: self.options.dispatch.get_client().unwrap(),
     })
   }
 }
