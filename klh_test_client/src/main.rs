@@ -1,5 +1,5 @@
 use klh_core::klh::{Klh, KlhClient};
-pub(crate) use klh_core::event::{BetterQuery, BetterCommand};
+pub(crate) use klh_core::event::{Query, Command};
 use std::io;
 
 async fn prompt_and_read(
@@ -23,49 +23,47 @@ e: exit
 	match input.as_str().trim() {
 	  "bad_query" => {
 	    println!("Sending bogus query");
-	    let mut bad_query = BetterQuery::from_id("NoSuchId");
-	    client.send_v2(bad_query.get_event_message().unwrap()).await.unwrap();
-	    // client.send(bad_event.clone()).await.unwrap();
+	    let mut bad_query = Query::from_id("NoSuchId");
+	    client.send(bad_query.get_event_message().unwrap()).await.unwrap();
 	  },
 	  "bad_command" => {
 	    println!("Sending bogus command");
-	    let mut bad_command = BetterCommand::from_id("NoSuchId", "nocontent".to_string());
-	    client.send_v2(bad_command.get_event_message().unwrap()).await.unwrap();
+	    let mut bad_command = Command::from_id("NoSuchId", "nocontent".to_string());
+	    client.send(bad_command.get_event_message().unwrap()).await.unwrap();
 	  }
 	  "dl" => {
-	    println!("Sending a diagnostics log the new way");
-	    let mut diagnostics_log_command : BetterCommand = BetterCommand::from_id(
+	    println!("Sending a diagnostics log");
+	    let mut diagnostics_log_command : Command = Command::from_id(
 	      "diagnostics::log_event",
 	      "This is some content".to_string(),
 	    );
-	    client.send_v2(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
+	    client.send(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
 	  },
 	  "db" => {
-	    println!("Sending a slow bomb the new way");
-	    let mut diagnostics_log_command = BetterCommand::from_id(
+	    println!("Sending a slow bomb");
+	    let mut diagnostics_log_command = Command::from_id(
 	      "diagnostics::slow_bomb",
 	      // An example of what content should be doing
 	      "{wait_time: 10}".to_string(),
 	    );
-	    client.send_v2(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
+	    client.send(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
 	  }
 	  "bc" => {
 	    println!("Creating a buffer");
-	    // client.send(create_buffer_event.clone()).await.unwrap();
-	    let mut create_buffer_command = BetterCommand::from_id(
+	    let mut create_buffer_command = Command::from_id(
 	      "buffers::create_buffer",
 	      "specialbuffer".to_string(),
 	    );
-	    client.send_v2(create_buffer_command.get_event_message().unwrap()).await.unwrap();
+	    client.send(create_buffer_command.get_event_message().unwrap()).await.unwrap();
 	  },
 	  "bl" => {
 	    println!("Asking for a buffers list");
 
-	    let mut list_buffer_query_v2 = BetterQuery::from_id("buffers::list_buffers");
+	    let mut list_buffer_query = Query::from_id("buffers::list_buffers");
 
-	    let mut list_buffer_handler = list_buffer_query_v2.get_handler().unwrap();
+	    let mut list_buffer_handler = list_buffer_query.get_handler().unwrap();
 
-	    client.send_v2(list_buffer_query_v2.get_event_message().unwrap()).await.unwrap();
+	    client.send(list_buffer_query.get_event_message().unwrap()).await.unwrap();
 
 	    match list_buffer_handler.handle_response().await {
 	      Ok(response) => {

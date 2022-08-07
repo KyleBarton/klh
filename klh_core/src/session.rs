@@ -29,8 +29,8 @@ pub struct SessionClient{
 // Needs so much work
 impl SessionClient {
 
-  pub async fn send_v2(&mut self, event_message: EventMessage) -> Result<(), String> {
-    match self.dispatch_client.send_v2(event_message).await {
+  pub async fn send(&mut self, event_message: EventMessage) -> Result<(), String> {
+    match self.dispatch_client.send(event_message).await {
       Err(_) => Err("Issue sending event message to session".to_string()),
       Ok(_) => Ok(())
     }

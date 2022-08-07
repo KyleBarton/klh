@@ -103,12 +103,12 @@ pub struct QueryResponse {
   pub content: String,
 }
 
-pub struct BetterCommand {
+pub struct Command {
   event_type: EventType,
   content: String,
 }
 
-impl BetterCommand {
+impl Command {
   pub fn from_id(
     id: &str,
     content: String,
@@ -128,13 +128,13 @@ impl BetterCommand {
   }
 }
 
-pub struct BetterQuery {
+pub struct Query {
   event_type: EventType,
   sender: Option<QueryResponder>,
   receiver: Option<QueryHandler>,
 }
 
-impl BetterQuery {
+impl Query {
   pub fn from_id(id: &str) -> Self {
     let (tx, rx) = oneshot::channel();
     Self {

@@ -37,7 +37,7 @@ impl Plugin for Buffers {
     self.session_client = Some(session_client)
   }
 
-  fn accept_event_v2(&mut self, mut event_message: EventMessage) -> Result<(), String> {
+  fn accept_event(&mut self, mut event_message: EventMessage) -> Result<(), String> {
     println!("[BUFFERS] received event message");
     match event_message.get_event_type() {
       EventType::Query(id) => {

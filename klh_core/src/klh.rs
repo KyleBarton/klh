@@ -11,8 +11,8 @@ impl KlhClient {
     }
   }
 
-  pub async fn send_v2(&mut self, event_message: EventMessage) -> Result<(), String> {
-    self.session_client.send_v2(event_message).await
+  pub async fn send(&mut self, event_message: EventMessage) -> Result<(), String> {
+    self.session_client.send(event_message).await
   }
 }
 

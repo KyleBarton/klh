@@ -14,13 +14,13 @@ pub struct PluginChannel {
 
 impl PluginChannel {
   pub fn new(plugin: Box<dyn Plugin + Send>) -> Self {
-    let (tx_v2, rx_v2) = mpsc::channel(128);
+    let (tx, rx) = mpsc::channel(128);
     Self {
       listener: PluginListener {
-	event_listener_v2: rx_v2,
+	event_listener: rx,
       },
       transmitter: PluginTransmitter {
-	event_transmitter_v2: tx_v2,
+	event_transmitter: tx,
 	event_types: plugin.list_event_types(),
       },
       plugin,
@@ -28,9 +28,9 @@ impl PluginChannel {
   }
 
   pub async fn start(&mut self) {
-    while let Some(event_message) = self.listener.receive_v2().await {
+    while let Some(event_message) = self.listener.receive().await {
       println!("Received event for plugin on the PluginChannel: {}", event_message);
-      self.plugin.accept_event_v2(event_message).unwrap();
+      self.plugin.accept_event(event_message).unwrap();
       
     }
     println!("Plugin stopped listening");
@@ -42,25 +42,25 @@ impl PluginChannel {
 }
 
 pub struct PluginListener {
-  event_listener_v2: mpsc::Receiver<EventMessage>,
+  event_listener: mpsc::Receiver<EventMessage>,
 }
 
 impl PluginListener {
-  pub async fn receive_v2(&mut self) -> Option<EventMessage> {
-    self.event_listener_v2.recv().await
+  pub async fn receive(&mut self) -> Option<EventMessage> {
+    self.event_listener.recv().await
   }
 }
 
 #[derive(Clone)]
 pub struct PluginTransmitter {
   event_types: Vec<EventType>,
-  event_transmitter_v2: mpsc::Sender<EventMessage>,
+  event_transmitter: mpsc::Sender<EventMessage>,
 }
 
 impl PluginTransmitter {
   
-  async fn send_event_v2(&self, event_message: EventMessage) -> Result<(), mpsc::error::SendError<EventMessage>> {
-    self.event_transmitter_v2.send(event_message).await
+  async fn send_event(&self, event_message: EventMessage) -> Result<(), mpsc::error::SendError<EventMessage>> {
+    self.event_transmitter.send(event_message).await
   }
 
 
@@ -73,8 +73,7 @@ impl PluginTransmitter {
 
 pub trait Plugin {
 
-
-  fn accept_event_v2(&mut self, event_message: EventMessage) -> Result<(), String>;
+  fn accept_event(&mut self, event_message: EventMessage) -> Result<(), String>;
 
   fn list_event_types(&self) -> Vec<EventType>;
 
@@ -105,12 +104,12 @@ impl PluginRegistrar {
     Ok(())
   }
 
-  pub(crate) async fn send_to_plugin_v2(&self, event_message: EventMessage) {
+  pub(crate) async fn send_to_plugin(&self, event_message: EventMessage) {
     println!("Trying to find event type {}", event_message.get_event_type());
     match self.plugin_type_map.get(&event_message.get_event_type()) {
       Some(listener) => {
 	println!("Found plugin for event type, sending along");
-	listener.send_event_v2(event_message).await.unwrap();
+	listener.send_event(event_message).await.unwrap();
       },
       None => {
 	println!("Could not find a plugin for this event: {}", event_message.get_event_type());

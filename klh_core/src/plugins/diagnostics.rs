@@ -25,7 +25,7 @@ impl Diagnostics {
 
 impl Plugin for Diagnostics {
 
-  fn accept_event_v2(&mut self, event_message: EventMessage) -> Result<(), String> {
+  fn accept_event(&mut self, event_message: EventMessage) -> Result<(), String> {
     println!("[DIAGNOSTICS] Diagnostics received event");
     match event_message.get_event_type() {
       EventType::Query(_) => {
