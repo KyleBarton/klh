@@ -411,3 +411,10 @@ testing, and everything is verified E2E. Fine for the early days, but
 at this point, I need to start making the needed tests because I'm
 getting into more concrete and less conceptual territory.
 
+
+** 08/08/2022
+I think I've found a pattern for submodules that's going to work well
+for me. Essentially, I won't expose any submodules, and will just use
+`pub use` in order to bring the public interfaces up into the module's
+namespace. The submodules within the folder will therefore be private,
+for the `mod.rs` to manipulate as needed to expose publicly.
