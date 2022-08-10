@@ -1,5 +1,5 @@
-name: basic-build-and-test
-on: [push]
+name: CI
+on: [push, pull_request]
 jobs:
   build_and_test:
     name: Build and test KLH
