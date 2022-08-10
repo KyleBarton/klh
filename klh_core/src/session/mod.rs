@@ -17,11 +17,6 @@ impl SessionOptions {
   }
 }
 
-pub struct Session {
-  options: SessionOptions,
-}
-
-// TODO impl client commands
 pub struct SessionClient{
   dispatch_client: DispatchClient,
 }
@@ -36,6 +31,11 @@ impl SessionClient {
     }
   }
 }
+
+pub struct Session {
+  options: SessionOptions,
+}
+
 
 impl Session {
   // Generate async channels, load plugins. Do not yet start runtime.
