@@ -4,7 +4,6 @@ use tokio::sync::mpsc;
 
 use crate::{event::EventMessage, plugin::{PluginRegistrar, PluginTransmitter}};
 
-pub(crate) struct Dispatcher;
 
 pub(crate) struct DispatchClient {
   transmitter: mpsc::Sender<EventMessage>,
@@ -66,6 +65,12 @@ impl Dispatch {
     }
   }
 
+  // TODO error handling
+  async fn dispatch_to_plugin(&self, event_message: EventMessage) -> Result<(), String> {
+    self.plugin_registrar.send_to_plugin(event_message).await;
+    Ok(())
+  }
+
   pub(crate) fn register_plugin(&mut self, plugin_transmitter: PluginTransmitter) -> Result<(), String> {
     match self.plugin_registrar.register_plugin_event_types(plugin_transmitter) {
       Err(msg) => Err(msg),
@@ -77,9 +82,22 @@ impl Dispatch {
     Ok(DispatchClient::new(self.input_transmitter.clone()))
   }
 
-  // TODO error handling
-  pub(crate) async fn dispatch_to_plugin(&self, event_message: EventMessage) -> Result<(), String> {
-    self.plugin_registrar.send_to_plugin(event_message).await;
+  pub(crate) async fn start_listener(&mut self) -> Result<(), String> {
+    let mut receiver = match self.input_receiver.take() {
+      Some(r) => r,
+      None => {
+	return Err("Dispatch is already used.".to_string());
+      },
+    };
+    while let Some(event_msg) = receiver.recv().await {
+      let thread_dispatch = self.clone();
+      tokio::spawn(async move {
+	match thread_dispatch.dispatch_to_plugin(event_msg).await {
+	  Ok(_) => Ok(()),
+	  Err(msg) => Err(msg),
+	}
+      });
+    }
     Ok(())
   }
 }
@@ -94,24 +112,3 @@ impl Clone for Dispatch {
     }
 }
 
-// Needs to be its own file/module. Pure functional
-impl Dispatcher {
-
-  pub(crate) async fn start_listener(mut dispatch: Dispatch) -> Result<(), String> {
-    let mut receiver = match dispatch.input_receiver.take() {
-      Some(r) => r,
-      None => return Err(String::from("Sender not authorized to start listener"))
-    };
-    while let Some(input) = receiver.recv().await {
-      let thread_dispatch = dispatch.clone();
-      tokio::spawn(async move {
-	match thread_dispatch.dispatch_to_plugin(input).await {
-	  Ok(_) => Ok(()),
-	  Err(msg) => Err(msg)
-	}
-      });
-    }
-
-    Ok(())
-  }
-}

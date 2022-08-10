@@ -1,4 +1,4 @@
-use crate::{event::EventMessage, session::{SessionOptions, Session, SessionClient}};
+use crate::{event::EventMessage, session::{Session, SessionClient}};
 
 pub struct KlhClient {
   session_client: SessionClient,
@@ -22,8 +22,7 @@ pub struct Klh {
 
 impl Klh {
   pub fn new() -> Self {
-    let session_options = SessionOptions::new();
-    let session = Session::new(session_options);
+    let session = Session::new();
     Self {
       session,
     }
