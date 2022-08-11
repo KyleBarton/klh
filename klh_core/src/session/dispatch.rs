@@ -2,7 +2,7 @@ use core::panic;
 
 use tokio::sync::mpsc;
 
-use crate::{event::EventMessage, plugin::{PluginRegistrar, PluginTransmitter}};
+use crate::{event::EventMessage, plugin::{PluginChannel, PluginRegistrar}};
 
 
 pub(crate) struct DispatchClient {
@@ -27,7 +27,6 @@ impl DispatchClient {
   }
 }
 
-// Needs its own file/module. Needs to implement clone/copy? At least Clone.
 pub(crate) struct Dispatch {
   input_receiver: Option<mpsc::Receiver<EventMessage>>,
   input_transmitter: mpsc::Sender<EventMessage>,
@@ -71,8 +70,8 @@ impl Dispatch {
     Ok(())
   }
 
-  pub(crate) fn register_plugin(&mut self, plugin_transmitter: PluginTransmitter) -> Result<(), String> {
-    match self.plugin_registrar.register_plugin_event_types(plugin_transmitter) {
+  pub(crate) fn register_plugin(&mut self, plugin_channel: &PluginChannel) -> Result<(), String> {
+    match self.plugin_registrar.register_plugin_event_types(plugin_channel) {
       Err(msg) => Err(msg),
       Ok(_) => Ok(()),
     }

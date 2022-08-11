@@ -30,7 +30,7 @@ impl Session {
 
     let mut diagnostics_channel: PluginChannel = PluginChannel::new(Box::new(diagnostics_plugin));
 
-    self.dispatch.register_plugin(diagnostics_channel.get_transmitter().unwrap()).unwrap();
+    self.dispatch.register_plugin(&diagnostics_channel).unwrap();
 
 
     // Buffers
@@ -40,7 +40,7 @@ impl Session {
 
     let mut buffers_channel: PluginChannel = PluginChannel::new(Box::new(buffers_plugin));
 
-    self.dispatch.register_plugin(buffers_channel.get_transmitter().unwrap()).unwrap();
+    self.dispatch.register_plugin(&buffers_channel).unwrap();
 
     tokio::spawn(async move {
       diagnostics_channel.start().await
