@@ -418,3 +418,8 @@ for me. Essentially, I won't expose any submodules, and will just use
 `pub use` in order to bring the public interfaces up into the module's
 namespace. The submodules within the folder will therefore be private,
 for the `mod.rs` to manipulate as needed to expose publicly.
+
+**IDEA**
+Consider adding an "opened" property to EventMessage. A message is
+then either opened or unopened, and that can dictate whether the data
+can be read (using options). Open once, read once.
