@@ -423,3 +423,27 @@ for the `mod.rs` to manipulate as needed to expose publicly.
 Consider adding an "opened" property to EventMessage. A message is
 then either opened or unopened, and that can dictate whether the data
 can be read (using options). Open once, read once.
+
+** 08/20/2022
+
+I think I've been thinking of my request refactoring wrong. In
+particular, I don't need to create a Request /from/ an event
+message. Rather, the handling code should be able to reason about an
+event message exclusively. The `Request` abstraction should be simply
+for the sender's ease. Whether handling code is shared within a plugin
+is up to the plugin's implementation. /Take Request out of the
+handling code/.
+
+**UPDATE** It's deeper than this. I need to start over, I've turned
+myself in circles. I need to separate out a couple of concepts:
+
+Request: A customizable way to configure an event message
+
+Response: A customizable way to deserialize an event message, and
+handle the proper things.
+
+My initial work here just mixed those two up. `Command` and `Query`
+don't seem to matter too much here, as I do more of this. I think we
+may want a way to Broadcast later, so it would be good to ensure that
+Request/EventMessage/Response can handle such a scenario, but those
+might be the only three types I really need to send around.
