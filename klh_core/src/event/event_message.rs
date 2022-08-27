@@ -1,14 +1,12 @@
 use core::fmt;
 
-use super::{EventType, QueryResponder};
+use super::{EventType, QueryResponder, MessageContent};
 
 #[derive(Debug)]
 pub struct EventMessage {
   event_type: EventType,
   responder: Option<QueryResponder>,
-  // TODO, content needs much better structure than a string, but this
-  // can get us started.
-  content: Option<String>,
+  content: Option<MessageContent>,
 }
 
 impl EventMessage {
@@ -16,7 +14,7 @@ impl EventMessage {
   pub fn new(
     event_type: EventType,
     responder: Option<QueryResponder>,
-    content: Option<String>,
+    content: Option<MessageContent>,
   ) -> Self {
     Self {
       event_type,
@@ -33,8 +31,7 @@ impl EventMessage {
     self.responder.take()
   }
 
-  // TODO this is a use-once proposition; should it be?
-  pub fn get_content(&mut self) -> Option<String> {
+  pub fn get_content(&mut self) -> Option<MessageContent> {
     self.content.take()
   }
 }
@@ -43,7 +40,7 @@ impl fmt::Display for EventMessage {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f,"EventMessage {{
   event_type: {},
-  content: {:?}
+  content: {:?},
 }}
 ", self.event_type.display_id(), self.content)
   }

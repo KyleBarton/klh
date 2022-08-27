@@ -1,6 +1,12 @@
 use std::{thread, time};
 
-use crate::{plugin::Plugin, event::{EventType, EventMessage}, session::SessionClient};
+use crate::{plugin::Plugin, event::{EventType, EventMessage, Request, MessageContent}, session::SessionClient};
+
+// TODO need a better way to do this
+static COMMAND_EVENT_TYPE_IDS : [&str; 2] = [
+  "diagnostics::log_event",
+  "diagnostics::slow_bomb",
+];
 
 pub(crate) struct Diagnostics {
   event_types: Vec<EventType>,
@@ -13,14 +19,23 @@ impl Diagnostics {
     //TODO ugly place for this
     let mut event_types: Vec<EventType> = Vec::new();
 
-    event_types.push(EventType::command_from_str("diagnostics::log_event"));
-    event_types.push(EventType::command_from_str("diagnostics::slow_bomb"));
+    for id in COMMAND_EVENT_TYPE_IDS {
+      event_types.push(EventType::command_from_str(id));
+    }
 
     Diagnostics{
       event_types,
       session_client: None,
     }
   }
+}
+
+pub fn new_log_event() -> Request {
+  Request::new(EventType::command_from_str("diagnostics::log_event"), MessageContent::empty())
+}
+
+pub fn new_slow_bomb() -> Request {
+  Request::new(EventType::command_from_str("diagnostics::slow_bomb"), MessageContent::empty())
 }
 
 impl Plugin for Diagnostics {

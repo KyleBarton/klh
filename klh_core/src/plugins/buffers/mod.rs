@@ -1,9 +1,30 @@
-use crate::{event::{EventType, EventMessage, QueryResponse, }, plugin::Plugin, session::SessionClient};
+use serde::{Serialize, Deserialize};
+
+use crate::{event::{EventType, EventMessage, QueryResponse, Request, MessageContent, }, plugin::Plugin, session::SessionClient};
 
 pub(crate) struct Buffers {
   event_types: Vec<EventType>,
   session_client: Option<SessionClient>,
   basic_buffer_names: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CreateBufferContent {
+  name: String,
+}
+
+pub fn new_list_buffers_request() -> Request {
+  Request::new(EventType::query_from_str("buffers::list_buffers"), MessageContent::empty())
+}
+
+pub fn new_create_buffer_request(name: &str) -> Request {
+  // Request::new(EventType::command_from_str("buffers::create_buffer"), RequestContent::from_string(name.to_string()))
+  let create_buffer_content = CreateBufferContent {
+    name: name.to_string(),
+  };
+  let content = MessageContent::from_content(create_buffer_content);
+
+  Request::new(EventType::command_from_str("buffers::create_buffer"), content)
 }
 
 impl Buffers {
@@ -54,9 +75,7 @@ impl Plugin for Buffers {
 	    content.push_str(&buf_name);
 	  }
 
-	  let response = QueryResponse {
-	    content: content.clone()
-	  };
+	  let response = QueryResponse::from_str(&content);
 
 	  event_message.get_responder().expect("No one should have used the event responder yet").respond(response).unwrap();
 	}
@@ -67,9 +86,11 @@ impl Plugin for Buffers {
       }
       EventType::Command(id) => {
 	if &id[0.."buffers::create_buffer".len()] == "buffers::create_buffer".as_bytes() {
-	  let buffer_name = event_message.get_content().expect("Should have a buffer name");
-	  println!("[BUFFERS] Creating buffer with name {}", buffer_name);
-	  self.basic_buffer_names.push(buffer_name);
+	  // let buffer_name = event_message.get_content().expect("Should have a buffer name");
+	  let mut message_content = event_message.get_content().expect("Content should be present");
+	  let create_buffer_content : CreateBufferContent = message_content.deserialize().expect("Should be able to deserialize");
+	  println!("[BUFFERS] Creating buffer with name {}", &create_buffer_content.name);
+	  self.basic_buffer_names.push(create_buffer_content.name);
 	} else {
 	  println!("[BUFFERS] command not found");
 	}

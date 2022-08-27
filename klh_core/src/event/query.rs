@@ -1,34 +1,84 @@
-// query.rs
+use bson::{Bson, Deserializer};
+use serde::{Serialize, Deserialize};
 use tokio::sync::oneshot::{Sender, Receiver, self,};
 
 use super::{EventMessage, EventType};
 
+#[derive(Debug)]
+pub struct MessageContent {
+  content: Option<Bson>,
+}
 
-pub struct Query {
+impl MessageContent {
+  pub fn empty() -> Self {
+    Self {
+      content: None,
+    }
+  }
+  pub fn from_content<T: Serialize>(content: T) -> Self {
+    Self {
+      content: Some(bson::to_bson(&content).unwrap()),
+    }
+  }
+
+  pub fn deserialize<'a, T: Deserialize<'a>>(&mut self) -> Option<T> {
+    match self.content.take() {
+      None => None,
+      Some(c) => {
+	let content: T = {
+	  let de = Deserializer::new(c);
+	  Deserialize::deserialize(de)
+	}.unwrap();
+
+	Some(content)
+      }
+    }
+  }
+}
+
+pub struct Request {
   event_type: EventType,
   sender: Option<QueryResponder>,
   receiver: Option<QueryHandler>,
+  content: Option<MessageContent>,
 }
 
-impl Query {
+impl Request {
+  pub fn new(event_type: EventType, content: MessageContent) -> Self {
+    let (tx, rx) = oneshot::channel();
+    Self {
+      event_type,
+      sender: Some(QueryResponder::new(Some(tx))),
+      receiver: Some(QueryHandler::new(Some(rx))),
+      content: Some(content),
+    }
+  }
+
   pub fn from_id(id: &str) -> Self {
     let (tx, rx) = oneshot::channel();
     Self {
       event_type: EventType::query_from_str(id),
       sender: Some(QueryResponder::new(Some(tx))),
       receiver: Some(QueryHandler::new(Some(rx))),
+      content: None,
     }
   }
 
-  pub fn get_event_message(&mut self) -> Result<EventMessage, String> {
-    Ok(EventMessage::new(
-      self.event_type,
-      self.sender.take(),
-      // No content interface for queries, for now
-      None,
-    ))
+  pub fn to_event_message(&mut self) -> Result<EventMessage, String> {
+    match self.content.take() {
+      None => Ok(EventMessage::new(
+	self.event_type,
+	self.sender.take(),
+	None,
+      )),
+      Some(content) => Ok(EventMessage::new(
+	self.event_type,
+	self.sender.take(),
+	Some(content),
+      ))
+    }
+    
   }
-
 
   pub fn get_handler(&mut self) -> Result<QueryHandler, String> {
     match self.receiver.take() {
@@ -87,7 +137,20 @@ impl QueryResponder {
   }
 }
 
+// TODO maybe just rename this to "Response"
 #[derive(Debug)]
 pub struct QueryResponse {
-  pub content: String,
+  content: String,
+}
+
+impl QueryResponse {
+  pub fn from_str(content: &str) -> Self {
+    Self {
+      content: content.to_string(),
+    }
+  }
+
+  pub fn as_string(&self) -> String {
+    self.content.clone()
+  }
 }

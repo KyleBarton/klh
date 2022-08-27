@@ -447,3 +447,41 @@ don't seem to matter too much here, as I do more of this. I think we
 may want a way to Broadcast later, so it would be good to ensure that
 Request/EventMessage/Response can handle such a scenario, but those
 might be the only three types I really need to send around.
+
+Ok, step back: event message content needs a better type than
+"string". Get that decoupled a bit more, and then use that for
+request.
+
+Argh, still getting mixed up. Some new thoughts:
+- `Query` more or less implements the Request that I'm looking for. No need to make this a trait. It just needs to a) serialize to an event message, b) provide some handling code for responses, c) provide content for the event message if needed. Really, `Command` looks like an inferior interface by comparison. So maybe try this:
+*** DONE Rewrite your commands as queries (don't change event types)
+CLOSED: [2022-08-26 Fri 16:30]
+*** DONE Rename `Query` to `Request`
+CLOSED: [2022-08-26 Fri 16:30]
+*** DONE Let the plugins provide their own `Request` (nee Query) objects via a public interface.
+CLOSED: [2022-08-26 Fri 16:30]
+
+** 08/26/2022
+Lots of improvements made:
+
+- Universal Request object, instead of commands and queries - those are just used in the terminology of EventType.
+- Content is now extensible, however I have to take a dependency on
+  serde's Serialize/Deserialize. Probably ok, but I would love to wrap
+  the serde usage entirely at some point. Using bson under the hood.
+- Basic client interface is simplified a TON!
+
+
+It's probably time for some usability updates, before getting serious about response design:
+*** TODO Add official logging and clean up excessive log messages. Don't go fully into debug logging yet.
+*** TODO Generally rename "Event" to "Message"
+Obviously this will make the naming of EventMessage interesting. The
+concept of an event doesn't really make sense; they are messages,
+which contain requests and solicit responses. An "event" may end up
+being a type (or types) of message in the future.
+
+EventType --> MessageType, and such
+*** TODO Simplify the "awaitResponse" flow for requests into a fluent interface.
+Also, parameterize slow bomb and have diagnostics return responses, instead of just logging them.
+
+*** TODO Reformat the event module
+a) it should messaging. b) we'll probably want to move consumer & producer, or request/response, code into different areas.
