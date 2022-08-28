@@ -1,26 +1,26 @@
 use core::fmt;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
-pub enum EventType {
+pub enum MessageType {
   Command([u8; 100]),
   Query([u8; 100]),
 }
 
 /// # Examples:
 /// ```
-/// use klh_core::event::EventType;
-/// let event: EventType = EventType::query_from_str("test");
-/// assert_eq!("test".to_string(), event.display_id())
+/// use klh_core::messaging::MessageType;
+/// let message: MessageType = MessageType::query_from_str("test");
+/// assert_eq!("test".to_string(), message.display_id())
 /// ```
-impl EventType {
+impl MessageType {
 
   pub fn display_id(&self) -> String {
     match self {
-      EventType::Command(bytes) => std::str::from_utf8(bytes)
+      MessageType::Command(bytes) => std::str::from_utf8(bytes)
 	.unwrap()
 	.replace("\u{0}", "")
 	.to_string(),
-      EventType::Query(bytes) => std::str::from_utf8(bytes)
+      MessageType::Query(bytes) => std::str::from_utf8(bytes)
 	.unwrap()
 	.replace("\u{0}", "")
 	.to_string(),
@@ -52,7 +52,7 @@ impl EventType {
   }
 }
 
-impl fmt::Display for EventType {
+impl fmt::Display for MessageType {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
     write!(f,"{}", self.display_id())
   }

@@ -1,5 +1,7 @@
 use klh_core::klh::{Klh, KlhClient};
-pub(crate) use klh_core::event::{Query, Command};
+use klh_core::messaging::Request;
+use klh_core::plugins::buffers::ListBuffersResponse;
+use klh_core::plugins::{diagnostics, buffers};
 use std::io;
 
 async fn prompt_and_read(
@@ -23,56 +25,47 @@ e: exit
 	match input.as_str().trim() {
 	  "bad_query" => {
 	    println!("Sending bogus query");
-	    let mut bad_query = Query::from_id("NoSuchId");
-	    client.send(bad_query.get_event_message().unwrap()).await.unwrap();
+	    let mut bad_query = Request::from_id("NoSuchId");
+	    client.send(bad_query.to_message().unwrap()).await.unwrap();
 	  },
 	  "bad_command" => {
 	    println!("Sending bogus command");
-	    let mut bad_command = Command::from_id("NoSuchId", "nocontent".to_string());
-	    client.send(bad_command.get_event_message().unwrap()).await.unwrap();
+	    let mut bad_command = Request::from_id("NoSuchId");
+	    client.send(bad_command.to_message().unwrap()).await.unwrap();
 	  }
 	  "dl" => {
 	    println!("Sending a diagnostics log");
-	    let mut diagnostics_log_command : Command = Command::from_id(
-	      "diagnostics::log_event",
-	      "This is some content".to_string(),
-	    );
-	    client.send(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
+	    let mut diagnostics_request = diagnostics::new_log_event();
+	    client.send(diagnostics_request.to_message().unwrap()).await.unwrap();
 	  },
 	  "db" => {
 	    println!("Sending a slow bomb");
-	    let mut diagnostics_log_command = Command::from_id(
-	      "diagnostics::slow_bomb",
-	      // An example of what content should be doing
-	      "{wait_time: 10}".to_string(),
-	    );
-	    client.send(diagnostics_log_command.get_event_message().unwrap()).await.unwrap();
+	    let mut diagnostics_request = diagnostics::new_slow_bomb();
+	    client.send(diagnostics_request.to_message().unwrap()).await.unwrap();
 	  }
 	  "bc" => {
 	    println!("Creating a buffer");
-	    let mut create_buffer_command = Command::from_id(
-	      "buffers::create_buffer",
-	      "specialbuffer".to_string(),
-	    );
-	    client.send(create_buffer_command.get_event_message().unwrap()).await.unwrap();
+	    let mut create_buffer_request = buffers::new_create_buffer_request("special_buffer");
+	    client.send(create_buffer_request.to_message().unwrap()).await.unwrap();
 	  },
 	  "bl" => {
 	    println!("Asking for a buffers list");
 
-	    let mut list_buffer_query = Query::from_id("buffers::list_buffers");
+	    let mut list_buffer_request = buffers::new_list_buffers_request();
+	    let mut list_buffer_handler = list_buffer_request.get_handler().unwrap();
 
-	    let mut list_buffer_handler = list_buffer_query.get_handler().unwrap();
-
-	    client.send(list_buffer_query.get_event_message().unwrap()).await.unwrap();
+	    client.send(list_buffer_request.to_message().unwrap()).await.unwrap();
 
 	    match list_buffer_handler.handle_response().await {
-	      Ok(response) => {
+	      Ok(mut response) => {
 		println!("Buffer plugin responded");
-		println!("Active buffers: {}", response.content);
+		let list_buffers_response : ListBuffersResponse = response.deserialize()
+		  .expect("Should have a list buffers response");
+		println!("Active buffers: {}", list_buffers_response.list_as_string);
 	      },
 	      Err(msg) => println!("Sender dropped probably: {}", &msg),
 	    };
-	  }
+	  },
 	  "e" => {
 	    println!("e for exit");
 	    break;

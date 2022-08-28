@@ -1,6 +1,6 @@
 use tokio::sync::mpsc;
 
-use crate::event::{EventMessage, EventType};
+use crate::messaging::{Message, MessageType};
 
 use super::Plugin;
 
@@ -16,20 +16,20 @@ impl PluginChannel {
     let (tx, rx) = mpsc::channel(128);
     Self {
       listener: PluginListener {
-	event_listener: rx,
+	listener: rx,
       },
       transmitter: PluginTransmitter {
-	event_transmitter: tx,
-	event_types: plugin.list_event_types(),
+	transmitter: tx,
+	message_types: plugin.list_message_types(),
       },
       plugin,
     }
   }
 
   pub(crate) async fn start(&mut self) {
-    while let Some(event_message) = self.listener.receive().await {
-      println!("Received event for plugin on the PluginChannel: {}", event_message);
-      self.plugin.accept_event(event_message).unwrap();
+    while let Some(message) = self.listener.receive().await {
+      println!("Received message for plugin on the PluginChannel: {}", message);
+      self.plugin.accept_message(message).unwrap();
       
     }
     println!("Plugin stopped listening");
@@ -41,31 +41,31 @@ impl PluginChannel {
 }
 
 struct PluginListener {
-  event_listener: mpsc::Receiver<EventMessage>,
+  listener: mpsc::Receiver<Message>,
 }
 
 impl PluginListener {
-  async fn receive(&mut self) -> Option<EventMessage> {
-    self.event_listener.recv().await
+  async fn receive(&mut self) -> Option<Message> {
+    self.listener.recv().await
   }
 }
 
 #[derive(Clone)]
 pub(crate) struct PluginTransmitter {
-  event_types: Vec<EventType>,
-  event_transmitter: mpsc::Sender<EventMessage>,
+  message_types: Vec<MessageType>,
+  transmitter: mpsc::Sender<Message>,
 }
 
 impl PluginTransmitter {
   
-  pub(crate) async fn send_event(&self, event_message: EventMessage) -> Result<(), mpsc::error::SendError<EventMessage>> {
-    self.event_transmitter.send(event_message).await
+  pub(crate) async fn send_message(&self, message: Message) -> Result<(), mpsc::error::SendError<Message>> {
+    self.transmitter.send(message).await
   }
 
 
-  // TODO can transmitter not own this? Should it really own the event
+  // TODO can transmitter not own this? Should it really own the message
   // types?
-  pub(crate) fn get_event_types(&self) -> Vec<EventType> {
-    self.event_types.clone()
+  pub(crate) fn get_message_types(&self) -> Vec<MessageType> {
+    self.message_types.clone()
   }
 }
