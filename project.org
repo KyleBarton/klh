@@ -486,3 +486,10 @@ Also, parameterize slow bomb and have diagnostics return responses, instead of j
 
 *** TODO Reformat the +event+ message module
 a) it should messaging. b) we'll probably want to move consumer & producer, or request/response, code into different areas.
+
+*** DONE Remove the `Query` concept in favor of Request
+CLOSED: [2022-08-27 Sat 22:40]
+"Query" should only exist as a message type.
+*** DONE Use structured content for the response side of things as well
+CLOSED: [2022-08-28 Sun 10:35]
+I believe this needs to happen before we can merge https://github.com/KyleBarton/klh/pull/4

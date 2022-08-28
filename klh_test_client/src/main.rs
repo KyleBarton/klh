@@ -1,5 +1,6 @@
 use klh_core::klh::{Klh, KlhClient};
 use klh_core::messaging::Request;
+use klh_core::plugins::buffers::ListBuffersResponse;
 use klh_core::plugins::{diagnostics, buffers};
 use std::io;
 
@@ -56,9 +57,11 @@ e: exit
 	    client.send(list_buffer_request.to_message().unwrap()).await.unwrap();
 
 	    match list_buffer_handler.handle_response().await {
-	      Ok(response) => {
+	      Ok(mut response) => {
 		println!("Buffer plugin responded");
-		println!("Active buffers: {}", response.as_string());
+		let list_buffers_response : ListBuffersResponse = response.deserialize()
+		  .expect("Should have a list buffers response");
+		println!("Active buffers: {}", list_buffers_response.list_as_string);
 	      },
 	      Err(msg) => println!("Sender dropped probably: {}", &msg),
 	    };

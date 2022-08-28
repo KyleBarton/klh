@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::{messaging::{MessageType, Message, QueryResponse, Request, MessageContent, }, plugin::Plugin, session::SessionClient};
+use crate::{messaging::{MessageType, Message, Request, MessageContent, }, plugin::Plugin, session::SessionClient};
 
 pub(crate) struct Buffers {
   message_types: Vec<MessageType>,
@@ -11,6 +11,12 @@ pub(crate) struct Buffers {
 #[derive(Serialize, Deserialize)]
 pub struct CreateBufferContent {
   name: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ListBuffersResponse {
+  // TODO obviously
+  pub list_as_string: String,
 }
 
 pub fn new_list_buffers_request() -> Request {
@@ -74,9 +80,17 @@ impl Plugin for Buffers {
 	    content.push_str(&buf_name);
 	  }
 
-	  let response = QueryResponse::from_str(&content);
+	  // let response = ResponseMessage::from_str(&content);
 
-	  message.get_responder().expect("No one should have used the responder yet").respond(response).unwrap();
+	  // message.get_responder().expect("No one should have used the responder yet").respond(response).unwrap();
+	  let response = ListBuffersResponse {
+	    list_as_string: content,
+	  };
+	  message.get_responder()
+	    .expect("No one should have used the responder yet")
+	    .respond(MessageContent::from_content(response))
+	    .unwrap();
+
 	}
 	else {
 	  println!("[BUFFERS] query not found");

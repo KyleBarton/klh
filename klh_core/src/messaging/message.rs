@@ -1,11 +1,11 @@
 use core::fmt;
 
-use super::{MessageType, QueryResponder, MessageContent};
+use super::{MessageType, RequestResponder, MessageContent};
 
 #[derive(Debug)]
 pub struct Message {
   message_type: MessageType,
-  responder: Option<QueryResponder>,
+  responder: Option<RequestResponder>,
   content: Option<MessageContent>,
 }
 
@@ -13,7 +13,7 @@ impl Message {
 
   pub fn new(
     message_type: MessageType,
-    responder: Option<QueryResponder>,
+    responder: Option<RequestResponder>,
     content: Option<MessageContent>,
   ) -> Self {
     Self {
@@ -27,7 +27,7 @@ impl Message {
     self.message_type
   }
 
-  pub fn get_responder(&mut self) -> Option<QueryResponder> {
+  pub fn get_responder(&mut self) -> Option<RequestResponder> {
     self.responder.take()
   }
 
