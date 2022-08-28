@@ -472,7 +472,8 @@ Lots of improvements made:
 
 
 It's probably time for some usability updates, before getting serious about response design:
-*** TODO Add official logging and clean up excessive log messages. Don't go fully into debug logging yet.
+*** DONE Add official logging and clean up excessive log messages. Don't go fully into debug logging yet.
+CLOSED: [2022-08-28 Sun 11:54]
 *** DONE Generally rename "Event" to "Message"
 CLOSED: [2022-08-27 Sat 22:30]
 Obviously this will make the naming of EventMessage interesting. The

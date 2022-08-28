@@ -1,3 +1,4 @@
+use log::{debug, warn};
 use serde::{Serialize, Deserialize};
 
 use crate::{messaging::{MessageType, Message, Request, MessageContent, }, plugin::Plugin, session::SessionClient};
@@ -64,14 +65,14 @@ impl Plugin for Buffers {
   }
 
   fn accept_message(&mut self, mut message: Message) -> Result<(), String> {
-    println!("[BUFFERS] received message");
+    debug!("[BUFFERS] received message");
     match message.get_message_type() {
       MessageType::Query(id) => {
 	// TODO oh god this can be better. Really this is just enough
 	// to prove that the async stuff is wired together. Much
 	// refactoring needed here.
 	if &id[0.."buffers::list_buffers".len()] == "buffers::list_buffers".as_bytes() {
-	  println!("[BUFFERS] got list buffers query via message!");
+	  debug!("[BUFFERS] got list buffers query via message!");
 
 	  let mut content: String = "".to_string();
 
@@ -93,7 +94,7 @@ impl Plugin for Buffers {
 
 	}
 	else {
-	  println!("[BUFFERS] query not found");
+	  warn!("[BUFFERS] query not found");
 	}
 	Ok(())
       }
@@ -103,10 +104,10 @@ impl Plugin for Buffers {
 	  let create_buffer_content : CreateBufferContent = message_content
 	    .deserialize()
 	    .expect("Should be able to deserialize");
-	  println!("[BUFFERS] Creating buffer with name {}", &create_buffer_content.name);
+	  debug!("[BUFFERS] Creating buffer with name {}", &create_buffer_content.name);
 	  self.basic_buffer_names.push(create_buffer_content.name);
 	} else {
-	  println!("[BUFFERS] command not found");
+	  warn!("[BUFFERS] command not found");
 	}
 	Ok(())
       }

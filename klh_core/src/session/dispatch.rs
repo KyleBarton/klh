@@ -4,6 +4,8 @@ use tokio::sync::mpsc;
 
 use crate::{messaging::Message, plugin::{PluginChannel, PluginRegistrar}};
 
+use log::debug;
+
 
 pub(crate) struct DispatchClient {
   transmitter: mpsc::Sender<Message>,
@@ -22,7 +24,7 @@ impl DispatchClient {
 impl DispatchClient {
 
   pub(crate) async fn send(&self, message: Message) -> Result<(), mpsc::error::SendError<Message>> {
-    println!("Sending message: {}", message);
+    debug!("Sending message: {}", message);
     self.transmitter.send(message).await
   }
 }

@@ -1,5 +1,7 @@
 use std::{thread, time};
 
+use log::{debug, warn, info};
+
 use crate::{plugin::Plugin, messaging::{MessageType, Message, Request, MessageContent}, session::SessionClient};
 
 // TODO need a better way to do this
@@ -41,20 +43,20 @@ pub fn new_slow_bomb() -> Request {
 impl Plugin for Diagnostics {
 
   fn accept_message(&mut self, message: Message) -> Result<(), String> {
-    println!("[DIAGNOSTICS] Diagnostics received message");
+    debug!("[DIAGNOSTICS] Diagnostics received message");
     match message.get_message_type() {
       MessageType::Query(_) => {
-	println!("[DIAGNOSTICS] don't know this message");
+	warn!("[DIAGNOSTICS] don't know this message");
 	Ok(())
       },
       MessageType::Command(id) => {
 	if &id[0.."diagnostics::log_event".len()] == "diagnostics::log_event".as_bytes() {
-	  println!("[DIAGNOSTICS] Diagnostics plugin received a (new) log event.");
+	  info!("[DIAGNOSTICS] Diagnostics plugin received a (new) log event.");
 	}
 	if &id[0.."diagnostics::slow_bomb".len()] == "diagnostics::slow_bomb".as_bytes() {
-	  println!("[DIAGNOSTICS] Diagnostics processing a (new) slow bomb for 10 seconds.");
+	  debug!("[DIAGNOSTICS] Diagnostics processing a (new) slow bomb for 10 seconds.");
 	  thread::sleep(time::Duration::from_secs(10));
-	  println!("Finished waiting for 10 seconds");
+	  info!("Finished waiting for 10 seconds");
 	}
 	Ok(())
       }

@@ -1,3 +1,4 @@
+use log::error;
 use tokio::sync::oneshot::{Sender, Receiver,};
 
 use super::MessageContent;
@@ -19,7 +20,7 @@ impl ResponseHandler {
 	match r.await {
 	  Ok(d) => Ok(d),
 	  Err(err) => {
-	    println!("{:?}", err);
+	    error!("Error receiving response: {:?}", err);
 	    Err("Problem receiving response".to_string())
 	  },
 	}

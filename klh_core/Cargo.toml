@@ -9,3 +9,5 @@ edition = "2018"
 tokio = { version = "1.8.4", features = ["full"] }
 bson = "*"
 serde = "*"
+log = "*"
+simplelog = "*"

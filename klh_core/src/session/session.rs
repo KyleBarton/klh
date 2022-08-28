@@ -1,3 +1,5 @@
+use log::info;
+
 use crate::plugin::PluginChannel;
 use crate::plugin::Plugin;
 use crate::plugins::{buffers::Buffers, diagnostics::Diagnostics};
@@ -51,7 +53,7 @@ impl Session {
   }
 
   pub async fn run(&mut self) -> Result<(), String> {
-    println!("Starting plugins");
+    info!("Starting plugins");
     self.discover_plugins().await;
     let readonly_dispatch_options = if self.dispatch.is_uncloned() {
       self.dispatch.clone()

@@ -1,3 +1,4 @@
+use log::{info, debug};
 use tokio::sync::mpsc;
 
 use crate::messaging::{Message, MessageType};
@@ -28,11 +29,11 @@ impl PluginChannel {
 
   pub(crate) async fn start(&mut self) {
     while let Some(message) = self.listener.receive().await {
-      println!("Received message for plugin on the PluginChannel: {}", message);
+      debug!("Received message for plugin on the PluginChannel: {}", message);
       self.plugin.accept_message(message).unwrap();
       
     }
-    println!("Plugin stopped listening");
+    info!("Plugin stopped listening");
   }
 
   pub(crate) fn get_transmitter(&self) -> Result<PluginTransmitter, String> {
