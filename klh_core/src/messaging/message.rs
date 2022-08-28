@@ -1,30 +1,30 @@
 use core::fmt;
 
-use super::{EventType, QueryResponder, MessageContent};
+use super::{MessageType, QueryResponder, MessageContent};
 
 #[derive(Debug)]
-pub struct EventMessage {
-  event_type: EventType,
+pub struct Message {
+  message_type: MessageType,
   responder: Option<QueryResponder>,
   content: Option<MessageContent>,
 }
 
-impl EventMessage {
+impl Message {
 
   pub fn new(
-    event_type: EventType,
+    message_type: MessageType,
     responder: Option<QueryResponder>,
     content: Option<MessageContent>,
   ) -> Self {
     Self {
-      event_type,
+      message_type,
       responder,
       content,
     }
   }
 
-  pub fn get_event_type(&self) -> EventType {
-    self.event_type
+  pub fn get_message_type(&self) -> MessageType {
+    self.message_type
   }
 
   pub fn get_responder(&mut self) -> Option<QueryResponder> {
@@ -36,12 +36,12 @@ impl EventMessage {
   }
 }
 
-impl fmt::Display for EventMessage {
+impl fmt::Display for Message {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f,"EventMessage {{
-  event_type: {},
+    write!(f,"Message {{
+  message_type: {},
   content: {:?},
 }}
-", self.event_type.display_id(), self.content)
+", self.message_type.display_id(), self.content)
   }
 }

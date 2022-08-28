@@ -1,11 +1,11 @@
-use crate::{event::{EventMessage, EventType}, session::SessionClient};
+use crate::{messaging::{Message, MessageType}, session::SessionClient};
 
 
 pub trait Plugin {
 
-  fn accept_event(&mut self, event_message: EventMessage) -> Result<(), String>;
+  fn accept_message(&mut self, message: Message) -> Result<(), String>;
 
-  fn list_event_types(&self) -> Vec<EventType>;
+  fn list_message_types(&self) -> Vec<MessageType>;
 
   fn receive_client(&mut self, client: SessionClient);
 

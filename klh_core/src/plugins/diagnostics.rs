@@ -1,15 +1,15 @@
 use std::{thread, time};
 
-use crate::{plugin::Plugin, event::{EventType, EventMessage, Request, MessageContent}, session::SessionClient};
+use crate::{plugin::Plugin, messaging::{MessageType, Message, Request, MessageContent}, session::SessionClient};
 
 // TODO need a better way to do this
-static COMMAND_EVENT_TYPE_IDS : [&str; 2] = [
+static COMMAND_MESSAGE_TYPE_IDS : [&str; 2] = [
   "diagnostics::log_event",
   "diagnostics::slow_bomb",
 ];
 
 pub(crate) struct Diagnostics {
-  event_types: Vec<EventType>,
+  message_types: Vec<MessageType>,
   session_client: Option<SessionClient>,
 }
 
@@ -17,37 +17,37 @@ impl Diagnostics {
   pub(crate) fn new() -> Self {
 
     //TODO ugly place for this
-    let mut event_types: Vec<EventType> = Vec::new();
+    let mut message_types: Vec<MessageType> = Vec::new();
 
-    for id in COMMAND_EVENT_TYPE_IDS {
-      event_types.push(EventType::command_from_str(id));
+    for id in COMMAND_MESSAGE_TYPE_IDS {
+      message_types.push(MessageType::command_from_str(id));
     }
 
     Diagnostics{
-      event_types,
+      message_types,
       session_client: None,
     }
   }
 }
 
 pub fn new_log_event() -> Request {
-  Request::new(EventType::command_from_str("diagnostics::log_event"), MessageContent::empty())
+  Request::new(MessageType::command_from_str("diagnostics::log_event"), MessageContent::empty())
 }
 
 pub fn new_slow_bomb() -> Request {
-  Request::new(EventType::command_from_str("diagnostics::slow_bomb"), MessageContent::empty())
+  Request::new(MessageType::command_from_str("diagnostics::slow_bomb"), MessageContent::empty())
 }
 
 impl Plugin for Diagnostics {
 
-  fn accept_event(&mut self, event_message: EventMessage) -> Result<(), String> {
-    println!("[DIAGNOSTICS] Diagnostics received event");
-    match event_message.get_event_type() {
-      EventType::Query(_) => {
-	println!("[DIAGNOSTICS] don't know this event");
+  fn accept_message(&mut self, message: Message) -> Result<(), String> {
+    println!("[DIAGNOSTICS] Diagnostics received message");
+    match message.get_message_type() {
+      MessageType::Query(_) => {
+	println!("[DIAGNOSTICS] don't know this message");
 	Ok(())
       },
-      EventType::Command(id) => {
+      MessageType::Command(id) => {
 	if &id[0.."diagnostics::log_event".len()] == "diagnostics::log_event".as_bytes() {
 	  println!("[DIAGNOSTICS] Diagnostics plugin received a (new) log event.");
 	}
@@ -61,8 +61,8 @@ impl Plugin for Diagnostics {
     }
   }
 
-  fn list_event_types(&self) -> Vec<EventType> {
-    self.event_types.clone()
+  fn list_message_types(&self) -> Vec<MessageType> {
+    self.message_types.clone()
   }
 
   // TODO do I actually need the client for diagnostics?

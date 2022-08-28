@@ -2,15 +2,15 @@ use core::panic;
 
 use tokio::sync::mpsc;
 
-use crate::{event::EventMessage, plugin::{PluginChannel, PluginRegistrar}};
+use crate::{messaging::Message, plugin::{PluginChannel, PluginRegistrar}};
 
 
 pub(crate) struct DispatchClient {
-  transmitter: mpsc::Sender<EventMessage>,
+  transmitter: mpsc::Sender<Message>,
 }
 
 impl DispatchClient {
-  pub(crate) fn new(transmitter: mpsc::Sender<EventMessage>) -> Self {
+  pub(crate) fn new(transmitter: mpsc::Sender<Message>) -> Self {
     Self {
       transmitter,
     }
@@ -21,15 +21,15 @@ impl DispatchClient {
 // Needs work
 impl DispatchClient {
 
-  pub(crate) async fn send(&self, event_message: EventMessage) -> Result<(), mpsc::error::SendError<EventMessage>> {
-    println!("Sending event message: {}", event_message);
-    self.transmitter.send(event_message).await
+  pub(crate) async fn send(&self, message: Message) -> Result<(), mpsc::error::SendError<Message>> {
+    println!("Sending message: {}", message);
+    self.transmitter.send(message).await
   }
 }
 
 pub(crate) struct Dispatch {
-  input_receiver: Option<mpsc::Receiver<EventMessage>>,
-  input_transmitter: mpsc::Sender<EventMessage>,
+  input_receiver: Option<mpsc::Receiver<Message>>,
+  input_transmitter: mpsc::Sender<Message>,
   plugin_registrar: PluginRegistrar,
 }
 
@@ -65,13 +65,13 @@ impl Dispatch {
   }
 
   // TODO error handling
-  async fn dispatch_to_plugin(&self, event_message: EventMessage) -> Result<(), String> {
-    self.plugin_registrar.send_to_plugin(event_message).await;
+  async fn dispatch_to_plugin(&self, message: Message) -> Result<(), String> {
+    self.plugin_registrar.send_to_plugin(message).await;
     Ok(())
   }
 
   pub(crate) fn register_plugin(&mut self, plugin_channel: &PluginChannel) -> Result<(), String> {
-    match self.plugin_registrar.register_plugin_event_types(plugin_channel) {
+    match self.plugin_registrar.register_plugin_message_types(plugin_channel) {
       Err(msg) => Err(msg),
       Ok(_) => Ok(()),
     }
@@ -88,10 +88,10 @@ impl Dispatch {
 	return Err("Dispatch is already used.".to_string());
       },
     };
-    while let Some(event_msg) = receiver.recv().await {
+    while let Some(msg) = receiver.recv().await {
       let thread_dispatch = self.clone();
       tokio::spawn(async move {
-	match thread_dispatch.dispatch_to_plugin(event_msg).await {
+	match thread_dispatch.dispatch_to_plugin(msg).await {
 	  Ok(_) => Ok(()),
 	  Err(msg) => Err(msg),
 	}

@@ -473,7 +473,8 @@ Lots of improvements made:
 
 It's probably time for some usability updates, before getting serious about response design:
 *** TODO Add official logging and clean up excessive log messages. Don't go fully into debug logging yet.
-*** TODO Generally rename "Event" to "Message"
+*** DONE Generally rename "Event" to "Message"
+CLOSED: [2022-08-27 Sat 22:30]
 Obviously this will make the naming of EventMessage interesting. The
 concept of an event doesn't really make sense; they are messages,
 which contain requests and solicit responses. An "event" may end up
@@ -483,5 +484,5 @@ EventType --> MessageType, and such
 *** TODO Simplify the "awaitResponse" flow for requests into a fluent interface.
 Also, parameterize slow bomb and have diagnostics return responses, instead of just logging them.
 
-*** TODO Reformat the event module
+*** TODO Reformat the +event+ message module
 a) it should messaging. b) we'll probably want to move consumer & producer, or request/response, code into different areas.

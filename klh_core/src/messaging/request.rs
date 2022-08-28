@@ -2,7 +2,7 @@ use bson::{Bson, Deserializer};
 use serde::{Serialize, Deserialize};
 use tokio::sync::oneshot::{Sender, Receiver, self,};
 
-use super::{EventMessage, EventType};
+use super::{Message, MessageType};
 
 #[derive(Debug)]
 pub struct MessageContent {
@@ -37,17 +37,17 @@ impl MessageContent {
 }
 
 pub struct Request {
-  event_type: EventType,
+  message_type: MessageType,
   sender: Option<QueryResponder>,
   receiver: Option<QueryHandler>,
   content: Option<MessageContent>,
 }
 
 impl Request {
-  pub fn new(event_type: EventType, content: MessageContent) -> Self {
+  pub fn new(message_type: MessageType, content: MessageContent) -> Self {
     let (tx, rx) = oneshot::channel();
     Self {
-      event_type,
+      message_type,
       sender: Some(QueryResponder::new(Some(tx))),
       receiver: Some(QueryHandler::new(Some(rx))),
       content: Some(content),
@@ -57,22 +57,22 @@ impl Request {
   pub fn from_id(id: &str) -> Self {
     let (tx, rx) = oneshot::channel();
     Self {
-      event_type: EventType::query_from_str(id),
+      message_type: MessageType::query_from_str(id),
       sender: Some(QueryResponder::new(Some(tx))),
       receiver: Some(QueryHandler::new(Some(rx))),
       content: None,
     }
   }
 
-  pub fn to_event_message(&mut self) -> Result<EventMessage, String> {
+  pub fn to_message(&mut self) -> Result<Message, String> {
     match self.content.take() {
-      None => Ok(EventMessage::new(
-	self.event_type,
+      None => Ok(Message::new(
+	self.message_type,
 	self.sender.take(),
 	None,
       )),
-      Some(content) => Ok(EventMessage::new(
-	self.event_type,
+      Some(content) => Ok(Message::new(
+	self.message_type,
 	self.sender.take(),
 	Some(content),
       ))

@@ -1,4 +1,4 @@
-use crate::event::EventMessage;
+use crate::messaging::Message;
 
 use super::dispatch::DispatchClient;
 
@@ -15,9 +15,9 @@ impl SessionClient {
     }
   }
 
-  pub async fn send(&mut self, event_message: EventMessage) -> Result<(), String> {
-    match self.dispatch_client.send(event_message).await {
-      Err(_) => Err("Issue sending event message to session".to_string()),
+  pub async fn send(&mut self, message: Message) -> Result<(), String> {
+    match self.dispatch_client.send(message).await {
+      Err(_) => Err("Issue sending message to session".to_string()),
       Ok(_) => Ok(())
     }
   }

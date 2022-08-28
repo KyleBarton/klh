@@ -1,5 +1,5 @@
 use klh_core::klh::{Klh, KlhClient};
-use klh_core::event::Request;
+use klh_core::messaging::Request;
 use klh_core::plugins::{diagnostics, buffers};
 use std::io;
 
@@ -25,27 +25,27 @@ e: exit
 	  "bad_query" => {
 	    println!("Sending bogus query");
 	    let mut bad_query = Request::from_id("NoSuchId");
-	    client.send(bad_query.to_event_message().unwrap()).await.unwrap();
+	    client.send(bad_query.to_message().unwrap()).await.unwrap();
 	  },
 	  "bad_command" => {
 	    println!("Sending bogus command");
 	    let mut bad_command = Request::from_id("NoSuchId");
-	    client.send(bad_command.to_event_message().unwrap()).await.unwrap();
+	    client.send(bad_command.to_message().unwrap()).await.unwrap();
 	  }
 	  "dl" => {
 	    println!("Sending a diagnostics log");
 	    let mut diagnostics_request = diagnostics::new_log_event();
-	    client.send(diagnostics_request.to_event_message().unwrap()).await.unwrap();
+	    client.send(diagnostics_request.to_message().unwrap()).await.unwrap();
 	  },
 	  "db" => {
 	    println!("Sending a slow bomb");
 	    let mut diagnostics_request = diagnostics::new_slow_bomb();
-	    client.send(diagnostics_request.to_event_message().unwrap()).await.unwrap();
+	    client.send(diagnostics_request.to_message().unwrap()).await.unwrap();
 	  }
 	  "bc" => {
 	    println!("Creating a buffer");
 	    let mut create_buffer_request = buffers::new_create_buffer_request("special_buffer");
-	    client.send(create_buffer_request.to_event_message().unwrap()).await.unwrap();
+	    client.send(create_buffer_request.to_message().unwrap()).await.unwrap();
 	  },
 	  "bl" => {
 	    println!("Asking for a buffers list");
@@ -53,7 +53,7 @@ e: exit
 	    let mut list_buffer_request = buffers::new_list_buffers_request();
 	    let mut list_buffer_handler = list_buffer_request.get_handler().unwrap();
 
-	    client.send(list_buffer_request.to_event_message().unwrap()).await.unwrap();
+	    client.send(list_buffer_request.to_message().unwrap()).await.unwrap();
 
 	    match list_buffer_handler.handle_response().await {
 	      Ok(response) => {
