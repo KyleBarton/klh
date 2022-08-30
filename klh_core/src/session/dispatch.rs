@@ -92,6 +92,7 @@ impl Dispatch {
       },
     };
     while let Some(msg) = receiver.recv().await {
+      debug!("Diagnostics Received message: {}", msg);
       let thread_dispatch = self.clone();
       tokio::spawn(async move {
 	match thread_dispatch.dispatch_to_plugin(msg).await {

@@ -1,6 +1,6 @@
 use std::fs;
 
-use log::info;
+use log::debug;
 
 use crate::{messaging::Request, session::{Session, SessionClient}};
 
@@ -28,15 +28,10 @@ pub struct Klh {
 
 impl Klh {
   pub fn new() -> Self {
-
-    simplelog::CombinedLogger::init(
-      vec![
-	simplelog::WriteLogger::new(
-	  simplelog::LevelFilter::Debug,
-	  simplelog::Config::default(),
-	  fs::File::create("klh.log").unwrap(),
-	)
-      ]
+    simplelog::WriteLogger::init(
+      simplelog::LevelFilter::Debug,
+      simplelog::Config::default(),
+      fs::File::create("klh.log").unwrap(),
     ).unwrap();
 
     let session = Session::new();
@@ -47,7 +42,7 @@ impl Klh {
 
   pub async fn start(&mut self) {
     self.session.run().await.unwrap();
-    info!("Session started");
+    debug!("Session started successfully");
     
   }
 

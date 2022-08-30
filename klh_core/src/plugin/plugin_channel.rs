@@ -29,7 +29,7 @@ impl PluginChannel {
 
   pub(crate) async fn start(&mut self) {
     while let Some(message) = self.listener.receive().await {
-      debug!("Received message for plugin on the PluginChannel: {}", message);
+      debug!("Received message on PluginChannel: {}", message);
       self.plugin.accept_message(message).unwrap();
       
     }

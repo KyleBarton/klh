@@ -44,15 +44,13 @@ impl Plugin for Buffers {
   }
 
   fn accept_message(&mut self, mut message: Message) -> Result<(), String> {
-    debug!("[BUFFERS] received message");
+    debug!("[BUFFERS] received message {}", message);
     match message.get_message_type() {
       MessageType::Query(id) => {
 	// TODO oh god this can be better. Really this is just enough
 	// to prove that the async stuff is wired together. Much
 	// refactoring needed here.
 	if &id[0.."buffers::list_buffers".len()] == "buffers::list_buffers".as_bytes() {
-	  debug!("[BUFFERS] got list buffers query via message!");
-
 	  let mut content: String = "".to_string();
 
 	  for buf_name in self.basic_buffer_names.iter() {
@@ -70,7 +68,7 @@ impl Plugin for Buffers {
 
 	}
 	else {
-	  warn!("[BUFFERS] query not found");
+	  warn!("[BUFFERS] message type id not found: {}", &message.get_message_type());
 	}
 	Ok(())
       }
@@ -83,7 +81,7 @@ impl Plugin for Buffers {
 	  debug!("[BUFFERS] Creating buffer with name {}", &create_buffer_content.name);
 	  self.basic_buffer_names.push(create_buffer_content.name);
 	} else {
-	  warn!("[BUFFERS] command not found");
+	  warn!("[BUFFERS] message type id not found: {}", &message.get_message_type());
 	}
 	Ok(())
       }

@@ -33,14 +33,14 @@ impl PluginRegistrar {
   }
 
   pub(crate) async fn send_to_plugin(&self, message: Message) {
-    debug!("Trying to find message type {}", message.get_message_type());
+    debug!("Plugin registrar received message {}", message);
     match self.plugin_type_map.get(&message.get_message_type()) {
       Some(listener) => {
-	debug!("Found plugin for message type, sending along");
+	debug!("Found listener for message {}", message);
 	listener.send_message(message).await.unwrap();
       },
       None => {
-	warn!("Could not find a plugin for this message: {}", message.get_message_type());
+	warn!("Could not find listener message {}", message);
 	()
       },
     }
