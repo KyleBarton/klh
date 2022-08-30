@@ -3,6 +3,7 @@ use crate::messaging::Message;
 use super::dispatch::DispatchClient;
 
 
+#[derive(Clone)]
 pub struct SessionClient{
   dispatch_client: DispatchClient,
 }

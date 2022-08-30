@@ -7,6 +7,7 @@ use crate::{messaging::Message, plugin::{PluginChannel, PluginRegistrar}};
 use log::debug;
 
 
+#[derive(Clone)]
 pub(crate) struct DispatchClient {
   transmitter: mpsc::Sender<Message>,
 }

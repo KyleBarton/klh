@@ -39,11 +39,12 @@ e: exit
 	    client.send(diagnostics_request).await.unwrap();
 	  },
 	  "db" => {
-	    println!("Sending a slow bomb");
-	    let mut diagnostics_request = diagnostics::new_slow_bomb(10);
-	    let mut slow_bomb_handler = diagnostics_request.get_handler().unwrap();
-	    client.send(diagnostics_request).await.unwrap();
+	    let mut thread_client = client.clone();
 	    tokio::spawn(async move {
+	      println!("Sending a slow bomb");
+	      let mut diagnostics_request = diagnostics::new_slow_bomb(10);
+	      let mut slow_bomb_handler = diagnostics_request.get_handler().unwrap();
+	      thread_client.send(diagnostics_request).await.unwrap();
 	      match slow_bomb_handler.handle_response().await {
 		Err(msg) => println!("Problem handling slow bomb response: {}", &msg),
 		Ok(_) => {

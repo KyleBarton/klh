@@ -4,6 +4,7 @@ use log::info;
 
 use crate::{messaging::Request, session::{Session, SessionClient}};
 
+#[derive(Clone)]
 pub struct KlhClient {
   session_client: SessionClient,
 }
