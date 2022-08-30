@@ -2,7 +2,7 @@ use std::fs;
 
 use log::info;
 
-use crate::{messaging::{Message, Request}, session::{Session, SessionClient}};
+use crate::{messaging::Request, session::{Session, SessionClient}};
 
 pub struct KlhClient {
   session_client: SessionClient,
@@ -15,12 +15,8 @@ impl KlhClient {
     }
   }
 
-  pub async fn send(&mut self, message: Message) -> Result<(), String> {
-    self.session_client.send(message).await
-  }
-
   // TODO
-  pub async fn send_v2(&mut self, mut request: Request) -> Result<(), String> {
+  pub async fn send(&mut self, mut request: Request) -> Result<(), String> {
     self.session_client.send(request.to_message().unwrap()).await
   }
 }
