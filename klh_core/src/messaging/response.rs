@@ -8,7 +8,7 @@ pub struct ResponseHandler {
 }
 
 impl ResponseHandler {
-  pub fn new(receiver: Option<Receiver<MessageContent>>) -> Self {
+  pub(crate) fn new(receiver: Option<Receiver<MessageContent>>) -> Self {
     Self {
       receiver,
     }
@@ -35,7 +35,7 @@ pub struct RequestResponder {
 }
 
 impl RequestResponder {
-  pub fn new(sender: Option<Sender<MessageContent>>) -> Self {
+  pub(crate) fn new(sender: Option<Sender<MessageContent>>) -> Self {
     Self {
       sender,
     }

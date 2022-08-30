@@ -1,9 +1,12 @@
 use std::{thread, time};
 
 use log::{debug, warn, info};
-use serde::{Serialize, Deserialize};
 
-use crate::{plugin::Plugin, messaging::{MessageType, Message, Request, MessageContent}, session::SessionClient};
+use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageContent}, session::SessionClient};
+
+
+pub mod requests;
+pub mod models;
 
 // TODO need a better way to do this
 static COMMAND_MESSAGE_TYPE_IDS : [&str; 2] = [
@@ -17,7 +20,7 @@ pub(crate) struct Diagnostics {
 }
 
 impl Diagnostics {
-  pub(crate) fn new() -> Self {
+  pub fn new() -> Self {
 
     //TODO ugly place for this
     let mut message_types: Vec<MessageType> = Vec::new();
@@ -32,24 +35,6 @@ impl Diagnostics {
     }
   }
 }
-
-pub fn new_log_event() -> Request {
-  Request::new(MessageType::command_from_str("diagnostics::log_event"), MessageContent::empty())
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SlowBombContent {
-  interval_seconds: u64,
-}
-
-pub fn new_slow_bomb(interval_seconds: u64) -> Request {
-  Request::new(MessageType::command_from_str("diagnostics::slow_bomb"), MessageContent::from_content(
-    SlowBombContent {
-      interval_seconds,
-    }
-  ))
-}
-
 impl Plugin for Diagnostics {
 
   fn accept_message(&mut self, mut message: Message) -> Result<(), String> {
@@ -65,7 +50,7 @@ impl Plugin for Diagnostics {
 	}
 	if &id[0.."diagnostics::slow_bomb".len()] == "diagnostics::slow_bomb".as_bytes() {
 	  debug!("[DIAGNOSTICS] Diagnostics processing a (new) slow bomb for 10 seconds.");
-	  let content: SlowBombContent = message.get_content()
+	  let content: models::SlowBombContent = message.get_content()
 	    .expect("Should have content")
 	    .deserialize()
 	    .expect("Should have slow bomb content");

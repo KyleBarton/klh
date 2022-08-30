@@ -1,6 +1,6 @@
 use klh_core::klh::{Klh, KlhClient};
 use klh_core::messaging::Request;
-use klh_core::plugins::buffers::ListBuffersResponse;
+use klh_core::plugins::buffers::models::ListBuffersResponse;
 use klh_core::plugins::{diagnostics, buffers};
 use std::io;
 
@@ -35,14 +35,14 @@ e: exit
 	  }
 	  "dl" => {
 	    println!("Sending a diagnostics log");
-	    let diagnostics_request = diagnostics::new_log_event();
+	    let diagnostics_request = diagnostics::requests::new_log_event();
 	    client.send(diagnostics_request).await.unwrap();
 	  },
 	  "db" => {
 	    let mut thread_client = client.clone();
 	    tokio::spawn(async move {
 	      println!("Sending a slow bomb");
-	      let mut diagnostics_request = diagnostics::new_slow_bomb(10);
+	      let mut diagnostics_request = diagnostics::requests::new_slow_bomb(10);
 	      let mut slow_bomb_handler = diagnostics_request.get_handler().unwrap();
 	      thread_client.send(diagnostics_request).await.unwrap();
 	      match slow_bomb_handler.handle_response().await {
@@ -55,13 +55,13 @@ e: exit
 	  }
 	  "bc" => {
 	    println!("Creating a buffer");
-	    let create_buffer_request = buffers::new_create_buffer_request("special_buffer");
+	    let create_buffer_request = buffers::requests::new_create_buffer_request("special_buffer");
 	    client.send(create_buffer_request).await.unwrap();
 	  },
 	  "bl" => {
 	    println!("Asking for a buffers list");
 
-	    let mut list_buffer_request = buffers::new_list_buffers_request();
+	    let mut list_buffer_request = buffers::requests::new_list_buffers_request();
 	    let mut list_buffer_handler = list_buffer_request.get_handler().unwrap();
 
 	    client.send(list_buffer_request).await.unwrap();

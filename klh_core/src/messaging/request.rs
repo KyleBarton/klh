@@ -30,7 +30,7 @@ impl Request {
     }
   }
 
-  pub fn to_message(&mut self) -> Result<Message, String> {
+  pub(crate) fn to_message(&mut self) -> Result<Message, String> {
     match self.content.take() {
       None => Ok(Message::new(
 	self.message_type,

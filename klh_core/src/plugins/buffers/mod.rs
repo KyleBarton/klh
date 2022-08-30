@@ -1,7 +1,10 @@
 use log::{debug, warn};
-use serde::{Serialize, Deserialize};
 
-use crate::{messaging::{MessageType, Message, Request, MessageContent, }, plugin::Plugin, session::SessionClient};
+use crate::{messaging::{MessageType, Message, MessageContent, }, plugin::Plugin, session::SessionClient};
+
+
+pub mod requests;
+pub mod models;
 
 pub(crate) struct Buffers {
   message_types: Vec<MessageType>,
@@ -9,32 +12,8 @@ pub(crate) struct Buffers {
   basic_buffer_names: Vec<String>,
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct CreateBufferContent {
-  name: String,
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct ListBuffersResponse {
-  // TODO obviously
-  pub list_as_string: String,
-}
-
-pub fn new_list_buffers_request() -> Request {
-  Request::new(MessageType::query_from_str("buffers::list_buffers"), MessageContent::empty())
-}
-
-pub fn new_create_buffer_request(name: &str) -> Request {
-  let create_buffer_content = CreateBufferContent {
-    name: name.to_string(),
-  };
-  let content = MessageContent::from_content(create_buffer_content);
-
-  Request::new(MessageType::command_from_str("buffers::create_buffer"), content)
-}
-
 impl Buffers {
-  pub(crate) fn new() -> Self {
+  pub fn new() -> Self {
     let mut message_types: Vec<MessageType> = Vec::new();
 
     message_types.push(MessageType::command_from_str("buffers::create_buffer"));
@@ -81,10 +60,7 @@ impl Plugin for Buffers {
 	    content.push_str(&buf_name);
 	  }
 
-	  // let response = ResponseMessage::from_str(&content);
-
-	  // message.get_responder().expect("No one should have used the responder yet").respond(response).unwrap();
-	  let response = ListBuffersResponse {
+	  let response = models::ListBuffersResponse {
 	    list_as_string: content,
 	  };
 	  message.get_responder()
@@ -101,7 +77,7 @@ impl Plugin for Buffers {
       MessageType::Command(id) => {
 	if &id[0.."buffers::create_buffer".len()] == "buffers::create_buffer".as_bytes() {
 	  let mut message_content = message.get_content().expect("Content should be present");
-	  let create_buffer_content : CreateBufferContent = message_content
+	  let create_buffer_content : models::CreateBufferContent = message_content
 	    .deserialize()
 	    .expect("Should be able to deserialize");
 	  debug!("[BUFFERS] Creating buffer with name {}", &create_buffer_content.name);
