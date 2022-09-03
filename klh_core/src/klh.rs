@@ -16,7 +16,6 @@ impl KlhClient {
     }
   }
 
-  // TODO
   pub async fn send(&mut self, mut request: Request) -> Result<(), String> {
     self.session_client.send(request.to_message().unwrap()).await
   }
