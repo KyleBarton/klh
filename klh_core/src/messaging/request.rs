@@ -20,10 +20,10 @@ impl Request {
     }
   }
 
-  pub fn from_id(id: &str) -> Self {
+  pub fn from_message_type(message_type: MessageType) -> Self {
     let (tx, rx) = oneshot::channel();
     Self {
-      message_type: MessageType::query_from_str(id),
+      message_type,
       sender: Some(RequestResponder::new(Some(tx))),
       receiver: Some(ResponseHandler::new(Some(rx))),
       content: None,

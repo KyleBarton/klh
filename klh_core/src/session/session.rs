@@ -10,6 +10,7 @@ use super::dispatch::Dispatch;
 
 pub struct Session {
   dispatch: Dispatch,
+  plugins: Option<Vec<Box<dyn Plugin + Send>>>,
 }
 
 
@@ -17,6 +18,7 @@ impl Session {
   pub fn new() -> Self {
     Session{
       dispatch: Dispatch::new(),
+      plugins: Some(Vec::new()),
     }
   }
 
@@ -24,7 +26,7 @@ impl Session {
   // as well as load the core functional plugins. For now, core
   // functional plugins are hard-coded. Dynamic memory appropriate
   // here as we are dealing with variou plugins at runtime here.
-  async fn discover_plugins(&mut self) {
+  async fn start_core_plugins(&mut self) {
     debug!("Loading core plugins");
     // Diagnostics
     debug!("Started loading Diagnostics plugin");
@@ -59,8 +61,37 @@ impl Session {
     debug!("Buffers plugin listening");
   }
 
+
+  pub fn register_plugins(&mut self, mut plugins: Vec<Box<dyn Plugin + Send>>) {
+    match self.plugins.take() {
+      None => self.plugins = Some(plugins),
+      Some(mut p) => {
+	p.append(&mut plugins);
+	self.plugins = Some(p);
+      }
+    }
+  }
+
+  async fn start_plugins(&mut self) {
+    debug!("Starting provided plugins");
+    match self.plugins.take() {
+      None => panic!("no plugins"),
+      Some(plugins) => {
+	for plugin in plugins {
+	  let mut plugin_channel: PluginChannel = PluginChannel::new(plugin);
+	  self.dispatch.register_plugin(&plugin_channel).unwrap();
+	  tokio::spawn(async move {
+	    plugin_channel.start().await
+	  });
+	}
+      }
+    }
+  }
+
   pub async fn run(&mut self) -> Result<(), String> {
-    self.discover_plugins().await;
+    self.start_core_plugins().await;
+    self.start_plugins().await;
+
     let readonly_dispatch_options = if self.dispatch.is_uncloned() {
       self.dispatch.clone()
     } else {

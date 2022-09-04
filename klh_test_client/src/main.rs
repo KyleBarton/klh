@@ -1,8 +1,8 @@
 use klh_core::klh::{Klh, KlhClient};
-use klh_core::messaging::Request;
+use klh_core::messaging::{Request, MessageType};
 use klh_core::plugins::buffers::models::ListBuffersResponse;
 use klh_core::plugins::{diagnostics, buffers};
-use std::io;
+use std::{io, fs};
 
 async fn prompt_and_read(
   mut client: KlhClient,
@@ -25,12 +25,12 @@ e: exit
 	match input.as_str().trim() {
 	  "bad_query" => {
 	    println!("Sending bogus query");
-	    let bad_query = Request::from_id("NoSuchId");
+	    let bad_query = Request::from_message_type(MessageType::query_from_str("NoSuchId"));
 	    client.send(bad_query).await.unwrap();
 	  },
 	  "bad_command" => {
 	    println!("Sending bogus command");
-	    let bad_command = Request::from_id("NoSuchId");
+	    let bad_command = Request::from_message_type(MessageType::command_from_str("NoSuchId"));
 	    client.send(bad_command).await.unwrap();
 	  }
 	  "dl" => {
@@ -96,11 +96,18 @@ e: exit
 // What if you wanted it to actually follow the public interface
 #[tokio::main]
 async fn main() {
+  // Set up some logging.
+  simplelog::WriteLogger::init(
+    simplelog::LevelFilter::Debug,
+    simplelog::Config::default(),
+    fs::File::create("klh.log").unwrap(),
+  ).unwrap();
+  
   let mut klh = Klh::new();
 
   klh.start().await;
 
-  let client : KlhClient = klh.get_client().unwrap();
+  let client : KlhClient = klh.get_client();
 
   prompt_and_read(
     client,
