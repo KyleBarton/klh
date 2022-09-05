@@ -18,7 +18,7 @@ impl Session {
   pub fn new() -> Self {
     Session{
       dispatch: Dispatch::new(),
-      plugins: Some(Vec::new()),
+      plugins: None,
     }
   }
 
@@ -26,49 +26,33 @@ impl Session {
   // as well as load the core functional plugins. For now, core
   // functional plugins are hard-coded. Dynamic memory appropriate
   // here as we are dealing with variou plugins at runtime here.
-  async fn start_core_plugins(&mut self) {
-    debug!("Loading core plugins");
+  async fn register_core_plugins(&mut self) {
+    debug!("Registering core plugins");
+
     // Diagnostics
-    debug!("Started loading Diagnostics plugin");
-    let mut diagnostics_plugin : Diagnostics = Diagnostics::new();
+    debug!("Registering Diagnostics plugin");
+    let diagnostics_plugin : Diagnostics = Diagnostics::new();
     
-    diagnostics_plugin.receive_client(self.get_client().unwrap());
-
-    let mut diagnostics_channel: PluginChannel = PluginChannel::new(Box::new(diagnostics_plugin));
-
-    self.dispatch.register_plugin(&diagnostics_channel).unwrap();
-    debug!("Diagnostics plugin loaded");
+    self.register_plugin(Box::new(diagnostics_plugin));
+    debug!("Diagnostics plugin registered");
 
 
     // Buffers
-    debug!("Started loading Buffers plugin");
-    let mut buffers_plugin : Buffers = Buffers::new();
+    debug!("Registering Buffers plugin");
+    let buffers_plugin : Buffers = Buffers::new();
 
-    buffers_plugin.receive_client(self.get_client().unwrap());
-
-    let mut buffers_channel: PluginChannel = PluginChannel::new(Box::new(buffers_plugin));
-
-    self.dispatch.register_plugin(&buffers_channel).unwrap();
-    debug!("Buffers plugin loaded");
-
-    tokio::spawn(async move {
-      diagnostics_channel.start().await
-    });
-    debug!("Diagnostics plugin listening");
-    tokio::spawn(async move {
-      buffers_channel.start().await
-    });
-    debug!("Buffers plugin listening");
+    self.register_plugin(Box::new(buffers_plugin));
+    debug!("Buffers plugin registered");
   }
 
-
-  pub fn register_plugins(&mut self, mut plugins: Vec<Box<dyn Plugin + Send>>) {
+  pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
+    plugin.receive_client(self.get_client().unwrap());
     match self.plugins.take() {
-      None => self.plugins = Some(plugins),
+      None => self.plugins = Some(vec!(plugin)),
       Some(mut p) => {
-	p.append(&mut plugins);
+	p.push(plugin);
 	self.plugins = Some(p);
-      }
+      },
     }
   }
 
@@ -89,7 +73,7 @@ impl Session {
   }
 
   pub async fn run(&mut self) -> Result<(), String> {
-    self.start_core_plugins().await;
+    self.register_core_plugins().await;
     self.start_plugins().await;
 
     let readonly_dispatch_options = if self.dispatch.is_uncloned() {
@@ -116,5 +100,36 @@ impl Session {
 	Ok(SessionClient::new(client))
       }
     }
+  }
+}
+
+#[cfg(test)]
+mod session_tests {
+  use super::Session;
+  use crate::plugin::plugin_test_utility::TestPlugin;
+
+  #[test]
+  fn session_should_have_no_plugins_when_new() {
+    let session = Session::new();
+    assert!(session.plugins.is_none())
+  }
+
+  #[test]
+  fn session_should_add_one_plugin() {
+    let mut session = Session::new();
+    session.register_plugin(Box::new(TestPlugin::new()));
+
+    assert!(session.plugins.is_some());
+    assert_eq!(session.plugins.expect("").len(), 1)
+  }
+
+  #[test]
+  fn session_should_add_two_plugins() {
+    let mut session = Session::new();
+    session.register_plugin(Box::new(TestPlugin::new()));
+    session.register_plugin(Box::new(TestPlugin::new()));
+
+    assert!(session.plugins.is_some());
+    assert_eq!(session.plugins.expect("").len(), 2);
   }
 }

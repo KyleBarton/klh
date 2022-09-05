@@ -21,7 +21,6 @@ impl KlhClient {
 
 pub struct Klh {
   session: Session,
-  plugins: Option<Vec<Box<dyn Plugin + Send>>>,
 }
 
 impl Klh {
@@ -29,27 +28,16 @@ impl Klh {
     let session = Session::new();
     Self {
       session,
-      plugins: None,
     }
   }
 
   pub async fn start(&mut self) {
-    match self.plugins.take() {
-      None => (),
-      Some(plugin_list) => self.session.register_plugins(plugin_list),
-    };
     self.session.run().await.unwrap();
     debug!("Session started successfully");
   }
 
   pub fn add_plugin(&mut self, plugin: Box<dyn Plugin + Send>) {
-    match self.plugins.take() {
-      None => self.plugins = Some(vec!(plugin)),
-      Some(mut plugin_list) => {
-	plugin_list.push(plugin);
-	self.plugins = Some(plugin_list);
-      }
-    }
+    self.session.register_plugin(plugin)
   }
 
   pub fn get_client(&self) -> KlhClient {
@@ -57,4 +45,72 @@ impl Klh {
     let client = KlhClient::new(self.session.get_client().unwrap());
     client
   }
+}
+
+
+#[cfg(test)]
+mod end_to_end_tests {
+  use crate::klh::Klh;
+  use crate::messaging::{Request, MessageType};
+  use crate::plugin::plugin_test_utility::{TestPlugin, COMMAND_ID, COMMAND_RESPONSE, QUERY_ID, QUERY_RESPONSE};
+
+  // Option thing to set up if you need to debug
+  fn setup_logging() {
+    simplelog::TermLogger::init(
+      simplelog::LevelFilter::Debug,
+      simplelog::Config::default(),
+      simplelog::TerminalMode::Stdout,
+      simplelog::ColorChoice::Auto,
+    ).unwrap();
+  }
+
+  #[tokio::test]
+  async fn should_send_command_request_and_get_response() {
+    let mut klh = Klh::new();
+
+    let test_plugin = TestPlugin::new();
+
+    klh.add_plugin(Box::new(test_plugin));
+
+    let mut klh_client = klh.get_client();
+    tokio::spawn(async move {
+      klh.start().await;
+    }).await.unwrap();
+
+    let mut request = Request::from_message_type(MessageType::command_from_str(COMMAND_ID));
+    let mut handler = request.get_handler().unwrap();
+
+    klh_client.send(request).await.unwrap();
+
+    let mut response = handler.handle_response().await.unwrap();
+
+    let response_deserialized: String = response.deserialize().expect("Serialize correctly");
+    assert_eq!(COMMAND_RESPONSE.to_string(), response_deserialized);
+  }
+
+  #[tokio::test]
+  async fn should_send_query_request_and_get_response() {
+    let mut klh = Klh::new();
+    
+    let test_plugin = TestPlugin::new();
+
+    klh.add_plugin(Box::new(test_plugin));
+
+    let mut klh_client = klh.get_client();
+    tokio::spawn(async move {
+      klh.start().await;
+    }).await.unwrap();
+
+    let mut request = Request::from_message_type(MessageType::query_from_str(QUERY_ID));
+    let mut handler = request.get_handler().unwrap();
+
+    klh_client.send(request).await.unwrap();
+
+    let mut response = handler.handle_response().await.unwrap();
+
+    let response_deserialized: String = response.deserialize().expect("Serialize correctly");
+    assert_eq!(QUERY_RESPONSE.to_string(), response_deserialized);
+  }
+
+  
 }
