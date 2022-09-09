@@ -1,4 +1,5 @@
 use log::debug;
+use log::error;
 
 use crate::plugin::PluginChannel;
 use crate::plugin::Plugin;
@@ -9,15 +10,19 @@ use super::dispatch::Dispatch;
 
 
 pub struct Session {
-  dispatch: Dispatch,
+  dispatch: Option<Dispatch>,
+  client: SessionClient,
   plugins: Option<Vec<Box<dyn Plugin + Send>>>,
 }
 
 
 impl Session {
   pub fn new() -> Self {
+    let dispatch = Dispatch::new();
+    let client = SessionClient::new(dispatch.get_client().unwrap());
     Session{
-      dispatch: Dispatch::new(),
+      dispatch: Some(dispatch),
+      client,
       plugins: None,
     }
   }
@@ -46,7 +51,7 @@ impl Session {
   }
 
   pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
-    plugin.receive_client(self.get_client().unwrap());
+    plugin.receive_client(self.get_client());
     match self.plugins.take() {
       None => self.plugins = Some(vec!(plugin)),
       Some(mut p) => {
@@ -58,55 +63,131 @@ impl Session {
 
   async fn start_plugins(&mut self) {
     debug!("Starting provided plugins");
-    match self.plugins.take() {
-      None => panic!("no plugins"),
-      Some(plugins) => {
-	for plugin in plugins {
-	  let mut plugin_channel: PluginChannel = PluginChannel::new(plugin);
-	  self.dispatch.register_plugin(&plugin_channel).unwrap();
-	  tokio::spawn(async move {
-	    plugin_channel.start().await
-	  });
+    match self.dispatch.take() {
+      None => error!("Tried to start plugins after session started"),
+      Some(mut dispatch) => {
+	match self.plugins.take() {
+	  None => debug!("No plugins to load"),
+	  Some(plugins) => {
+	    for plugin in plugins {
+	      let mut plugin_channel: PluginChannel = PluginChannel::new(plugin);
+	      dispatch.register_plugin(&plugin_channel).unwrap();
+	      tokio::spawn(async move {
+		plugin_channel.start().await
+	      });
+	    }
+	    self.dispatch = Some(dispatch);
+	  }
 	}
       }
     }
+    
   }
-
   pub async fn run(&mut self) -> Result<(), String> {
     self.register_core_plugins().await;
     self.start_plugins().await;
 
-    let readonly_dispatch_options = if self.dispatch.is_uncloned() {
-      self.dispatch.clone()
-    } else {
-      return Err(String::from("Cannot call session run more than once"));
-    };
-
-    let mut listener_dispatch = self.dispatch.clone_once();
-    
-    tokio::spawn( async move {
-      listener_dispatch.start_listener().await.unwrap()
-    });
-
-    self.dispatch = readonly_dispatch_options;
-
-    Ok(())
-  }
-
-  pub fn get_client(&self) -> Result<SessionClient, String> {
-    match self.dispatch.get_client() {
-      Err(msg) => Err(msg),
-      Ok(client) => {
-	Ok(SessionClient::new(client))
+    match self.dispatch.take() {
+      None => Err("Session already used".to_string()),
+      Some(mut dispatch) => {
+	tokio::spawn(async move {
+	  dispatch.start_listener().await.unwrap()
+	});
+	Ok(())
       }
     }
+  }
+
+  pub fn get_client(&self) -> SessionClient {
+    self.client.clone()
   }
 }
 
 #[cfg(test)]
 mod session_tests {
+  use rstest::*;
   use super::Session;
-  use crate::plugin::plugin_test_utility::TestPlugin;
+  use crate::{plugin::plugin_test_utility::{TestPlugin, QUERY_ID, QUERY_RESPONSE}, messaging::{Request, MessageType}};
+
+  #[fixture]
+  pub fn session_with_plugin_fixture() -> Session {
+    let mut session = Session::new();
+    let plugin: TestPlugin = TestPlugin::new();
+    session.register_plugin(Box::new(plugin));
+    session
+  }
+
+  #[fixture]
+  pub fn session_with_no_plugins_fixture() -> Session {
+    Session::new()
+  }
+
+  #[rstest]
+  #[tokio::test]
+  pub async fn should_send_message_to_registered_plugin(mut session_with_plugin_fixture: Session) {
+    let mut client = session_with_plugin_fixture.get_client();
+    session_with_plugin_fixture.run().await.unwrap();
+    let mut request = Request::from_message_type(
+      MessageType::query_from_str(QUERY_ID)
+    );
+    let mut handler = request.get_handler().unwrap();
+
+    client.send(request.to_message().unwrap()).await.unwrap();
+
+    let mut response = handler.handle_response().await.unwrap();
+
+    let deserialized_response: String = response.deserialize()
+      .expect("Should deserialize into a string");
+    assert_eq!(QUERY_RESPONSE.to_string(), deserialized_response);
+  }
+
+  #[rstest]
+  pub fn should_register_plugin() { 
+    let mut session = Session::new();
+
+    session.register_plugin(Box::new(TestPlugin::new()));
+
+    assert!(session.plugins.is_some());
+    assert_eq!(1, session.plugins.expect("Should have a plugin").len());
+    
+  }
+
+  // TODO Not sure if I really need this
+  // How _do_ I test this part of it?
+  #[rstest]
+  #[tokio::test]
+  pub async fn should_start_plugin(mut session_with_plugin_fixture: Session) {
+    session_with_plugin_fixture.start_plugins().await;
+  }
+
+
+  // test - should register correct core plugins according to config (many tests & design needed)
+
+  // test - client should send unknown message and its handled the right way
+  // TODO This doesn't work, because the message is fire & forget. Think about hwo best to test this.
+  // #[rstest]
+  // #[tokio::test]
+  // pub async fn should_handle_unknown_message(mut session_with_plugin_fixture: Session) {
+  //   session_with_plugin_fixture.run().await.unwrap();
+
+  //   let mut client = session_with_plugin_fixture.get_client();
+
+  //   let mut unknown_request = Request::from_message_type(MessageType::query_from_str("unknown"));
+
+  //   let result = client.send(unknown_request.to_message().unwrap()).await;
+  //   assert!(result.is_err());
+  //   assert_eq!(result.err().expect("Should error"), "Unrecognized Message Type".to_string());
+  // }
+
+  // test - should start session
+
+  // test - should not be able to start already started session
+
+  /// Actually maybe we support the below
+  // test - should not be able to register plugins after session started
+
+  // test - should not be able to start plugins after session started
+  // IDK Maybe this is actually something we support
 
   #[test]
   fn session_should_have_no_plugins_when_new() {

@@ -1,5 +1,3 @@
-use core::panic;
-
 use tokio::sync::mpsc;
 
 use crate::{messaging::Message, plugin::{PluginChannel, PluginRegistrar}};
@@ -7,7 +5,7 @@ use crate::{messaging::Message, plugin::{PluginChannel, PluginRegistrar}};
 use log::debug;
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct DispatchClient {
   transmitter: mpsc::Sender<Message>,
 }
@@ -45,27 +43,6 @@ impl Dispatch {
       plugin_registrar: PluginRegistrar::new(),
     }
   }
-  pub(crate) fn is_uncloned(&self) -> bool {
-    match &self.input_receiver {
-      Some(_) => true,
-      None => false,
-    }
-  }
-
-  // A special clone that takes the receiver
-  pub(crate) fn clone_once(&mut self) -> Self {
-    let input_receiver = match self.input_receiver.take() {
-      Some(r) => Some(r),
-      None => panic!("Cannot clone a clone"),
-    };
-    self.input_receiver = None;
-
-    Self {
-      input_receiver,
-      input_transmitter: self.input_transmitter.clone(),
-      plugin_registrar: self.plugin_registrar.clone(),
-    }
-  }
 
   // TODO error handling
   async fn dispatch_to_plugin(&self, message: Message) -> Result<(), String> {
@@ -92,26 +69,9 @@ impl Dispatch {
       },
     };
     while let Some(msg) = receiver.recv().await {
-      debug!("Diagnostics Received message: {}", msg);
-      let thread_dispatch = self.clone();
-      tokio::spawn(async move {
-	match thread_dispatch.dispatch_to_plugin(msg).await {
-	  Ok(_) => Ok(()),
-	  Err(msg) => Err(msg),
-	}
-      });
+      debug!("Dispatch received message: {}", msg);
+      self.dispatch_to_plugin(msg).await.unwrap();
     }
     Ok(())
   }
 }
-
-impl Clone for Dispatch {
-    fn clone(&self) -> Self {
-      Self {
-	input_receiver: None,
-	input_transmitter: self.input_transmitter.clone(),
-	plugin_registrar: self.plugin_registrar.clone(),
-      }
-    }
-}
-

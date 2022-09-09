@@ -42,7 +42,7 @@ impl Klh {
 
   pub fn get_client(&self) -> KlhClient {
     // TODO eliminate this result chain
-    let client = KlhClient::new(self.session.get_client().unwrap());
+    let client = KlhClient::new(self.session.get_client());
     client
   }
 }
@@ -50,18 +50,30 @@ impl Klh {
 
 #[cfg(test)]
 mod end_to_end_tests {
-  use crate::klh::Klh;
+
+  use log::debug;
+use rstest::{fixture, rstest};
+
+use crate::klh::Klh;
   use crate::messaging::{Request, MessageType};
   use crate::plugin::plugin_test_utility::{TestPlugin, COMMAND_ID, COMMAND_RESPONSE, QUERY_ID, QUERY_RESPONSE};
 
   // Option thing to set up if you need to debug
-  fn setup_logging() {
+  #[fixture]
+  #[once]
+  fn setup_logging_fixture() -> () {
     simplelog::TermLogger::init(
       simplelog::LevelFilter::Debug,
       simplelog::Config::default(),
       simplelog::TerminalMode::Stdout,
       simplelog::ColorChoice::Auto,
-    ).unwrap();
+    ).unwrap()
+  }
+
+  #[rstest]
+  #[ignore]
+  fn setup(_setup_logging_fixture: &()) {
+    debug!("Setup function completed")
   }
 
   #[tokio::test]
