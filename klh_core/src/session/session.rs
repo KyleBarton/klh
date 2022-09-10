@@ -64,6 +64,8 @@ impl Session {
     }
   }
 
+  /// Registers a plugin with the session. This plugin will be started
+  /// on a channel when [Session::run] is called.
   pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
     plugin.receive_client(self.get_client());
     match self.plugins.take() {
@@ -97,6 +99,16 @@ impl Session {
     }
     
   }
+
+  /// Runs the `Session`. This will do the following:
+  /// 1. Registers core plugins according to the `KlhConfig`
+  /// `CorePlugins` options.
+  /// 2. Starts a each registered plugin on a plugin channel
+  /// 3. Starts the `Dispatch` to listen for incoming messages.
+  /// # Errors
+  /// Returns an [Err] result of [SessionError] in certain situations:
+  /// 1. [SessionError::SessionAlreadyStarted] - this session has
+  /// already had `run()` called.
   pub async fn run(&mut self) -> Result<(), SessionError> {
     self.register_core_plugins();
     self.start_plugins().await;
@@ -115,6 +127,15 @@ impl Session {
     }
   }
 
+  /// Returns a new `SessionClient`
+  /// # Examples
+  /// ```
+  /// use klh_core::config::KlhConfig;
+  /// use klh_core::session::*;
+  /// 
+  /// let session = Session::new(KlhConfig::default());
+  /// let client: SessionClient = session.get_client();
+  /// ```
   pub fn get_client(&self) -> SessionClient {
     self.client.clone()
   }
