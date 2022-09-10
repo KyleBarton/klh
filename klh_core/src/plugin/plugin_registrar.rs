@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use log::{debug, warn};
 
-use crate::messaging::{Message, MessageType};
+use crate::messaging::{Message, MessageType, MessageContent, MessageError};
 
 use super::PluginChannel;
 use super::plugin_channel::PluginTransmitter;
@@ -32,7 +32,7 @@ impl PluginRegistrar {
     Ok(())
   }
 
-  pub(crate) async fn send_to_plugin(&self, message: Message) {
+  pub(crate) async fn send_to_plugin(&self, mut message: Message) {
     debug!("Plugin registrar received message {}", message);
     match self.plugin_type_map.get(&message.get_message_type()) {
       Some(listener) => {
@@ -41,7 +41,10 @@ impl PluginRegistrar {
       },
       None => {
 	warn!("Could not find listener message {}", message);
-	()
+	message.get_responder()
+	  .expect("Should have a responder")
+	  .respond(MessageContent::from_content(MessageError::MessageTypeNotFound))
+	  .unwrap();
       },
     }
   }

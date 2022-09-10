@@ -1,6 +1,7 @@
 use log::debug;
 use log::error;
 
+use crate::config::KlhConfig;
 use crate::plugin::PluginChannel;
 use crate::plugin::Plugin;
 use crate::plugins::{buffers::Buffers, diagnostics::Diagnostics};
@@ -8,8 +9,13 @@ use crate::session::SessionClient;
 
 use super::dispatch::Dispatch;
 
+#[derive(Debug, Eq, PartialEq)]
+pub enum SessionError {
+  SessionAlreadyStarted,
+}
 
 pub struct Session {
+  _config: KlhConfig,
   dispatch: Option<Dispatch>,
   client: SessionClient,
   plugins: Option<Vec<Box<dyn Plugin + Send>>>,
@@ -17,10 +23,11 @@ pub struct Session {
 
 
 impl Session {
-  pub fn new() -> Self {
+  pub fn new(config: KlhConfig) -> Self {
     let dispatch = Dispatch::new();
     let client = SessionClient::new(dispatch.get_client().unwrap());
     Session{
+      _config: config,
       dispatch: Some(dispatch),
       client,
       plugins: None,
@@ -83,12 +90,15 @@ impl Session {
     }
     
   }
-  pub async fn run(&mut self) -> Result<(), String> {
+  pub async fn run(&mut self) -> Result<(), SessionError> {
     self.register_core_plugins().await;
     self.start_plugins().await;
 
     match self.dispatch.take() {
-      None => Err("Session already used".to_string()),
+      None => {
+	debug!("Attempted to run a used session");
+	Err(SessionError::SessionAlreadyStarted)
+      },
       Some(mut dispatch) => {
 	tokio::spawn(async move {
 	  dispatch.start_listener().await.unwrap()
@@ -107,24 +117,24 @@ impl Session {
 mod session_tests {
   use rstest::*;
   use super::Session;
-  use crate::{plugin::plugin_test_utility::{TestPlugin, QUERY_ID, QUERY_RESPONSE}, messaging::{Request, MessageType}};
+  use crate::{plugin::plugin_test_utility::{TestPlugin, QUERY_ID, QUERY_RESPONSE}, messaging::{Request, MessageType, MessageError}, session::session::SessionError, config::KlhConfig};
 
   #[fixture]
-  pub fn session_with_plugin_fixture() -> Session {
-    let mut session = Session::new();
+  fn session_with_plugin_fixture() -> Session {
+    let mut session = Session::new(KlhConfig::default());
     let plugin: TestPlugin = TestPlugin::new();
     session.register_plugin(Box::new(plugin));
     session
   }
 
-  #[fixture]
-  pub fn session_with_no_plugins_fixture() -> Session {
-    Session::new()
-  }
+  // #[fixture]
+  // fn session_with_no_plugins_fixture() -> Session {
+  //   Session::new(KlhConfig::default())
+  // }
 
   #[rstest]
   #[tokio::test]
-  pub async fn should_send_message_to_registered_plugin(mut session_with_plugin_fixture: Session) {
+  async fn should_send_message_to_registered_plugin(mut session_with_plugin_fixture: Session) {
     let mut client = session_with_plugin_fixture.get_client();
     session_with_plugin_fixture.run().await.unwrap();
     let mut request = Request::from_message_type(
@@ -142,8 +152,8 @@ mod session_tests {
   }
 
   #[rstest]
-  pub fn should_register_plugin() { 
-    let mut session = Session::new();
+  fn should_register_plugin() { 
+    let mut session = Session::new(KlhConfig::default());
 
     session.register_plugin(Box::new(TestPlugin::new()));
 
@@ -152,61 +162,66 @@ mod session_tests {
     
   }
 
-  // TODO Not sure if I really need this
-  // How _do_ I test this part of it?
   #[rstest]
   #[tokio::test]
-  pub async fn should_start_plugin(mut session_with_plugin_fixture: Session) {
+  async fn should_start_plugin(mut session_with_plugin_fixture: Session) {
     session_with_plugin_fixture.start_plugins().await;
   }
 
 
   // test - should register correct core plugins according to config (many tests & design needed)
 
-  // test - client should send unknown message and its handled the right way
-  // TODO This doesn't work, because the message is fire & forget. Think about hwo best to test this.
-  // #[rstest]
-  // #[tokio::test]
-  // pub async fn should_handle_unknown_message(mut session_with_plugin_fixture: Session) {
-  //   session_with_plugin_fixture.run().await.unwrap();
+  #[rstest]
+  #[tokio::test]
+  async fn should_handle_unknown_message(mut session_with_plugin_fixture: Session) {
+    session_with_plugin_fixture.run().await.unwrap();
 
-  //   let mut client = session_with_plugin_fixture.get_client();
+    let mut client = session_with_plugin_fixture.get_client();
 
-  //   let mut unknown_request = Request::from_message_type(MessageType::query_from_str("unknown"));
+    let mut unknown_request = Request::from_message_type(MessageType::query_from_str("unknown"));
 
-  //   let result = client.send(unknown_request.to_message().unwrap()).await;
-  //   assert!(result.is_err());
-  //   assert_eq!(result.err().expect("Should error"), "Unrecognized Message Type".to_string());
-  // }
+    let mut handler = unknown_request.get_handler().unwrap();
 
-  // test - should start session
+    client.send(unknown_request.to_message().unwrap()).await.unwrap();
 
-  // test - should not be able to start already started session
+    let mut response = handler.handle_response().await.unwrap();
 
-  /// Actually maybe we support the below
-  // test - should not be able to register plugins after session started
+    let expected_response: Option<MessageError> = response.deserialize();
 
-  // test - should not be able to start plugins after session started
-  // IDK Maybe this is actually something we support
+    assert_eq!(expected_response, Some(MessageError::MessageTypeNotFound));
+  }
 
-  #[test]
+  #[rstest]
+  #[tokio::test]
+  async fn should_not_be_able_to_start_started_session(mut session_with_plugin_fixture: Session) {
+    session_with_plugin_fixture.run().await.unwrap();
+
+    let unsuccessful_run = session_with_plugin_fixture.run().await;
+
+    assert!(unsuccessful_run.is_err());
+    assert_eq!(unsuccessful_run.err(), Some(SessionError::SessionAlreadyStarted));
+  }
+
+  // TODO is this really right? Seems like maybe we want plugins to
+  // include core plugins now that we have a config.
+  #[rstest]
   fn session_should_have_no_plugins_when_new() {
-    let session = Session::new();
+    let session = Session::new(KlhConfig::default());
     assert!(session.plugins.is_none())
   }
 
-  #[test]
+  #[rstest]
   fn session_should_add_one_plugin() {
-    let mut session = Session::new();
+    let mut session = Session::new(KlhConfig::default());
     session.register_plugin(Box::new(TestPlugin::new()));
 
     assert!(session.plugins.is_some());
     assert_eq!(session.plugins.expect("").len(), 1)
   }
 
-  #[test]
+  #[rstest]
   fn session_should_add_two_plugins() {
-    let mut session = Session::new();
+    let mut session = Session::new(KlhConfig::default());
     session.register_plugin(Box::new(TestPlugin::new()));
     session.register_plugin(Box::new(TestPlugin::new()));
 

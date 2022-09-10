@@ -1,6 +1,6 @@
 use log::debug;
 
-use crate::{messaging::Request, session::{Session, SessionClient}, plugin::Plugin};
+use crate::{messaging::Request, session::{Session, SessionClient}, plugin::Plugin, config::KlhConfig};
 
 #[derive(Clone)]
 pub struct KlhClient {
@@ -25,7 +25,7 @@ pub struct Klh {
 
 impl Klh {
   pub fn new() -> Self {
-    let session = Session::new();
+    let session = Session::new(KlhConfig::default());
     Self {
       session,
     }
