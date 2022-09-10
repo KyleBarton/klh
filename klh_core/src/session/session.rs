@@ -1,6 +1,7 @@
 use log::debug;
 use log::error;
 
+use crate::config::CorePlugins;
 use crate::config::KlhConfig;
 use crate::plugin::PluginChannel;
 use crate::plugin::Plugin;
@@ -15,7 +16,7 @@ pub enum SessionError {
 }
 
 pub struct Session {
-  _config: KlhConfig,
+  config: KlhConfig,
   dispatch: Option<Dispatch>,
   client: SessionClient,
   plugins: Option<Vec<Box<dyn Plugin + Send>>>,
@@ -27,7 +28,7 @@ impl Session {
     let dispatch = Dispatch::new();
     let client = SessionClient::new(dispatch.get_client().unwrap());
     Session{
-      _config: config,
+      config,
       dispatch: Some(dispatch),
       client,
       plugins: None,
@@ -38,23 +39,29 @@ impl Session {
   // as well as load the core functional plugins. For now, core
   // functional plugins are hard-coded. Dynamic memory appropriate
   // here as we are dealing with variou plugins at runtime here.
-  async fn register_core_plugins(&mut self) {
+  fn register_core_plugins(&mut self) {
     debug!("Registering core plugins");
 
-    // Diagnostics
-    debug!("Registering Diagnostics plugin");
-    let diagnostics_plugin : Diagnostics = Diagnostics::new();
-    
-    self.register_plugin(Box::new(diagnostics_plugin));
-    debug!("Diagnostics plugin registered");
+    let mut core_plugins : Vec<Box<dyn Plugin + Send>> = Vec::new();
+    for core_plugin in &self.config.core_plugins {
+      match core_plugin {
+	CorePlugins::Diagnostics => {
+	  debug!("Adding Diagnostics plugin");
+	  core_plugins.push(Box::new(Diagnostics::new()));
+	  debug!("Diagnostics plugin added");
+	},
+	CorePlugins::Buffers => {
+	  debug!("Adding Buffers plugin");
+	  core_plugins.push(Box::new(Buffers::new()));
+	  debug!("Buffers plugin added");
+	},
+	_ => (),
+      }
+    }
 
-
-    // Buffers
-    debug!("Registering Buffers plugin");
-    let buffers_plugin : Buffers = Buffers::new();
-
-    self.register_plugin(Box::new(buffers_plugin));
-    debug!("Buffers plugin registered");
+    for plugin in core_plugins {
+      self.register_plugin(plugin);
+    }
   }
 
   pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
@@ -83,15 +90,15 @@ impl Session {
 		plugin_channel.start().await
 	      });
 	    }
-	    self.dispatch = Some(dispatch);
 	  }
 	}
+	self.dispatch = Some(dispatch);
       }
     }
     
   }
   pub async fn run(&mut self) -> Result<(), SessionError> {
-    self.register_core_plugins().await;
+    self.register_core_plugins();
     self.start_plugins().await;
 
     match self.dispatch.take() {
@@ -117,26 +124,21 @@ impl Session {
 mod session_tests {
   use rstest::*;
   use super::Session;
-  use crate::{plugin::plugin_test_utility::{TestPlugin, QUERY_ID, QUERY_RESPONSE}, messaging::{Request, MessageType, MessageError}, session::session::SessionError, config::KlhConfig};
+  use crate::{plugin::plugin_test_utility::{TestPlugin, QUERY_ID, QUERY_RESPONSE}, messaging::{Request, MessageType, MessageError}, session::session::SessionError, config::{KlhConfig, CorePlugins}, plugins::buffers::{requests::new_list_buffers_request, models::ListBuffersResponse}};
 
   #[fixture]
-  fn session_with_plugin_fixture() -> Session {
+  fn default_session() -> Session {
     let mut session = Session::new(KlhConfig::default());
     let plugin: TestPlugin = TestPlugin::new();
     session.register_plugin(Box::new(plugin));
     session
   }
 
-  // #[fixture]
-  // fn session_with_no_plugins_fixture() -> Session {
-  //   Session::new(KlhConfig::default())
-  // }
-
   #[rstest]
   #[tokio::test]
-  async fn should_send_message_to_registered_plugin(mut session_with_plugin_fixture: Session) {
-    let mut client = session_with_plugin_fixture.get_client();
-    session_with_plugin_fixture.run().await.unwrap();
+  async fn should_send_message_to_registered_plugin(mut default_session: Session) {
+    let mut client = default_session.get_client();
+    default_session.run().await.unwrap();
     let mut request = Request::from_message_type(
       MessageType::query_from_str(QUERY_ID)
     );
@@ -164,19 +166,68 @@ mod session_tests {
 
   #[rstest]
   #[tokio::test]
-  async fn should_start_plugin(mut session_with_plugin_fixture: Session) {
-    session_with_plugin_fixture.start_plugins().await;
+  async fn should_start_plugin(mut default_session: Session) {
+    default_session.start_plugins().await;
   }
 
 
-  // test - should register correct core plugins according to config (many tests & design needed)
+  #[rstest]
+  #[tokio::test]
+  async fn should_register_core_plugin_specified_in_config() {
+    let config = KlhConfig::with_core_plugins(vec!(CorePlugins::Buffers));
+
+    let mut session = Session::new(config);
+
+    session.run().await.unwrap();
+
+    let mut request = new_list_buffers_request();
+
+    let mut handler = request.get_handler().unwrap();
+
+    session.get_client().send(request.to_message().unwrap()).await.unwrap();
+
+    let mut response = handler.handle_response().await.unwrap();
+
+    let expected_response : Option<ListBuffersResponse> = response.deserialize();
+
+    assert!(expected_response.is_some());
+
+  }
 
   #[rstest]
   #[tokio::test]
-  async fn should_handle_unknown_message(mut session_with_plugin_fixture: Session) {
-    session_with_plugin_fixture.run().await.unwrap();
+  async fn should_not_register_core_plugins_omitted_in_config() {
+    let config = KlhConfig::with_core_plugins(Vec::new());
 
-    let mut client = session_with_plugin_fixture.get_client();
+    let mut session = Session::new(config);
+
+    session.run().await.unwrap();
+
+    let mut request = new_list_buffers_request();
+
+    let mut handler = request.get_handler().unwrap();
+
+    session.get_client().send(request.to_message().unwrap()).await.unwrap();
+
+    let mut response = handler.handle_response().await.unwrap();
+
+    let mut response_as_error = response.clone();
+
+    let unexpected_response : Option<ListBuffersResponse> = response.deserialize();
+
+    assert!(unexpected_response.is_none());
+
+    let expected_error_response : Option<MessageError> = response_as_error.deserialize();
+
+    assert_eq!(expected_error_response.expect("should have error"), MessageError::MessageTypeNotFound)
+  }
+
+  #[rstest]
+  #[tokio::test]
+  async fn should_handle_unknown_message(mut default_session: Session) {
+    default_session.run().await.unwrap();
+
+    let mut client = default_session.get_client();
 
     let mut unknown_request = Request::from_message_type(MessageType::query_from_str("unknown"));
 
@@ -193,17 +244,15 @@ mod session_tests {
 
   #[rstest]
   #[tokio::test]
-  async fn should_not_be_able_to_start_started_session(mut session_with_plugin_fixture: Session) {
-    session_with_plugin_fixture.run().await.unwrap();
+  async fn should_not_be_able_to_start_started_session(mut default_session: Session) {
+    default_session.run().await.unwrap();
 
-    let unsuccessful_run = session_with_plugin_fixture.run().await;
+    let unsuccessful_run = default_session.run().await;
 
     assert!(unsuccessful_run.is_err());
     assert_eq!(unsuccessful_run.err(), Some(SessionError::SessionAlreadyStarted));
   }
 
-  // TODO is this really right? Seems like maybe we want plugins to
-  // include core plugins now that we have a config.
   #[rstest]
   fn session_should_have_no_plugins_when_new() {
     let session = Session::new(KlhConfig::default());

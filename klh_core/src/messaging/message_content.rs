@@ -2,7 +2,7 @@ use bson::{Bson, Deserializer};
 use serde::{Serialize, Deserialize};
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MessageContent {
   content: Option<Bson>,
 }
@@ -23,12 +23,12 @@ impl MessageContent {
     match self.content.take() {
       None => None,
       Some(c) => {
-	let content: T = {
-	  let de = Deserializer::new(c);
-	  Deserialize::deserialize(de)
-	}.unwrap();
-
-	Some(content)
+	let de = Deserializer::new(c);
+	match Deserialize::deserialize(de) {
+	  // Return None if the type doesn't match
+	  Err(_) => None,
+	  Ok(content) => Some(content)
+	}
       }
     }
   }
