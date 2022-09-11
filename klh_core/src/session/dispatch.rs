@@ -4,6 +4,11 @@ use crate::{messaging::Message, plugin::PluginRegistrar};
 
 use log::debug;
 
+#[derive(Debug, Eq, PartialEq)]
+pub(crate) enum DispatchError {
+  DispatchAlreadyUsed,
+}
+
 
 #[derive(Clone, Debug)]
 pub(crate) struct DispatchClient {
@@ -41,18 +46,18 @@ impl Dispatch {
     }
   }
 
-  pub(crate) fn get_client(&self) -> Result<DispatchClient, String> {
-    Ok(DispatchClient::new(self.input_transmitter.clone()))
+  pub(crate) fn get_client(&self) -> DispatchClient {
+    DispatchClient::new(self.input_transmitter.clone())
   }
 
   pub(crate) async fn start_listener(
     &mut self,
     plugin_registrar: PluginRegistrar,
-  ) -> Result<(), String> {
+  ) -> Result<(), DispatchError> {
     let mut receiver = match self.input_receiver.take() {
       Some(r) => r,
       None => {
-	return Err("Dispatch is already used.".to_string());
+	return Err(DispatchError::DispatchAlreadyUsed);
       },
     };
     while let Some(msg) = receiver.recv().await {

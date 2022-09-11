@@ -1,6 +1,8 @@
+use log::error;
+
 use crate::messaging::Message;
 
-use super::dispatch::DispatchClient;
+use super::{dispatch::DispatchClient, SessionError};
 
 
 #[derive(Clone, Debug)]
@@ -16,9 +18,12 @@ impl SessionClient {
     }
   }
 
-  pub async fn send(&mut self, message: Message) -> Result<(), String> {
+  pub async fn send(&mut self, message: Message) -> Result<(), SessionError> {
     match self.dispatch_client.send(message).await {
-      Err(_) => Err("Issue sending message to session".to_string()),
+      Err(err) => {
+	error!("Error sending message to dispatch client: {}", err);
+	Err(SessionError::ErrorSendingMessage)	
+      },
       Ok(_) => Ok(())
     }
   }

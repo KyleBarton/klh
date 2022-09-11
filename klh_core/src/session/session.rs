@@ -12,6 +12,7 @@ use super::dispatch::Dispatch;
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum SessionError {
+  ErrorSendingMessage,
   SessionAlreadyStarted,
 }
 
@@ -27,7 +28,7 @@ pub struct Session {
 impl Session {
   pub fn new(config: KlhConfig) -> Self {
     let dispatch = Dispatch::new();
-    let client = SessionClient::new(dispatch.get_client().unwrap());
+    let client = SessionClient::new(dispatch.get_client());
     Session{
       config,
       dispatch: Some(dispatch),
@@ -37,10 +38,10 @@ impl Session {
     }
   }
 
-  // Meant as a place that can locate plugins at a given startup spot,
-  // as well as load the core functional plugins. For now, core
-  // functional plugins are hard-coded. Dynamic memory appropriate
-  // here as we are dealing with variou plugins at runtime here.
+  /// Meant as a place that can locate plugins at a given startup spot,
+  /// as well as load the core functional plugins. For now, core
+  /// functional plugins are hard-coded. Dynamic memory appropriate
+  /// here as we are dealing with variou plugins at runtime here.
   fn register_core_plugins(&mut self) {
     debug!("Registering core plugins");
 
