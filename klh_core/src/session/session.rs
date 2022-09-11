@@ -19,8 +19,8 @@ pub struct Session {
   config: KlhConfig,
   dispatch: Option<Dispatch>,
   client: SessionClient,
-  plugins: Option<Vec<Box<dyn Plugin + Send>>>,
   plugin_registrar: PluginRegistrar,
+  plugin_channels: Option<Vec<PluginChannel>>,
 }
 
 
@@ -32,8 +32,8 @@ impl Session {
       config,
       dispatch: Some(dispatch),
       client,
-      plugins: None,
       plugin_registrar: PluginRegistrar::new(),
+      plugin_channels: None,
     }
   }
 
@@ -70,30 +70,37 @@ impl Session {
   /// on a channel when [Session::run] is called.
   pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
     plugin.receive_client(self.get_client());
-    match self.plugins.take() {
-      None => self.plugins = Some(vec!(plugin)),
-      Some(mut p) => {
-	p.push(plugin);
-	self.plugins = Some(p);
-      },
+
+    let message_types = plugin.list_message_types();
+
+    let channel = PluginChannel::new(plugin);
+
+    self.plugin_registrar.register_message_types_for_plugin(
+      message_types,
+      channel.get_transmitter(),
+    );
+
+    match self.plugin_channels.take() {
+      None => self.plugin_channels = Some(vec!(channel)),
+      Some(mut channels) => {
+	channels.push(channel);
+	self.plugin_channels = Some(channels);
+      }
     }
   }
 
   async fn start_plugins(&mut self) {
     debug!("Starting provided plugins");
-    match self.plugins.take() {
+    match self.plugin_channels.take() {
       None => debug!("No plugins to load"),
-      Some(plugins) => {
-	for plugin in plugins {
-	  let mut plugin_channel = PluginChannel::new(plugin);
-	  self.plugin_registrar.register_plugin_message_types(&plugin_channel).unwrap();
+      Some(channels) => {
+	for mut channel in channels {
 	  tokio::spawn(async move {
-	    plugin_channel.start().await
+	    channel.start().await
 	  });
 	}
       }
     }
-    
   }
 
   /// Runs the `Session`. This will do the following:
@@ -169,17 +176,6 @@ mod session_tests {
     let deserialized_response: String = response.deserialize()
       .expect("Should deserialize into a string");
     assert_eq!(QUERY_RESPONSE.to_string(), deserialized_response);
-  }
-
-  #[rstest]
-  fn should_register_plugin() { 
-    let mut session = Session::new(KlhConfig::default());
-
-    session.register_plugin(Box::new(TestPlugin::new()));
-
-    assert!(session.plugins.is_some());
-    assert_eq!(1, session.plugins.expect("Should have a plugin").len());
-    
   }
 
   #[rstest]
@@ -274,7 +270,7 @@ mod session_tests {
   #[rstest]
   fn session_should_have_no_plugins_when_new() {
     let session = Session::new(KlhConfig::default());
-    assert!(session.plugins.is_none())
+    assert!(session.plugin_channels.is_none())
   }
 
   #[rstest]
@@ -282,8 +278,8 @@ mod session_tests {
     let mut session = Session::new(KlhConfig::default());
     session.register_plugin(Box::new(TestPlugin::new()));
 
-    assert!(session.plugins.is_some());
-    assert_eq!(session.plugins.expect("").len(), 1)
+    assert!(session.plugin_channels.is_some());
+    assert_eq!(session.plugin_channels.expect("").len(), 1)
   }
 
   #[rstest]
@@ -292,7 +288,7 @@ mod session_tests {
     session.register_plugin(Box::new(TestPlugin::new()));
     session.register_plugin(Box::new(TestPlugin::new()));
 
-    assert!(session.plugins.is_some());
-    assert_eq!(session.plugins.expect("").len(), 2);
+    assert!(session.plugin_channels.is_some());
+    assert_eq!(session.plugin_channels.expect("").len(), 2);
   }
 }

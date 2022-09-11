@@ -4,7 +4,6 @@ use log::{debug, warn};
 
 use crate::messaging::{Message, MessageType, MessageContent, MessageError};
 
-use super::PluginChannel;
 use super::plugin_channel::PluginTransmitter;
 
 
@@ -21,15 +20,15 @@ impl PluginRegistrar {
     }
   }
 
-  // Registers all message types which should be associated with a given plugin.
-  pub(crate) fn register_plugin_message_types(&mut self, plugin_channel: &PluginChannel) -> Result<(), String> {
-    let transmitter: PluginTransmitter = plugin_channel.get_transmitter().unwrap().clone();
-    for message_type in transmitter.get_message_types().iter() {
+  pub(crate) fn register_message_types_for_plugin(
+    &mut self,
+    message_types: Vec<MessageType>,
+    transmitter: PluginTransmitter
+  ) {
+    for message_type in message_types.iter() {
       debug!("Registering message type {}", message_type);
       self.plugin_type_map.insert(message_type.clone(), transmitter.clone());
     }
-
-    Ok(())
   }
 
   pub(crate) async fn send_to_plugin(&self, mut message: Message) {

@@ -1,14 +1,13 @@
 use log::{info, debug};
 use tokio::sync::mpsc;
 
-use crate::messaging::{Message, MessageType};
+use crate::messaging::Message;
 
 use super::Plugin;
 
 pub(crate) struct PluginChannel {
   listener: PluginListener,
   transmitter: PluginTransmitter,
-  // Long term: Figure out how to encapsulate Send
   plugin: Box<dyn Plugin + Send>,
 }
 
@@ -21,7 +20,6 @@ impl PluginChannel {
       },
       transmitter: PluginTransmitter {
 	transmitter: tx,
-	message_types: plugin.list_message_types(),
       },
       plugin,
     }
@@ -36,8 +34,8 @@ impl PluginChannel {
     info!("Plugin stopped listening");
   }
 
-  pub(crate) fn get_transmitter(&self) -> Result<PluginTransmitter, String> {
-    Ok(self.transmitter.clone())
+  pub(crate) fn get_transmitter(&self) -> PluginTransmitter {
+    self.transmitter.clone()
   }
 }
 
@@ -53,7 +51,6 @@ impl PluginListener {
 
 #[derive(Clone)]
 pub(crate) struct PluginTransmitter {
-  message_types: Vec<MessageType>,
   transmitter: mpsc::Sender<Message>,
 }
 
@@ -61,12 +58,5 @@ impl PluginTransmitter {
   
   pub(crate) async fn send_message(&self, message: Message) -> Result<(), mpsc::error::SendError<Message>> {
     self.transmitter.send(message).await
-  }
-
-
-  // TODO can transmitter not own this? Should it really own the message
-  // types?
-  pub(crate) fn get_message_types(&self) -> Vec<MessageType> {
-    self.message_types.clone()
   }
 }
