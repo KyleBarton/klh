@@ -1,10 +1,10 @@
 use log::debug;
-use log::error;
 
 use crate::config::CorePlugins;
 use crate::config::KlhConfig;
 use crate::plugin::PluginChannel;
 use crate::plugin::Plugin;
+use crate::plugin::PluginRegistrar;
 use crate::plugins::{buffers::Buffers, diagnostics::Diagnostics};
 use crate::session::SessionClient;
 
@@ -20,6 +20,7 @@ pub struct Session {
   dispatch: Option<Dispatch>,
   client: SessionClient,
   plugins: Option<Vec<Box<dyn Plugin + Send>>>,
+  plugin_registrar: PluginRegistrar,
 }
 
 
@@ -32,6 +33,7 @@ impl Session {
       dispatch: Some(dispatch),
       client,
       plugins: None,
+      plugin_registrar: PluginRegistrar::new(),
     }
   }
 
@@ -79,22 +81,16 @@ impl Session {
 
   async fn start_plugins(&mut self) {
     debug!("Starting provided plugins");
-    match self.dispatch.take() {
-      None => error!("Tried to start plugins after session started"),
-      Some(mut dispatch) => {
-	match self.plugins.take() {
-	  None => debug!("No plugins to load"),
-	  Some(plugins) => {
-	    for plugin in plugins {
-	      let mut plugin_channel: PluginChannel = PluginChannel::new(plugin);
-	      dispatch.register_plugin(&plugin_channel).unwrap();
-	      tokio::spawn(async move {
-		plugin_channel.start().await
-	      });
-	    }
-	  }
+    match self.plugins.take() {
+      None => debug!("No plugins to load"),
+      Some(plugins) => {
+	for plugin in plugins {
+	  let mut plugin_channel = PluginChannel::new(plugin);
+	  self.plugin_registrar.register_plugin_message_types(&plugin_channel).unwrap();
+	  tokio::spawn(async move {
+	    plugin_channel.start().await
+	  });
 	}
-	self.dispatch = Some(dispatch);
       }
     }
     
@@ -119,8 +115,9 @@ impl Session {
 	Err(SessionError::SessionAlreadyStarted)
       },
       Some(mut dispatch) => {
+	let registrar_copy = self.plugin_registrar.clone();
 	tokio::spawn(async move {
-	  dispatch.start_listener().await.unwrap()
+	  dispatch.start_listener(registrar_copy).await.unwrap()
 	});
 	Ok(())
       }

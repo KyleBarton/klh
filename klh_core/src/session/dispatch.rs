@@ -1,6 +1,6 @@
 use tokio::sync::mpsc;
 
-use crate::{messaging::Message, plugin::{PluginChannel, PluginRegistrar}};
+use crate::{messaging::Message, plugin::PluginRegistrar};
 
 use log::debug;
 
@@ -18,7 +18,6 @@ impl DispatchClient {
   }
 }
 
-
 // Needs work
 impl DispatchClient {
 
@@ -31,7 +30,6 @@ impl DispatchClient {
 pub(crate) struct Dispatch {
   input_receiver: Option<mpsc::Receiver<Message>>,
   input_transmitter: mpsc::Sender<Message>,
-  plugin_registrar: PluginRegistrar,
 }
 
 impl Dispatch {
@@ -40,20 +38,6 @@ impl Dispatch {
     Self {
       input_receiver: Some(rx),
       input_transmitter: tx,
-      plugin_registrar: PluginRegistrar::new(),
-    }
-  }
-
-  // TODO error handling
-  async fn dispatch_to_plugin(&self, message: Message) -> Result<(), String> {
-    self.plugin_registrar.send_to_plugin(message).await;
-    Ok(())
-  }
-
-  pub(crate) fn register_plugin(&mut self, plugin_channel: &PluginChannel) -> Result<(), String> {
-    match self.plugin_registrar.register_plugin_message_types(plugin_channel) {
-      Err(msg) => Err(msg),
-      Ok(_) => Ok(()),
     }
   }
 
@@ -61,7 +45,10 @@ impl Dispatch {
     Ok(DispatchClient::new(self.input_transmitter.clone()))
   }
 
-  pub(crate) async fn start_listener(&mut self) -> Result<(), String> {
+  pub(crate) async fn start_listener(
+    &mut self,
+    plugin_registrar: PluginRegistrar,
+  ) -> Result<(), String> {
     let mut receiver = match self.input_receiver.take() {
       Some(r) => r,
       None => {
@@ -70,7 +57,8 @@ impl Dispatch {
     };
     while let Some(msg) = receiver.recv().await {
       debug!("Dispatch received message: {}", msg);
-      self.dispatch_to_plugin(msg).await.unwrap();
+      // self.dispatch_to_plugin(msg).await.unwrap();
+      plugin_registrar.send_to_plugin(msg).await
     }
     Ok(())
   }
