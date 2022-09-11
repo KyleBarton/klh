@@ -46,7 +46,7 @@ e: exit
 	      let mut slow_bomb_handler = diagnostics_request.get_handler().unwrap();
 	      thread_client.send(diagnostics_request).await.unwrap();
 	      match slow_bomb_handler.handle_response().await {
-		Err(msg) => println!("Problem handling slow bomb response: {}", &msg),
+		Err(msg) => println!("Problem handling slow bomb response: {:?}", &msg),
 		Ok(_) => {
 		  println!("Slow bomb responded!")
 		}
@@ -73,7 +73,7 @@ e: exit
 		  .expect("Should have a list buffers response");
 		println!("Active buffers: {}", list_buffers_response.list_as_string);
 	      },
-	      Err(msg) => println!("Sender dropped probably: {}", &msg),
+	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    };
 	  },
 	  "e" => {
