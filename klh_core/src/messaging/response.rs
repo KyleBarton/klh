@@ -3,10 +3,10 @@ use tokio::sync::oneshot::{Sender, Receiver,};
 
 use super::{MessageContent, MessageError};
 
-/// A one-time use handler which tries to return an asynchronous
+/// A one-time use handler which awaits an asynchronous
 /// [MessageContent] response to a [Request](super::Request) sent
-/// through the klh session. No constructor; Can only be provided by
-/// [Request::get_handler](super::Request::get_handler)
+/// through the klh session. No public constructor; Can only be
+/// provided by [Request::get_handler](super::Request::get_handler)
 pub struct ResponseHandler {
   receiver: Option<Receiver<MessageContent>>,
 }
