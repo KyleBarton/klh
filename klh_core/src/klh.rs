@@ -16,7 +16,7 @@ impl KlhClient {
 
   pub async fn send(&mut self, mut request: Request) -> Result<(), String> {
     match self.session_client.send(
-      request.to_message().unwrap()
+      request.to_message()
     ).await {
       Err(session_err) => {
 	debug!("Error sending message to session: {:?}", session_err);

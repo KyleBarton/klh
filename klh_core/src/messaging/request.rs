@@ -69,18 +69,18 @@ impl Request {
     }
   }
 
-  pub(crate) fn to_message(&mut self) -> Result<Message, String> {
+  pub(crate) fn to_message(&mut self) -> Message {
     match self.content.take() {
-      None => Ok(Message::new(
+      None => Message::new(
 	self.message_type,
 	self.sender.take(),
 	None,
-      )),
-      Some(content) => Ok(Message::new(
+      ),
+      Some(content) => Message::new(
 	self.message_type,
 	self.sender.take(),
 	Some(content),
-      ))
+      ),
     }
     
   }

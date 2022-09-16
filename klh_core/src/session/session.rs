@@ -170,7 +170,7 @@ mod session_tests {
     );
     let mut handler = request.get_handler().unwrap();
 
-    client.send(request.to_message().unwrap()).await.unwrap();
+    client.send(request.to_message()).await.unwrap();
 
     let mut response = handler.handle_response().await.unwrap();
 
@@ -199,7 +199,7 @@ mod session_tests {
 
     let mut handler = request.get_handler().unwrap();
 
-    session.get_client().send(request.to_message().unwrap()).await.unwrap();
+    session.get_client().send(request.to_message()).await.unwrap();
 
     let mut response = handler.handle_response().await.unwrap();
 
@@ -222,7 +222,7 @@ mod session_tests {
 
     let mut handler = request.get_handler().unwrap();
 
-    session.get_client().send(request.to_message().unwrap()).await.unwrap();
+    session.get_client().send(request.to_message()).await.unwrap();
 
     let mut response = handler.handle_response().await.unwrap();
 
@@ -248,7 +248,7 @@ mod session_tests {
 
     let mut handler = unknown_request.get_handler().unwrap();
 
-    client.send(unknown_request.to_message().unwrap()).await.unwrap();
+    client.send(unknown_request.to_message()).await.unwrap();
 
     let mut response = handler.handle_response().await.unwrap();
 
