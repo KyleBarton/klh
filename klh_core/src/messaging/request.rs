@@ -1,16 +1,6 @@
 use tokio::sync::oneshot;
 
-use super::{Message, MessageType, MessageContent, RequestResponder, ResponseHandler};
-
-/// Enumerates known error conditions related to the [Request] struct.
-#[derive(Debug, Eq, PartialEq)]
-pub enum RequestError {
-  /// Indicates that the associated [Request] object has already given
-  /// away ownership of its [ResponseHandler]. This error will be
-  /// shown if [Request::get_handler] is called on the same struct
-  /// instance more than once.
-  ResponseHandlerAlreadyTaken
-}
+use super::{Message, MessageType, MessageContent, RequestResponder, ResponseHandler, MessageError};
 
 /// The fundamental struct with which to communicate through klh. A
 /// `Request` can apply to any [MessageType]. A user interfaces with
@@ -90,9 +80,9 @@ impl Request {
   /// # Errors
   /// Will return an error if the handler has already been taken from
   /// the request.
-  pub fn get_handler(&mut self) -> Result<ResponseHandler, RequestError> {
+  pub fn get_handler(&mut self) -> Result<ResponseHandler, MessageError> {
     match self.receiver.take() {
-      None => Err(RequestError::ResponseHandlerAlreadyTaken),
+      None => Err(MessageError::ResponseHandlerAlreadyTaken),
       Some(r) => Ok(r),
     }
     

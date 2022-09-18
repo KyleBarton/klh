@@ -1,5 +1,6 @@
 use core::fmt;
 
+/// Enum that identifies the type of a message sent through Klh.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum MessageType {
   Command([u8; 100]),
@@ -14,6 +15,8 @@ pub enum MessageType {
 /// ```
 impl MessageType {
 
+  /// Displays the Id of the MessageType as a readable string, for
+  /// debugging & logging purposes.
   pub fn display_id(&self) -> String {
     match self {
       MessageType::Command(bytes) => std::str::from_utf8(bytes)

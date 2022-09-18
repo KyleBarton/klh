@@ -60,10 +60,16 @@ impl RequestResponder {
     
   }
 
-  /// 
-  pub fn respond(&mut self, response: MessageContent) -> Result<(), String> {
+  /// One-time use function which responds on the request's oneshot
+  /// callback channel with a [MessageContent] for the client to
+  /// deserialize.
+  /// # Errors
+  /// `Err(MessagingError::RequestResponderAlreadyUsed` -> indicates
+  /// that this function has already been called for this responder
+  /// instance.
+  pub fn respond(&mut self, response: MessageContent) -> Result<(), MessageError> {
     match self.sender.take() {
-      None => Err("Already responded".to_string()),
+      None => Err(MessageError::RequestResponderAlreadyUsed),
       Some(s) => {
 	s.send(response).unwrap();
 	Ok(())

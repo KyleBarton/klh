@@ -12,11 +12,6 @@ pub use message_type::*;
 
 mod message;
 pub use message::*;
-use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
-pub enum MessageError {
-  MessageTypeNotFound,
-  ResponseAlreadyHandled,
-  FailedToReceiveResponse,
-}
+mod message_error;
+pub use message_error::MessageError;
