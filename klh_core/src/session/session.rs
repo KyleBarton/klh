@@ -10,9 +10,15 @@ use crate::session::SessionClient;
 
 use super::dispatch::Dispatch;
 
+/// Errors which can occur when using a klh [Session](Session)
 #[derive(Debug, Eq, PartialEq)]
 pub enum SessionError {
+  /// Indicates that a Message was not able to be sent to the central
+  /// processing loop of the session.
   ErrorSendingMessage,
+  /// Indicates a caller's attempt to start a session using
+  /// [Session::run](Session::run) after it has already been
+  /// run. [Session](Session) instances can only be run once.
   SessionAlreadyStarted,
 }
 
@@ -37,6 +43,72 @@ impl Session {
       plugin_channels: None,
     }
   }
+
+  /// Registers a plugin with the session. This plugin will be started
+  /// on a channel when [Session::run] is called.
+  pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
+    plugin.receive_client(self.get_client());
+
+    let message_types = plugin.list_message_types();
+
+    let channel = PluginChannel::new(plugin);
+
+    self.plugin_registrar.register_message_types_for_plugin(
+      message_types,
+      channel.get_transmitter(),
+    );
+
+    match self.plugin_channels.take() {
+      None => self.plugin_channels = Some(vec!(channel)),
+      Some(mut channels) => {
+	channels.push(channel);
+	self.plugin_channels = Some(channels);
+      }
+    }
+  }
+
+  /// Runs the `Session`. This will do the following:
+  /// 1. Registers core plugins according to the `KlhConfig`
+  /// `CorePlugins` options.
+  /// 2. Starts a each registered plugin on a plugin channel
+  /// 3. Starts the main processing loop to listen for incoming messages.
+  /// # Errors
+  /// Returns an [Err] result of [SessionError] in certain situations:
+  /// 1. [SessionError::SessionAlreadyStarted] - this session has
+  /// already had `run()` called.
+  pub async fn run(&mut self) -> Result<(), SessionError> {
+    self.register_core_plugins();
+    self.start_plugins().await;
+
+    match self.dispatch.take() {
+      None => {
+	debug!("Attempted to run a used session");
+	Err(SessionError::SessionAlreadyStarted)
+      },
+      Some(mut dispatch) => {
+	let registrar_copy = self.plugin_registrar.clone();
+	tokio::spawn(async move {
+	  dispatch.start(registrar_copy).await.unwrap()
+	});
+	Ok(())
+      }
+    }
+  }
+
+  /// Returns a new `SessionClient`
+  /// # Examples
+  /// ```
+  /// use klh_core::config::KlhConfig;
+  /// use klh_core::session::*;
+  /// 
+  /// let session = Session::new(KlhConfig::default());
+  /// let client: SessionClient = session.get_client();
+  /// ```
+  pub fn get_client(&self) -> SessionClient {
+    self.client.clone()
+  }
+
+  /* Non-public API*/
 
   /// Meant as a place that can locate plugins at a given startup spot,
   /// as well as load the core functional plugins. For now, core
@@ -67,29 +139,7 @@ impl Session {
     }
   }
 
-  /// Registers a plugin with the session. This plugin will be started
-  /// on a channel when [Session::run] is called.
-  pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
-    plugin.receive_client(self.get_client());
-
-    let message_types = plugin.list_message_types();
-
-    let channel = PluginChannel::new(plugin);
-
-    self.plugin_registrar.register_message_types_for_plugin(
-      message_types,
-      channel.get_transmitter(),
-    );
-
-    match self.plugin_channels.take() {
-      None => self.plugin_channels = Some(vec!(channel)),
-      Some(mut channels) => {
-	channels.push(channel);
-	self.plugin_channels = Some(channels);
-      }
-    }
-  }
-
+  /// Start registered plugins. Called in the main `run` loop.
   async fn start_plugins(&mut self) {
     debug!("Starting provided plugins");
     match self.plugin_channels.take() {
@@ -104,46 +154,7 @@ impl Session {
     }
   }
 
-  /// Runs the `Session`. This will do the following:
-  /// 1. Registers core plugins according to the `KlhConfig`
-  /// `CorePlugins` options.
-  /// 2. Starts a each registered plugin on a plugin channel
-  /// 3. Starts the `Dispatch` to listen for incoming messages.
-  /// # Errors
-  /// Returns an [Err] result of [SessionError] in certain situations:
-  /// 1. [SessionError::SessionAlreadyStarted] - this session has
-  /// already had `run()` called.
-  pub async fn run(&mut self) -> Result<(), SessionError> {
-    self.register_core_plugins();
-    self.start_plugins().await;
 
-    match self.dispatch.take() {
-      None => {
-	debug!("Attempted to run a used session");
-	Err(SessionError::SessionAlreadyStarted)
-      },
-      Some(mut dispatch) => {
-	let registrar_copy = self.plugin_registrar.clone();
-	tokio::spawn(async move {
-	  dispatch.start_listener(registrar_copy).await.unwrap()
-	});
-	Ok(())
-      }
-    }
-  }
-
-  /// Returns a new `SessionClient`
-  /// # Examples
-  /// ```
-  /// use klh_core::config::KlhConfig;
-  /// use klh_core::session::*;
-  /// 
-  /// let session = Session::new(KlhConfig::default());
-  /// let client: SessionClient = session.get_client();
-  /// ```
-  pub fn get_client(&self) -> SessionClient {
-    self.client.clone()
-  }
 }
 
 #[cfg(test)]
