@@ -3,8 +3,22 @@ use serde::{Serialize, Deserialize};
 /// Collection of known error identifiers that can be returned in the [messaging](super) module.
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum MessageError {
+  /// Indicates that the associated
+  /// [ResponseHandler](super::ResponseHandler) has already handled
+  /// the response with
+  /// [ResponseHandler::handle_response](super::ResponseHandler::handle_response). A
+  /// ResponseHandler can only handle a query response once before
+  /// being consumed.
   ResponseAlreadyHandled,
+  /// Indicates that a message type is not yet registered with the KLH
+  /// instance has not registed a plugin for this message type. This
+  /// error means that KLH was sent a message that it did not know how
+  /// to dispatch.
   MessageTypeNotFound,
+  /// Indicates that a [ResponseHandler](super::ResponseHandler)
+  /// attempted to handle a query response, but the response never
+  /// came. Generally indicates that an error occurred in the plugin
+  /// that was sent the request preventing a response from being sent.
   FailedToReceiveResponse,
   /// Indicates that the associated [Request](super::Request) object
   /// has already given away ownership of its
@@ -12,10 +26,10 @@ pub enum MessageError {
   /// shown if [Request::get_handler](super::Request::get_handler) is
   /// called on the same struct instance more than once.
   ResponseHandlerAlreadyTaken,
-  /// Indicates that the `RequestResponder` has already responded to
+  /// Indicates that the `Responder` has already responded to
   /// the request one the oneshot channel. Since this is a one-time
   /// action, subsequent calls to
-  /// [RequestResponder::respond](super::RequestResponder::respond)
+  /// [Responder::respond](super::Responder::respond)
   /// after the first will result in an [Err] of this type.
-  RequestResponderAlreadyUsed,
+  ResponderAlreadyUsed,
 }

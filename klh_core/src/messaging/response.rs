@@ -48,11 +48,11 @@ impl ResponseHandler {
 /// [Message](super::Message). No constructor; can only be provided by
 /// [Message::get_responder](super::Message::get_responder)
 #[derive(Debug)]
-pub struct RequestResponder {
+pub struct Responder {
   sender: Option<Sender<MessageContent>>,
 }
 
-impl RequestResponder {
+impl Responder {
   pub(crate) fn new(sender: Option<Sender<MessageContent>>) -> Self {
     Self {
       sender,
@@ -69,7 +69,7 @@ impl RequestResponder {
   /// instance.
   pub fn respond(&mut self, response: MessageContent) -> Result<(), MessageError> {
     match self.sender.take() {
-      None => Err(MessageError::RequestResponderAlreadyUsed),
+      None => Err(MessageError::ResponderAlreadyUsed),
       Some(s) => {
 	s.send(response).unwrap();
 	Ok(())

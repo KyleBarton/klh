@@ -1,17 +1,17 @@
 use core::fmt;
 
-use super::{MessageType, RequestResponder, MessageContent};
+use super::{MessageType, Responder, MessageContent};
 
 /// The fundamental struct by which plugins accept data through the
 /// [Plugin::accept_message](crate::plugin::Plugin::accept_message)
 /// interface. The plugin contains the necessary information for a
 /// plugin to get the [MessageType] of the originating request, the
-/// [MessageContent] of the message, and a [RequestResponder] with
+/// [MessageContent] of the message, and a [Responder] with
 /// which to send an asynchronous response.
 #[derive(Debug)]
 pub struct Message {
   message_type: MessageType,
-  responder: Option<RequestResponder>,
+  responder: Option<Responder>,
   content: Option<MessageContent>,
 }
 
@@ -19,7 +19,7 @@ impl Message {
 
   pub(crate) fn new(
     message_type: MessageType,
-    responder: Option<RequestResponder>,
+    responder: Option<Responder>,
     content: Option<MessageContent>,
   ) -> Self {
     Self {
@@ -37,7 +37,7 @@ impl Message {
   /// Gets a one-time use responder with which to asynchronously
   /// respond to the message. A `Message` instance returns [None] if
   /// this function is called more than once.
-  pub fn get_responder(&mut self) -> Option<RequestResponder> {
+  pub fn get_responder(&mut self) -> Option<Responder> {
     self.responder.take()
   }
 

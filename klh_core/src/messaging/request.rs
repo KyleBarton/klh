@@ -1,6 +1,6 @@
 use tokio::sync::oneshot;
 
-use super::{Message, MessageType, MessageContent, RequestResponder, ResponseHandler, MessageError};
+use super::{Message, MessageType, MessageContent, Responder, ResponseHandler, MessageError};
 
 /// The fundamental struct with which to communicate through klh. A
 /// `Request` can apply to any [MessageType]. A user interfaces with
@@ -27,7 +27,7 @@ use super::{Message, MessageType, MessageContent, RequestResponder, ResponseHand
 /// ```
 pub struct Request {
   message_type: MessageType,
-  sender: Option<RequestResponder>,
+  sender: Option<Responder>,
   receiver: Option<ResponseHandler>,
   content: Option<MessageContent>,
 }
@@ -38,7 +38,7 @@ impl Request {
     let (tx, rx) = oneshot::channel();
     Self {
       message_type,
-      sender: Some(RequestResponder::new(Some(tx))),
+      sender: Some(Responder::new(Some(tx))),
       receiver: Some(ResponseHandler::new(Some(rx))),
       content: Some(content),
     }
@@ -53,7 +53,7 @@ impl Request {
     let (tx, rx) = oneshot::channel();
     Self {
       message_type,
-      sender: Some(RequestResponder::new(Some(tx))),
+      sender: Some(Responder::new(Some(tx))),
       receiver: Some(ResponseHandler::new(Some(rx))),
       content: None,
     }
