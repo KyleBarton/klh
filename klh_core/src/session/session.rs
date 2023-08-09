@@ -1,11 +1,8 @@
 use log::debug;
 
-use crate::config::CorePlugins;
-use crate::config::KlhConfig;
 use crate::plugin::PluginChannel;
 use crate::plugin::Plugin;
 use crate::plugin::PluginRegistrar;
-use crate::plugins::{buffers::Buffers, diagnostics::Diagnostics};
 use crate::session::SessionClient;
 
 use super::dispatch::Dispatch;
@@ -23,7 +20,6 @@ pub enum SessionError {
 }
 
 pub struct Session {
-  config: KlhConfig,
   dispatch: Option<Dispatch>,
   client: SessionClient,
   plugin_registrar: PluginRegistrar,
@@ -32,11 +28,10 @@ pub struct Session {
 
 
 impl Session {
-  pub fn new(config: KlhConfig) -> Self {
+  pub fn new() -> Self {
     let dispatch = Dispatch::new();
     let client = SessionClient::new(dispatch.get_client());
     Session{
-      config,
       dispatch: Some(dispatch),
       client,
       plugin_registrar: PluginRegistrar::new(),
@@ -77,7 +72,6 @@ impl Session {
   /// 1. [SessionError::SessionAlreadyStarted] - this session has
   /// already had `run()` called.
   pub async fn run(&mut self) -> Result<(), SessionError> {
-    self.register_core_plugins();
     self.start_plugins().await;
 
     match self.dispatch.take() {
@@ -106,37 +100,6 @@ impl Session {
   /// ```
   pub fn get_client(&self) -> SessionClient {
     self.client.clone()
-  }
-
-  /* Non-public API*/
-
-  /// Meant as a place that can locate plugins at a given startup spot,
-  /// as well as load the core functional plugins. For now, core
-  /// functional plugins are hard-coded. Dynamic memory appropriate
-  /// here as we are dealing with variou plugins at runtime here.
-  fn register_core_plugins(&mut self) {
-    debug!("Registering core plugins");
-
-    let mut core_plugins : Vec<Box<dyn Plugin + Send>> = Vec::new();
-    for core_plugin in &self.config.core_plugins {
-      match core_plugin {
-	CorePlugins::Diagnostics => {
-	  debug!("Adding Diagnostics plugin");
-	  core_plugins.push(Box::new(Diagnostics::new()));
-	  debug!("Diagnostics plugin added");
-	},
-	CorePlugins::Buffers => {
-	  debug!("Adding Buffers plugin");
-	  core_plugins.push(Box::new(Buffers::new()));
-	  debug!("Buffers plugin added");
-	},
-	_ => (),
-      }
-    }
-
-    for plugin in core_plugins {
-      self.register_plugin(plugin);
-    }
   }
 
   /// Start registered plugins. Called in the main `run` loop.

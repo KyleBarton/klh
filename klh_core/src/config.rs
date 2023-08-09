@@ -1,6 +1,6 @@
 /// A list of core plugins with which to start Klh. This will likely
 /// be refactored as configuration needs become more sophisticated.
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone, Copy)]
 pub enum CorePlugins {
   Buffers,
   Diagnostics,

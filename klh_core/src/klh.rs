@@ -1,6 +1,19 @@
 use log::debug;
 
-use crate::{messaging::Request, session::{Session, SessionClient}, plugin::Plugin, config::KlhConfig};
+use crate::config::{KlhConfig, CorePlugins};
+use crate::messaging::Request;
+use crate::plugin::Plugin;
+use crate::plugins::{diagnostics::Diagnostics, buffers::Buffers};
+use crate::session::{Session, SessionClient, SessionError};
+
+
+#[derive(Debug, Eq, PartialEq)]
+pub enum KlhError {
+  /// Indicates that a Message was not able to be sent to the running
+  /// Klh instance. Wraps a
+  /// [SessionError](crate::session::SessionError)
+  ErrorSendingMessage(SessionError),
+}
 
 /// The entrypoint to sending data through KLH using a [Request](crate::messaging::Request)
 #[derive(Clone)]
@@ -15,16 +28,15 @@ impl KlhClient {
     }
   }
 
-  // TODO error of type String isn't good here.
   /// Aynchronously send a [Request](crate::messaging::Request) along
   /// to the running instance of KLH.
-  pub async fn send(&mut self, mut request: Request) -> Result<(), String> {
+  pub async fn send(&mut self, mut request: Request) -> Result<(), KlhError> {
     match self.session_client.send(
       request.to_message()
     ).await {
       Err(session_err) => {
 	debug!("Error sending message to session: {:?}", session_err);
-	Err("Error sending message to session".to_string())
+	Err(KlhError::ErrorSendingMessage(session_err))
       },
       Ok(_) => Ok(()),
     }
@@ -34,18 +46,22 @@ impl KlhClient {
 /// The primary struct of a running KLH instance.
 pub struct Klh {
   session: Session,
+  config: KlhConfig,
 }
 
 impl Klh {
   pub fn new() -> Self {
-    let session = Session::new(KlhConfig::default());
+    let session = Session::new();
     Self {
       session,
+      config: KlhConfig::default(),
     }
   }
 
-  /// Start the instance of Klh.
+  /// Start the instance of Klh, after registering the core plugins
+  /// according to its [KlhConfig](crate::config::KlhConfig)
   pub async fn start(&mut self) {
+    self.register_core_plugins();
     self.session.run().await.unwrap();
     debug!("Session started successfully");
   }
@@ -61,6 +77,28 @@ impl Klh {
   pub fn get_client(&self) -> KlhClient {
     let client = KlhClient::new(self.session.get_client());
     client
+  }
+
+  /// Meant as a place that can locate plugins at a given startup spot,
+  /// as well as load the core functional plugins. For now, core
+  /// functional plugins are hard-coded. Dynamic memory appropriate
+  /// here as we are dealing with variou plugins at runtime here.
+  fn register_core_plugins(&mut self) {
+    for core_plugin in &self.config.core_plugins.clone() {
+      match core_plugin {
+	CorePlugins::Diagnostics => {
+	  debug!("Adding Diagnostics plugin");
+	  self.add_plugin(Box::new(Diagnostics::new()));
+	  debug!("Diagnostics plugin added");
+	},
+	CorePlugins::Buffers => {
+	  debug!("Adding Diagnostics plugin");
+	  self.add_plugin(Box::new(Buffers::new()));
+	  debug!("Diagnostics plugin added");
+	},
+	_ => (),
+      }
+    }
   }
 }
 
