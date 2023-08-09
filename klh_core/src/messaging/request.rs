@@ -89,3 +89,69 @@ impl Request {
   }
 }
 
+
+#[cfg(test)]
+mod request_tests {
+  use rstest::*;
+
+use crate::messaging::{MessageType, MessageContent, ResponseHandler, MessageError};
+
+use super::Request;
+
+  #[rstest]
+  fn should_serialize_into_message_with_no_content() {
+    let mut request: Request = Request::from_message_type(MessageType::query_from_str("query"));
+
+    let mut serialized_message = request.to_message();
+
+    assert_eq!(
+      serialized_message.get_content(),
+      None);
+  }
+
+  #[rstest]
+  fn should_serialize_into_message_with_expected_content() {
+    let mut request: Request = Request::new(
+      MessageType::query_from_str("query"),
+      MessageContent::from_content("content"),
+    );
+
+    let mut serialized_message = request.to_message();
+
+    assert_eq!(
+      serialized_message.get_content(),
+      Some(MessageContent::from_content("content")));
+  }
+
+  #[rstest]
+  fn should_serialize_into_message_with_expected_message_type() {
+    let mut request: Request = Request::from_message_type(MessageType::query_from_str("query"));
+
+    let serialized_message = request.to_message();
+
+    assert_eq!(
+      serialized_message.get_message_type(),
+      MessageType::query_from_str("query"));
+  }
+
+  #[rstest]
+  fn should_provide_handler_when_get_handler_first_called() {
+    let mut request: Request = Request::from_message_type(MessageType::query_from_str("query"));
+
+    let handler = request.get_handler();
+
+    assert!(handler.is_ok())
+  }
+
+  #[rstest]
+  fn should_return_expected_err_when_get_handler_called_more_than_once() {
+    let mut request: Request = Request::from_message_type(MessageType::query_from_str("query"));
+
+    let _handler = request.get_handler();
+
+    let handler = request.get_handler();
+
+    assert_eq!(handler.unwrap_err(), MessageError::ResponseHandlerAlreadyTaken)
+    
+  }
+}

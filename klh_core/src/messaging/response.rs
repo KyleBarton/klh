@@ -7,6 +7,7 @@ use super::{MessageContent, MessageError};
 /// [MessageContent] response to a [Request](super::Request) sent
 /// through the klh session. No public constructor; Can only be
 /// provided by [Request::get_handler](super::Request::get_handler)
+#[derive(Debug)]
 pub struct ResponseHandler {
   receiver: Option<Receiver<MessageContent>>,
 }

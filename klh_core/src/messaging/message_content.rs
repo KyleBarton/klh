@@ -7,7 +7,7 @@ use serde::{Serialize, Deserialize};
 /// [Serialize](serde::Serialize) and
 /// [Deserialize](serde::Deserialize) traits for provided generic
 /// types.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct MessageContent {
   content: Option<Bson>,
 }
