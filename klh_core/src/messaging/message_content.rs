@@ -60,3 +60,23 @@ impl MessageContent {
     }
   }
 }
+
+#[cfg(test)]
+mod message_content_tests {
+  use rstest::*;
+  use crate::messaging::MessageContent;
+
+  #[rstest]
+  fn should_deserialize_expected_type() {
+    let mut msg_content = MessageContent::from_content("This is content".to_string());
+    let content: String = msg_content.deserialize().expect("Should be a string content");
+    assert_eq!(content, "This is content".to_string());
+  }
+
+  #[rstest]
+  fn should_return_none_when_deserializing_wrong_type() {
+    let mut msg_content = MessageContent::from_content("This is content".to_string());
+    let content: Option<i64> = msg_content.deserialize();
+    assert_eq!(content, None);
+  }
+}
