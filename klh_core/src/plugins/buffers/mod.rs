@@ -1,6 +1,6 @@
 use log::{debug, warn};
 
-use crate::{messaging::{MessageType, Message, MessageContent, }, plugin::Plugin, session::SessionClient};
+use crate::{messaging::{MessageType, Message, MessageContent, MessageError, }, plugin::Plugin, session::SessionClient};
 
 
 pub mod requests;
@@ -43,7 +43,7 @@ impl Plugin for Buffers {
     self.session_client = Some(session_client)
   }
 
-  fn accept_message(&mut self, mut message: Message) -> Result<(), String> {
+  fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
     debug!("[BUFFERS] received message {}", message);
     match message.get_message_type() {
       MessageType::Query(id) => {

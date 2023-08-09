@@ -32,4 +32,9 @@ pub enum MessageError {
   /// [Responder::respond](super::Responder::respond)
   /// after the first will result in an [Err] of this type.
   ResponderAlreadyUsed,
+  /// Indicates that a message was sent to its plugin, but that the
+  /// plugin was unable to process the message when
+  /// [Plugin::accept_message](crate::plugin::Plugin::accept_message)
+  /// was invoked. Points to an issue on the plugin side.
+  PluginFailedToProcessMessage
 }

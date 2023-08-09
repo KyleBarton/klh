@@ -7,6 +7,8 @@ use crate::messaging::{Message, MessageType, MessageContent, MessageError};
 use super::plugin_channel::PluginTransmitter;
 
 
+/// The repository of active plugins that a KLH instance manages
+/// during its running session. Not part of the KLH public API.
 #[derive(Clone)]
 pub(crate) struct PluginRegistrar {
   plugin_type_map: HashMap<MessageType, PluginTransmitter>,
@@ -20,6 +22,9 @@ impl PluginRegistrar {
     }
   }
 
+  /// Receives a list of MessageTypes and PluginTransmitter instances,
+  /// and creates a mapping from MessageType -> Transmitter in its
+  /// plugin_type_map.
   pub(crate) fn register_message_types_for_plugin(
     &mut self,
     message_types: Vec<MessageType>,
@@ -31,6 +36,9 @@ impl PluginRegistrar {
     }
   }
 
+  /// Receives a Message and sends it to one of the PluginTransmitter
+  /// instances stored in its plugin_type_map, based on the
+  /// MessageType of the sent Message.
   pub(crate) async fn send_to_plugin(&self, mut message: Message) {
     debug!("Plugin registrar received message {}", message);
     match self.plugin_type_map.get(&message.get_message_type()) {
