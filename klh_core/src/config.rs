@@ -1,9 +1,14 @@
+/// A list of core plugins with which to start Klh. This will likely
+/// be refactored as configuration needs become more sophisticated.
 #[derive(Debug, Eq, PartialEq)]
 pub enum CorePlugins {
   Buffers,
   Diagnostics,
   Displays,
 }
+
+/// An object containing a representation of any configuration needed
+/// to start an instance of [Klh](super::klh::Klh)
 pub struct KlhConfig {
   pub core_plugins: Vec<CorePlugins>,
 }

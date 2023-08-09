@@ -2,6 +2,7 @@ use log::debug;
 
 use crate::{messaging::Request, session::{Session, SessionClient}, plugin::Plugin, config::KlhConfig};
 
+/// The entrypoint to sending data through KLH using a [Request](crate::messaging::Request)
 #[derive(Clone)]
 pub struct KlhClient {
   session_client: SessionClient,
@@ -14,6 +15,9 @@ impl KlhClient {
     }
   }
 
+  // TODO error of type String isn't good here.
+  /// Aynchronously send a [Request](crate::messaging::Request) along
+  /// to the running instance of KLH.
   pub async fn send(&mut self, mut request: Request) -> Result<(), String> {
     match self.session_client.send(
       request.to_message()
@@ -27,6 +31,7 @@ impl KlhClient {
   }
 }
 
+/// The primary struct of a running KLH instance.
 pub struct Klh {
   session: Session,
 }
@@ -39,17 +44,21 @@ impl Klh {
     }
   }
 
+  /// Start the instance of Klh.
   pub async fn start(&mut self) {
     self.session.run().await.unwrap();
     debug!("Session started successfully");
   }
 
+  /// Add an instance of a [Plugin](crate::plugin::Plugin) to the
+  /// session for registration. Must be called before [Klh::start]
   pub fn add_plugin(&mut self, plugin: Box<dyn Plugin + Send>) {
     self.session.register_plugin(plugin)
   }
 
+  /// Provide an instance of a [KlhClient] in order to send it
+  /// messages.
   pub fn get_client(&self) -> KlhClient {
-    // TODO eliminate this result chain
     let client = KlhClient::new(self.session.get_client());
     client
   }
