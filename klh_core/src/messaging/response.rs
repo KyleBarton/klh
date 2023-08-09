@@ -1,4 +1,4 @@
-use log::error;
+use log::{error, debug};
 use tokio::sync::oneshot::{Sender, Receiver,};
 
 use super::{MessageContent, MessageError};
@@ -70,11 +70,92 @@ impl Responder {
   /// instance.
   pub fn respond(&mut self, response: MessageContent) -> Result<(), MessageError> {
     match self.sender.take() {
-      None => Err(MessageError::ResponderAlreadyUsed),
+      None => {
+	debug!("Attempted to repond with an already-used responder");
+	Err(MessageError::ResponderAlreadyUsed)
+      },
       Some(s) => {
-	s.send(response).unwrap();
-	Ok(())
+	match s.send(response) {
+	  Err(_) => Err(MessageError::FailedToSendResponse),
+	  Ok(_) => Ok(()),
+	}
       },
     }
   }
+}
+
+#[cfg(test)]
+mod response_tests {
+  use rstest::*;
+
+use crate::messaging::{Request, MessageType, MessageContent, MessageError};
+
+  #[tokio::test]
+  async fn responder_should_respond_with_expected_content() {
+    let mut given_request = Request::from_message_type(MessageType::query_from_str("test"));
+
+    let mut response_handler = given_request.get_handler().unwrap();
+
+    let mut given_message = given_request.to_message();
+
+    let mut responder = given_message.get_responder().expect("Should be a responder available");
+
+    tokio::spawn(async move {
+      responder.respond(MessageContent::from_content("responding"))
+    });
+
+    let response = response_handler.handle_response().await.unwrap();
+
+    assert_eq!(
+      response,
+      MessageContent::from_content("responding"),
+    )
+  }
+
+  #[rstest]
+  fn responder_should_return_expected_error_when_called_to_respond_twice() {
+    let mut given_request = Request::from_message_type(MessageType::query_from_str("test"));
+    let mut given_message = given_request.to_message();
+
+    let mut responder = given_message.get_responder().expect("Should be a responder available");
+
+    responder.respond(MessageContent::from_content("content")).unwrap();
+
+    let second_response_attempt = responder.respond(MessageContent::from_content("content"));
+
+    assert_eq!(
+      second_response_attempt,
+      Err(MessageError::ResponderAlreadyUsed),
+    )
+  }
+
+  #[tokio::test]
+  async fn response_hander_should_return_expected_error_when_called_to_handle_twice() {
+    let mut given_request = Request::from_message_type(MessageType::query_from_str("test"));
+
+    let mut response_handler = given_request.get_handler().unwrap();
+
+    let mut given_message = given_request.to_message();
+
+    let mut responder = given_message.get_responder().expect("Should be a responder available");
+
+    tokio::spawn(async move {
+      responder.respond(MessageContent::from_content("responding"))
+    });
+
+    let first_response = response_handler.handle_response().await.unwrap();
+
+    assert_eq!(
+      first_response,
+      MessageContent::from_content("responding"),
+    );
+
+    let second_response = response_handler.handle_response().await;
+
+    assert_eq!(
+      second_response,
+      Err(MessageError::ResponseAlreadyHandled),
+    )
+  }
+  
 }

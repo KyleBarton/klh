@@ -36,5 +36,9 @@ pub enum MessageError {
   /// plugin was unable to process the message when
   /// [Plugin::accept_message](crate::plugin::Plugin::accept_message)
   /// was invoked. Points to an issue on the plugin side.
-  PluginFailedToProcessMessage
+  PluginFailedToProcessMessage,
+  /// Indicates that a [Responder](crate::messaging::Responder) was
+  /// unable to send a response along the oneshot channel. This points
+  /// to a serious problem in the request/response infrastructure.
+  FailedToSendResponse,
 }
