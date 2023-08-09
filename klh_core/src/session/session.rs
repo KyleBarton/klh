@@ -95,7 +95,7 @@ impl Session {
   /// use klh_core::config::KlhConfig;
   /// use klh_core::session::*;
   /// 
-  /// let session = Session::new(KlhConfig::default());
+  /// let session = Session::new();
   /// let client: SessionClient = session.get_client();
   /// ```
   pub fn get_client(&self) -> SessionClient {
@@ -124,11 +124,13 @@ impl Session {
 mod session_tests {
   use rstest::*;
   use super::Session;
-  use crate::{plugin::plugin_test_utility::{TestPlugin, QUERY_ID, QUERY_RESPONSE}, messaging::{Request, MessageType, MessageError}, session::session::SessionError, config::{KlhConfig, CorePlugins}, plugins::buffers::{requests::new_list_buffers_request, models::ListBuffersResponse}};
+  use crate::messaging::{Request, MessageType, MessageError};
+  use crate::session::session::SessionError;
+  use crate::plugin::plugin_test_utility::{TestPlugin, QUERY_ID, QUERY_RESPONSE};
 
   #[fixture]
   fn default_session() -> Session {
-    let mut session = Session::new(KlhConfig::default());
+    let mut session = Session::new();
     let plugin: TestPlugin = TestPlugin::new();
     session.register_plugin(Box::new(plugin));
     session
@@ -159,57 +161,6 @@ mod session_tests {
     default_session.start_plugins().await;
   }
 
-
-  #[rstest]
-  #[tokio::test]
-  async fn should_register_core_plugin_specified_in_config() {
-    let config = KlhConfig::with_core_plugins(vec!(CorePlugins::Buffers));
-
-    let mut session = Session::new(config);
-
-    session.run().await.unwrap();
-
-    let mut request = new_list_buffers_request();
-
-    let mut handler = request.get_handler().unwrap();
-
-    session.get_client().send(request.to_message()).await.unwrap();
-
-    let mut response = handler.handle_response().await.unwrap();
-
-    let expected_response : Option<ListBuffersResponse> = response.deserialize();
-
-    assert!(expected_response.is_some());
-
-  }
-
-  #[rstest]
-  #[tokio::test]
-  async fn should_not_register_core_plugins_omitted_in_config() {
-    let config = KlhConfig::with_core_plugins(Vec::new());
-
-    let mut session = Session::new(config);
-
-    session.run().await.unwrap();
-
-    let mut request = new_list_buffers_request();
-
-    let mut handler = request.get_handler().unwrap();
-
-    session.get_client().send(request.to_message()).await.unwrap();
-
-    let mut response = handler.handle_response().await.unwrap();
-
-    let mut response_as_error = response.clone();
-
-    let unexpected_response : Option<ListBuffersResponse> = response.deserialize();
-
-    assert!(unexpected_response.is_none());
-
-    let expected_error_response : Option<MessageError> = response_as_error.deserialize();
-
-    assert_eq!(expected_error_response.expect("should have error"), MessageError::MessageTypeNotFound)
-  }
 
   #[rstest]
   #[tokio::test]
@@ -244,13 +195,13 @@ mod session_tests {
 
   #[rstest]
   fn session_should_have_no_plugins_when_new() {
-    let session = Session::new(KlhConfig::default());
+    let session = Session::new();
     assert!(session.plugin_channels.is_none())
   }
 
   #[rstest]
   fn session_should_add_one_plugin() {
-    let mut session = Session::new(KlhConfig::default());
+    let mut session = Session::new();
     session.register_plugin(Box::new(TestPlugin::new()));
 
     assert!(session.plugin_channels.is_some());
@@ -259,7 +210,7 @@ mod session_tests {
 
   #[rstest]
   fn session_should_add_two_plugins() {
-    let mut session = Session::new(KlhConfig::default());
+    let mut session = Session::new();
     session.register_plugin(Box::new(TestPlugin::new()));
     session.register_plugin(Box::new(TestPlugin::new()));
 

@@ -15,10 +15,9 @@ pub mod plugin_test_utility {
   pub const COMMAND_RESPONSE: &str = "commandResponse";
   pub const QUERY_RESPONSE: &str = "queryResponse";
 
-  use crate::{messaging::{Message, MessageType, MessageContent}, session::SessionClient};
-
+  use crate::messaging::{Message, MessageType, MessageContent, MessageError};
+  use crate::session::SessionClient;
   use super::Plugin;
-
   
   pub struct TestPlugin {
     command_sent: bool,
@@ -35,7 +34,7 @@ pub mod plugin_test_utility {
   }
 
   impl Plugin for TestPlugin {
-    fn accept_message(&mut self, mut message: Message) -> Result<(), String> {
+    fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
       match message.get_message_type() {
 	MessageType::Query(id) => {
 	  if QUERY_ID.as_bytes() == &id[0..QUERY_ID.len()] {
