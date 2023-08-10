@@ -63,3 +63,88 @@ impl fmt::Display for Message {
 ", self.message_type.display_id(), self.content)
   }
 }
+
+#[cfg(test)]
+mod message_tests {
+  use rstest::*;
+
+  use crate::messaging::{MessageType, MessageContent, Request};
+
+  #[rstest]
+  fn should_get_expected_content_from_message() {
+    let mut given_request = Request::new(
+      MessageType::command_from_str("command").unwrap(),
+      MessageContent::from_content("content"),
+    );
+
+    let mut message = given_request.to_message();
+
+    assert_eq!(
+      message.get_content(),
+      Some(MessageContent::from_content("content")),
+    )
+  }
+
+  #[rstest]
+  fn should_preserve_message_content_after_providing() {
+    let mut given_request = Request::new(
+      MessageType::command_from_str("command").unwrap(),
+      MessageContent::from_content("content"),
+    );
+
+    let mut message = given_request.to_message();
+
+    let _content_throwaway = message.get_content();
+
+    let preserved_content = message.get_content();
+
+    assert_eq!(
+      preserved_content,
+      Some(MessageContent::from_content("content")),
+    )
+  }
+
+  #[rstest]
+  fn should_provide_responder() {
+    let mut given_request = Request::new(
+      MessageType::command_from_str("command").unwrap(),
+      MessageContent::from_content("content"),
+    );
+
+    let mut message = given_request.to_message();
+
+    let responder = message.get_responder();
+
+    assert!(responder.is_some())
+  }
+
+  #[rstest]
+  fn should_provide_none_if_asked_for_responder_twice() {
+    let mut given_request = Request::new(
+      MessageType::command_from_str("command").unwrap(),
+      MessageContent::from_content("content"),
+    );
+
+    let mut message = given_request.to_message();
+
+    let _responder_thrown_away = message.get_responder();
+
+    let second_responder = message.get_responder();
+
+    assert!(second_responder.is_none())
+  }
+
+  #[rstest]
+  fn should_return_expected_message_type() {
+    let mut given_request = Request::from_message_type(
+      MessageType::query_from_str("query").unwrap(),
+    );
+
+    let message = given_request.to_message();
+
+    assert_eq!(
+      message.get_message_type(),
+      MessageType::query_from_str("query").unwrap(),
+    )
+  }
+}
