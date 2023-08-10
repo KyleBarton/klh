@@ -26,7 +26,9 @@ impl Diagnostics {
     let mut message_types: Vec<MessageType> = Vec::new();
 
     for id in COMMAND_MESSAGE_TYPE_IDS {
-      message_types.push(MessageType::command_from_str(id));
+      message_types.push(
+	MessageType::command_from_str(id).unwrap()
+      );
     }
 
     Diagnostics{

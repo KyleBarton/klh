@@ -94,13 +94,15 @@ impl Request {
 mod request_tests {
   use rstest::*;
 
-use crate::messaging::{MessageType, MessageContent, ResponseHandler, MessageError};
+use crate::messaging::{MessageType, MessageContent, MessageError};
 
 use super::Request;
 
   #[rstest]
   fn should_serialize_into_message_with_no_content() {
-    let mut request: Request = Request::from_message_type(MessageType::query_from_str("query"));
+    let mut request: Request = Request::from_message_type(
+      MessageType::query_from_str("query").unwrap()
+    );
 
     let mut serialized_message = request.to_message();
 
@@ -112,7 +114,7 @@ use super::Request;
   #[rstest]
   fn should_serialize_into_message_with_expected_content() {
     let mut request: Request = Request::new(
-      MessageType::query_from_str("query"),
+      MessageType::query_from_str("query").unwrap(),
       MessageContent::from_content("content"),
     );
 
@@ -125,18 +127,23 @@ use super::Request;
 
   #[rstest]
   fn should_serialize_into_message_with_expected_message_type() {
-    let mut request: Request = Request::from_message_type(MessageType::query_from_str("query"));
+    let mut request: Request = Request::from_message_type(
+      MessageType::query_from_str("query").unwrap()
+    );
 
     let serialized_message = request.to_message();
 
     assert_eq!(
       serialized_message.get_message_type(),
-      MessageType::query_from_str("query"));
+      MessageType::query_from_str("query").unwrap(),
+    );
   }
 
   #[rstest]
   fn should_provide_handler_when_get_handler_first_called() {
-    let mut request: Request = Request::from_message_type(MessageType::query_from_str("query"));
+    let mut request: Request = Request::from_message_type(
+      MessageType::query_from_str("query").unwrap()
+    );
 
     let handler = request.get_handler();
 
@@ -145,7 +152,9 @@ use super::Request;
 
   #[rstest]
   fn should_return_expected_err_when_get_handler_called_more_than_once() {
-    let mut request: Request = Request::from_message_type(MessageType::query_from_str("query"));
+    let mut request: Request = Request::from_message_type(
+      MessageType::query_from_str("query").unwrap()
+    );
 
     let _handler = request.get_handler();
 

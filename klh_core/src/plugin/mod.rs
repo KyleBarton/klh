@@ -61,8 +61,8 @@ pub mod plugin_test_utility {
 
     fn list_message_types(&self) -> Vec<MessageType> {
       vec!(
-	MessageType::command_from_str(COMMAND_ID),
-	MessageType::query_from_str(QUERY_ID),
+	MessageType::command_from_str(COMMAND_ID).unwrap(),
+	MessageType::query_from_str(QUERY_ID).unwrap(),
       )
     }
 

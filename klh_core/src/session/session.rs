@@ -142,7 +142,7 @@ mod session_tests {
     let mut client = default_session.get_client();
     default_session.run().await.unwrap();
     let mut request = Request::from_message_type(
-      MessageType::query_from_str(QUERY_ID)
+      MessageType::query_from_str(QUERY_ID).unwrap()
     );
     let mut handler = request.get_handler().unwrap();
 
@@ -169,7 +169,9 @@ mod session_tests {
 
     let mut client = default_session.get_client();
 
-    let mut unknown_request = Request::from_message_type(MessageType::query_from_str("unknown"));
+    let mut unknown_request = Request::from_message_type(
+      MessageType::query_from_str("unknown").unwrap()
+    );
 
     let mut handler = unknown_request.get_handler().unwrap();
 

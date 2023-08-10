@@ -25,12 +25,16 @@ e: exit
 	match input.as_str().trim() {
 	  "bad_query" => {
 	    println!("Sending bogus query");
-	    let bad_query = Request::from_message_type(MessageType::query_from_str("NoSuchId"));
+	    let bad_query = Request::from_message_type(
+	      MessageType::query_from_str("NoSuchId").unwrap()
+	    );
 	    client.send(bad_query).await.unwrap();
 	  },
 	  "bad_command" => {
 	    println!("Sending bogus command");
-	    let bad_command = Request::from_message_type(MessageType::command_from_str("NoSuchId"));
+	    let bad_command = Request::from_message_type(
+	      MessageType::command_from_str("NoSuchId").unwrap()
+	    );
 	    client.send(bad_command).await.unwrap();
 	  }
 	  "dl" => {

@@ -144,7 +144,9 @@ use crate::klh::Klh;
       klh.start().await;
     }).await.unwrap();
 
-    let mut request = Request::from_message_type(MessageType::command_from_str(COMMAND_ID));
+    let mut request = Request::from_message_type(
+      MessageType::command_from_str(COMMAND_ID).unwrap()
+    );
     let mut handler = request.get_handler().unwrap();
 
     klh_client.send(request).await.unwrap();
@@ -168,7 +170,9 @@ use crate::klh::Klh;
       klh.start().await;
     }).await.unwrap();
 
-    let mut request = Request::from_message_type(MessageType::query_from_str(QUERY_ID));
+    let mut request = Request::from_message_type(
+      MessageType::query_from_str(QUERY_ID).unwrap()
+    );
     let mut handler = request.get_handler().unwrap();
 
     klh_client.send(request).await.unwrap();
