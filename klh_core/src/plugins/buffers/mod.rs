@@ -54,8 +54,8 @@ impl Plugin for Buffers {
 	  let mut content: String = "".to_string();
 
 	  for buf_name in self.basic_buffer_names.iter() {
-	    content.push_str(" ");
-	    content.push_str(&buf_name);
+	    content.push(' ');
+	    content.push_str(buf_name);
 	  }
 
 	  let response = models::ListBuffersResponse {

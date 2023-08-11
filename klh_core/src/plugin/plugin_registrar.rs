@@ -32,7 +32,7 @@ impl PluginRegistrar {
   ) {
     for message_type in message_types.iter() {
       debug!("Registering message type {}", message_type);
-      self.plugin_type_map.insert(message_type.clone(), transmitter.clone());
+      self.plugin_type_map.insert(*message_type, transmitter.clone());
     }
   }
 

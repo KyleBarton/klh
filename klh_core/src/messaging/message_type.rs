@@ -47,11 +47,11 @@ impl MessageType {
     match self {
       MessageType::Command(bytes) => std::str::from_utf8(bytes)
 	.unwrap()
-	.replace("\u{0}", "")
+	.replace('\u{0}', "")
 	.to_string(),
       MessageType::Query(bytes) => std::str::from_utf8(bytes)
 	.unwrap()
-	.replace("\u{0}", "")
+	.replace('\u{0}', "")
 	.to_string(),
     }
   }
@@ -69,7 +69,7 @@ impl MessageType {
       let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
       let mut index = 0;
       for b in str_id.as_bytes() {
-	id[index] = b.clone();
+	id[index] = *b;
 	index += 1;
       }
 
@@ -138,7 +138,7 @@ mod message_type_tests {
     let message_type_result = MessageType::command_from_str(&command_id_too_long);
     assert!(message_type_result.is_err());
     assert_eq!(
-      message_type_result.err().expect("Is an error"),
+      message_type_result.expect_err("Is an error"),
       MessageTypeError::MessageTypeIdTooLong,
     )
   }
@@ -149,7 +149,7 @@ mod message_type_tests {
     let message_type_result = MessageType::query_from_str(&query_id_too_long);
     assert!(message_type_result.is_err());
     assert_eq!(
-      message_type_result.err().expect("Is an error"),
+      message_type_result.expect_err("Is an error"),
       MessageTypeError::MessageTypeIdTooLong,
     )
   }

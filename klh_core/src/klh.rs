@@ -75,8 +75,8 @@ impl Klh {
   /// Provide an instance of a [KlhClient] in order to send it
   /// messages.
   pub fn get_client(&self) -> KlhClient {
-    let client = KlhClient::new(self.session.get_client());
-    client
+    
+    KlhClient::new(self.session.get_client())
   }
 
   /// Meant as a place that can locate plugins at a given startup spot,

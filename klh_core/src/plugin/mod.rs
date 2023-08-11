@@ -67,7 +67,7 @@ pub mod plugin_test_utility {
     }
 
     fn receive_client(&mut self, _client: SessionClient) {
-      ()
+      
     }
   }
 }
