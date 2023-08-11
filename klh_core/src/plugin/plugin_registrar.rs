@@ -44,14 +44,26 @@ impl PluginRegistrar {
     match self.plugin_type_map.get(&message.get_message_type()) {
       Some(listener) => {
 	debug!("Found listener for message {}", message);
-	listener.send_message(message).await.unwrap();
+	match listener.send_message(message).await {
+	  Ok(_) => (),
+	  Err(e) => {
+	    debug!("Error sending message to plugin channel listener: {}", e);
+	  },
+	}
       },
       None => {
 	warn!("Could not find listener message {}", message);
-	message.get_responder()
+	match message.get_responder()
 	  .expect("Should have a responder")
-	  .respond(MessageContent::from_content(MessageError::MessageTypeNotFound))
-	  .unwrap();
+	  .respond(MessageContent::from_content(MessageError::MessageTypeNotFound)) {
+	    Err(message_error) => {
+	      debug!(
+		"Received a message error attempting to respond with MessageTypeNotFound: {:?}",
+		message_error
+	      );
+	    },
+	    Ok(_) => (),
+	  }
       },
     }
   }
