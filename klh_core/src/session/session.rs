@@ -118,11 +118,11 @@ impl Session {
   }
 }
 
-impl Default for Session {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+// impl Default for Session {
+//     fn default() -> Self {
+//         Self::new()
+//     }
+// }
 
 #[cfg(test)]
 mod session_tests {
