@@ -59,7 +59,7 @@ impl Request {
     }
   }
 
-  pub(crate) fn to_message(&mut self) -> Message {
+  pub(crate) fn as_message(&mut self) -> Message {
     match self.content.take() {
       None => Message::new(
 	self.message_type,
@@ -104,7 +104,7 @@ use super::Request;
       MessageType::query_from_str("query").unwrap()
     );
 
-    let mut serialized_message = request.to_message();
+    let mut serialized_message = request.as_message();
 
     assert_eq!(
       serialized_message.get_content(),
@@ -118,7 +118,7 @@ use super::Request;
       MessageContent::from_content("content"),
     );
 
-    let mut serialized_message = request.to_message();
+    let mut serialized_message = request.as_message();
 
     assert_eq!(
       serialized_message.get_content(),
@@ -131,7 +131,7 @@ use super::Request;
       MessageType::query_from_str("query").unwrap()
     );
 
-    let serialized_message = request.to_message();
+    let serialized_message = request.as_message();
 
     assert_eq!(
       serialized_message.get_message_type(),

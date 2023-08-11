@@ -77,7 +77,7 @@ mod message_tests {
       MessageContent::from_content("content"),
     );
 
-    let mut message = given_request.to_message();
+    let mut message = given_request.as_message();
 
     assert_eq!(
       message.get_content(),
@@ -92,7 +92,7 @@ mod message_tests {
       MessageContent::from_content("content"),
     );
 
-    let mut message = given_request.to_message();
+    let mut message = given_request.as_message();
 
     let _content_throwaway = message.get_content();
 
@@ -111,7 +111,7 @@ mod message_tests {
       MessageContent::from_content("content"),
     );
 
-    let mut message = given_request.to_message();
+    let mut message = given_request.as_message();
 
     let responder = message.get_responder();
 
@@ -125,7 +125,7 @@ mod message_tests {
       MessageContent::from_content("content"),
     );
 
-    let mut message = given_request.to_message();
+    let mut message = given_request.as_message();
 
     let _responder_thrown_away = message.get_responder();
 
@@ -140,7 +140,7 @@ mod message_tests {
       MessageType::query_from_str("query").unwrap(),
     );
 
-    let message = given_request.to_message();
+    let message = given_request.as_message();
 
     assert_eq!(
       message.get_message_type(),

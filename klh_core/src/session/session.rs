@@ -146,7 +146,7 @@ mod session_tests {
     );
     let mut handler = request.get_handler().unwrap();
 
-    client.send(request.to_message()).await.unwrap();
+    client.send(request.as_message()).await.unwrap();
 
     let mut response = handler.handle_response().await.unwrap();
 
@@ -175,7 +175,7 @@ mod session_tests {
 
     let mut handler = unknown_request.get_handler().unwrap();
 
-    client.send(unknown_request.to_message()).await.unwrap();
+    client.send(unknown_request.as_message()).await.unwrap();
 
     let mut response = handler.handle_response().await.unwrap();
 

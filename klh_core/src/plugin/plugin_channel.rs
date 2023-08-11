@@ -85,7 +85,7 @@ mod plugin_channel_tests {
   fn message_to_send() -> Message {
     Request::from_message_type(
       MessageType::query_from_str(QUERY_ID).unwrap()
-    ).to_message()
+    ).as_message()
   }
 
   #[rstest]
@@ -97,7 +97,7 @@ mod plugin_channel_tests {
     let mut response_handler = given_request.get_handler()
       .expect("response handler should be available");
 
-    let message = given_request.to_message();
+    let message = given_request.as_message();
 
     let mut plugin_channel : PluginChannel = PluginChannel::new(
       Box::new(TestPlugin::new()),

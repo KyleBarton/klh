@@ -98,7 +98,7 @@ use crate::messaging::{Request, MessageType, MessageContent, MessageError};
 
     let mut response_handler = given_request.get_handler().unwrap();
 
-    let mut given_message = given_request.to_message();
+    let mut given_message = given_request.as_message();
 
     let mut responder = given_message.get_responder().expect("Should be a responder available");
 
@@ -119,7 +119,7 @@ use crate::messaging::{Request, MessageType, MessageContent, MessageError};
     let mut given_request = Request::from_message_type(
       MessageType::query_from_str("test").unwrap()
     );
-    let mut given_message = given_request.to_message();
+    let mut given_message = given_request.as_message();
 
     let mut responder = given_message.get_responder().expect("Should be a responder available");
 
@@ -141,7 +141,7 @@ use crate::messaging::{Request, MessageType, MessageContent, MessageError};
 
     let mut response_handler = given_request.get_handler().unwrap();
 
-    let mut given_message = given_request.to_message();
+    let mut given_message = given_request.as_message();
 
     let mut responder = given_message.get_responder().expect("Should be a responder available");
 
