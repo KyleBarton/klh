@@ -22,3 +22,4 @@ jobs:
         name: Lint
         with:
           command: clippy
+          args: -- -D warnings
