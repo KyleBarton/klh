@@ -1,5 +1,5 @@
 use log::{info, debug};
-use tokio::sync::mpsc;
+use tokio::sync::mpsc::{self, error::SendError};
 
 use crate::messaging::Message;
 
@@ -67,7 +67,53 @@ pub(crate) struct PluginTransmitter {
 
 impl PluginTransmitter {
   
-  pub(crate) async fn send_message(&self, message: Message) -> Result<(), mpsc::error::SendError<Message>> {
+  pub(crate) async fn send_message(&self, message: Message) -> Result<(), SendError<Message>> {
     self.transmitter.send(message).await
+  }
+}
+
+#[cfg(test)]
+mod plugin_channel_tests {
+  use rstest::*;
+
+  use crate::plugin::plugin_test_utility::{TestPlugin, QUERY_RESPONSE, QUERY_ID};
+  use crate::messaging::{Request, MessageType, Message, MessageContent};
+
+  use super::PluginChannel;
+
+  #[fixture]
+  fn message_to_send() -> Message {
+    Request::from_message_type(
+      MessageType::query_from_str(QUERY_ID).unwrap()
+    ).to_message()
+  }
+
+  #[rstest]
+  #[tokio::test]
+  async fn should_send_message_through_plugin_channel() {
+    let mut given_request = Request::from_message_type(
+      MessageType::query_from_str(QUERY_ID).unwrap()
+    );
+    let mut response_handler = given_request.get_handler()
+      .expect("response handler should be available");
+
+    let message = given_request.to_message();
+
+    let mut plugin_channel : PluginChannel = PluginChannel::new(
+      Box::new(TestPlugin::new()),
+    );
+
+    let transmitter = plugin_channel.get_transmitter();
+
+
+    tokio::spawn(async move {
+      plugin_channel.start().await;
+    });
+
+    let _ = transmitter.send_message(message).await;
+
+    let response = response_handler.handle_response().await.unwrap();
+
+    assert_eq!(response, MessageContent::from_content(QUERY_RESPONSE))
   }
 }

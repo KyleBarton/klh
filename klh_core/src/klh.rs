@@ -126,6 +126,8 @@ use crate::klh::Klh;
   }
 
   #[rstest]
+  // Comment the below `ignore` in order to enable stdout debug
+  // logging during test runs.
   #[ignore]
   fn setup(_setup_logging_fixture: &()) {
     debug!("Setup function completed")
