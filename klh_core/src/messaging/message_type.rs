@@ -65,12 +65,13 @@ impl MessageType {
       Err(MessageTypeError::MessageTypeIdTooLong)
     }
     else {
-      
       let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
-      let mut index = 0;
-      for b in str_id.as_bytes() {
+      for (index, b) in str_id
+	.as_bytes()
+	.iter()
+	.enumerate()
+      {
 	id[index] = *b;
-	index += 1;
       }
 
       Ok(Self::Query(id))
@@ -88,10 +89,12 @@ impl MessageType {
     }
     else {
       let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
-      let mut index = 0;
-      for b in str_id.as_bytes() {
+      for (index, b) in str_id
+	.as_bytes()
+	.iter()
+	.enumerate()
+      {
 	id[index] = *b;
-	index += 1;
       }
 
       Ok(Self::Command(id))

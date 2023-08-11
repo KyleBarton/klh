@@ -14,10 +14,10 @@ pub(crate) struct Buffers {
 
 impl Buffers {
   pub fn new() -> Self {
-    let mut message_types: Vec<MessageType> = Vec::new();
-
-    message_types.push(MessageType::command_from_str("buffers::create_buffer").unwrap());
-    message_types.push(MessageType::query_from_str("buffers::list_buffers").unwrap());
+    let message_types: Vec<MessageType> = vec![
+      MessageType::command_from_str("buffers::create_buffer").unwrap(),
+      MessageType::query_from_str("buffers::list_buffers").unwrap(),
+    ];
 
     Self {
       message_types,

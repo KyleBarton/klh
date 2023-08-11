@@ -53,16 +53,13 @@ impl PluginRegistrar {
       },
       None => {
 	warn!("Could not find listener message {}", message);
-	match message.get_responder()
+	if let Err(message_error) = message.get_responder()
 	  .expect("Should have a responder")
 	  .respond(MessageContent::from_content(MessageError::MessageTypeNotFound)) {
-	    Err(message_error) => {
-	      debug!(
-		"Received a message error attempting to respond with MessageTypeNotFound: {:?}",
-		message_error
-	      );
-	    },
-	    Ok(_) => (),
+	    debug!(
+	      "Received a message error attempting to respond with MessageTypeNotFound: {:?}",
+	      message_error
+	    );
 	  }
       },
     }

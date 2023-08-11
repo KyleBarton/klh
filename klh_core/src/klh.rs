@@ -43,6 +43,12 @@ impl KlhClient {
   }
 }
 
+impl Default for Klh {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 /// The primary struct of a running KLH instance.
 pub struct Klh {
   session: Session,

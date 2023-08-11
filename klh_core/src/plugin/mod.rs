@@ -1,3 +1,4 @@
+#[allow(clippy::module_inception)]
 mod plugin;
 pub use plugin::Plugin;
 
@@ -22,6 +23,12 @@ pub mod plugin_test_utility {
   pub struct TestPlugin {
     command_sent: bool,
     query_sent: bool,
+  }
+
+  impl Default for TestPlugin {
+    fn default() -> Self {
+      Self::new()
+    }
   }
 
   impl TestPlugin {
