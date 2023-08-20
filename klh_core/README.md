@@ -6,7 +6,7 @@ This is the core crate for KLH, containing the public API and client code to sta
 
 ### Communicating with a running Klh
 
-UIs and other clients of a runnint Klh instance should use KlhClient to send Requests to the running Klh:
+UIs and other clients of a running Klh instance should use KlhClient to send Requests to the running Klh:
 
 ```rs
 #[tokio::main]
@@ -31,7 +31,8 @@ This includes core functionality. `Buffers`, `Display`, `LanguageParser` (Name T
 
 Adding a plugin to an instance of Klh must be done before the instance has `start`ed:
 
-_Note: See [#11](https://github.com/KyleBarton/klh/issues/11) for more work needed here_
+> [!NOTE]
+> See [#11](https://github.com/KyleBarton/klh/issues/11) for more work needed here
 
 
 ```rs
