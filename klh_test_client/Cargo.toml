@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 klh_core = { path = "../klh_core"}
+simplelog = "*"

@@ -2,7 +2,7 @@ use std::{thread, time};
 
 use log::{debug, warn, info};
 
-use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageContent}, session::SessionClient};
+use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageContent, MessageError}, session::SessionClient};
 
 
 pub mod requests;
@@ -26,7 +26,9 @@ impl Diagnostics {
     let mut message_types: Vec<MessageType> = Vec::new();
 
     for id in COMMAND_MESSAGE_TYPE_IDS {
-      message_types.push(MessageType::command_from_str(id));
+      message_types.push(
+	MessageType::command_from_str(id).unwrap()
+      );
     }
 
     Diagnostics{
@@ -37,12 +39,12 @@ impl Diagnostics {
 }
 impl Plugin for Diagnostics {
 
-  fn accept_message(&mut self, mut message: Message) -> Result<(), String> {
+  fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
     debug!("[DIAGNOSTICS] Diagnostics received message {}", message);
     match message.get_message_type() {
       MessageType::Query(_) => {
 	warn!("[DIAGNOSTICS] message type not found: {}", &message.get_message_type());
-	Ok(())
+	Err(MessageError::PluginFailedToProcessMessage)
       },
       MessageType::Command(id) => {
 	if &id[0.."diagnostics::log_event".len()] == "diagnostics::log_event".as_bytes() {

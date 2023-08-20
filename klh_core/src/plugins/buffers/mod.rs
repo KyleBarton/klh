@@ -1,6 +1,6 @@
 use log::{debug, warn};
 
-use crate::{messaging::{MessageType, Message, MessageContent, }, plugin::Plugin, session::SessionClient};
+use crate::{messaging::{MessageType, Message, MessageContent, MessageError, }, plugin::Plugin, session::SessionClient};
 
 
 pub mod requests;
@@ -14,10 +14,10 @@ pub(crate) struct Buffers {
 
 impl Buffers {
   pub fn new() -> Self {
-    let mut message_types: Vec<MessageType> = Vec::new();
-
-    message_types.push(MessageType::command_from_str("buffers::create_buffer"));
-    message_types.push(MessageType::query_from_str("buffers::list_buffers"));
+    let message_types: Vec<MessageType> = vec![
+      MessageType::command_from_str("buffers::create_buffer").unwrap(),
+      MessageType::query_from_str("buffers::list_buffers").unwrap(),
+    ];
 
     Self {
       message_types,
@@ -43,7 +43,7 @@ impl Plugin for Buffers {
     self.session_client = Some(session_client)
   }
 
-  fn accept_message(&mut self, mut message: Message) -> Result<(), String> {
+  fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
     debug!("[BUFFERS] received message {}", message);
     match message.get_message_type() {
       MessageType::Query(id) => {
@@ -54,8 +54,8 @@ impl Plugin for Buffers {
 	  let mut content: String = "".to_string();
 
 	  for buf_name in self.basic_buffer_names.iter() {
-	    content.push_str(" ");
-	    content.push_str(&buf_name);
+	    content.push(' ');
+	    content.push_str(buf_name);
 	  }
 
 	  let response = models::ListBuffersResponse {

@@ -12,3 +12,6 @@ pub use message_type::*;
 
 mod message;
 pub use message::*;
+
+mod message_error;
+pub use message_error::MessageError;

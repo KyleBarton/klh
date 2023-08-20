@@ -482,10 +482,12 @@ which contain requests and solicit responses. An "event" may end up
 being a type (or types) of message in the future.
 
 EventType --> MessageType, and such
-*** TODO Simplify the "awaitResponse" flow for requests into a fluent interface.
+*** DONE Simplify the "awaitResponse" flow for requests into a fluent interface.
+CLOSED: [2022-09-03 Sat 14:39]
 Also, parameterize slow bomb and have diagnostics return responses, instead of just logging them.
 
-*** TODO Reformat the +event+ message module
+*** DONE Reformat the +event+ message module
+CLOSED: [2022-09-03 Sat 14:39]
 a) it should messaging. b) we'll probably want to move consumer & producer, or request/response, code into different areas.
 
 *** DONE Remove the `Query` concept in favor of Request
@@ -494,3 +496,24 @@ CLOSED: [2022-08-27 Sat 22:40]
 *** DONE Use structured content for the response side of things as well
 CLOSED: [2022-08-28 Sun 10:35]
 I believe this needs to happen before we can merge https://github.com/KyleBarton/klh/pull/4
+
+** 09/03/2022
+Starting on a larger refactor effort to get some documentation and coding standards and testing in place.
+
+Phase 1:
+- Go through and add tests
+- Adjust function return values as you go
+- Document testing & function signature standards
+- Linting
+
+Phase 2: 
+- Move Core Plugins out of klh-core
+- Add detailed readmes
+- Research code coverage plugins for GH.
+
+*** Initial E2E Tests done
+It's probably time to decide if I really need `session` - it seems
+like Klh and Session wrap the same thing. It might be better to
+simplify into the KLH layer, and then develop a "set of option" object
+that is passed in to KLH in order to determine common plugin
+locations, logging setup, etc.

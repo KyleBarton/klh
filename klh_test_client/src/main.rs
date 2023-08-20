@@ -1,8 +1,8 @@
 use klh_core::klh::{Klh, KlhClient};
-use klh_core::messaging::Request;
+use klh_core::messaging::{Request, MessageType};
 use klh_core::plugins::buffers::models::ListBuffersResponse;
 use klh_core::plugins::{diagnostics, buffers};
-use std::io;
+use std::{io, fs};
 
 async fn prompt_and_read(
   mut client: KlhClient,
@@ -25,12 +25,16 @@ e: exit
 	match input.as_str().trim() {
 	  "bad_query" => {
 	    println!("Sending bogus query");
-	    let bad_query = Request::from_id("NoSuchId");
+	    let bad_query = Request::from_message_type(
+	      MessageType::query_from_str("NoSuchId").unwrap()
+	    );
 	    client.send(bad_query).await.unwrap();
 	  },
 	  "bad_command" => {
 	    println!("Sending bogus command");
-	    let bad_command = Request::from_id("NoSuchId");
+	    let bad_command = Request::from_message_type(
+	      MessageType::command_from_str("NoSuchId").unwrap()
+	    );
 	    client.send(bad_command).await.unwrap();
 	  }
 	  "dl" => {
@@ -46,7 +50,7 @@ e: exit
 	      let mut slow_bomb_handler = diagnostics_request.get_handler().unwrap();
 	      thread_client.send(diagnostics_request).await.unwrap();
 	      match slow_bomb_handler.handle_response().await {
-		Err(msg) => println!("Problem handling slow bomb response: {}", &msg),
+		Err(msg) => println!("Problem handling slow bomb response: {:?}", &msg),
 		Ok(_) => {
 		  println!("Slow bomb responded!")
 		}
@@ -73,7 +77,7 @@ e: exit
 		  .expect("Should have a list buffers response");
 		println!("Active buffers: {}", list_buffers_response.list_as_string);
 	      },
-	      Err(msg) => println!("Sender dropped probably: {}", &msg),
+	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    };
 	  },
 	  "e" => {
@@ -96,11 +100,18 @@ e: exit
 // What if you wanted it to actually follow the public interface
 #[tokio::main]
 async fn main() {
+  // Set up some logging.
+  simplelog::WriteLogger::init(
+    simplelog::LevelFilter::Debug,
+    simplelog::Config::default(),
+    fs::File::create("klh.log").unwrap(),
+  ).unwrap();
+  
   let mut klh = Klh::new();
 
   klh.start().await;
 
-  let client : KlhClient = klh.get_client().unwrap();
+  let client : KlhClient = klh.get_client();
 
   prompt_and_read(
     client,

@@ -11,3 +11,7 @@ bson = "*"
 serde = "*"
 log = "*"
 simplelog = "*"
+async-std = { version = "*", features = ["attributes"]}
+
+[dev-dependencies]
+rstest = "*"
