@@ -6,6 +6,7 @@ use crate::{messaging::{MessageType, Message, MessageContent, MessageError, }, p
 pub mod requests;
 pub mod models;
 
+// TODO should this be a fully public struct? I think it should...
 pub(crate) struct Buffers {
   message_types: Vec<MessageType>,
   session_client: Option<SessionClient>,
