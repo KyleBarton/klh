@@ -36,33 +36,10 @@ impl Plugin for Display {
 
     fn accept_message(&mut self, message: Message) -> Result<(), MessageError> {
       debug!("[DISPLAY] received message {}", message);
-      match message.get_message_type() {
-        // MessageType::Command("display::create_window") => {
-        //   debug!("[DISPLAY] received create_window command");
-        //   handle_create_window_command()
-        // },
-        // MessageType::Query("display::list_windows") => {
-        //   debug!("[DISPLAY] received list_windows query");
-        //   handle_list_windows_query()
-        // },
-        // MessageType::Command("display::delete_window") => {
-        //   debug!("[DISPLAY] received delete_window command");
-        //   handle_delete_window_command()
-        // },
-        // MessageType::Command("display::attach_buffer") => {
-        //   debug!("[DISPLAY] received attach_buffer command");
-        //   handle_attach_buffer_command()
-        // },
-        // MessageType::Command("display::detach_buffer") => {
-        //   debug!("[DISPLAY] received detach_buffer command");
-        //   handle_detach_buffer_command()
-        // },
-        // MessageType::Query("display::list_buffers_in_window") => {
-        //   debug!("[DISPLAY] received list_buffers_in_window query");
-        //   handle_list_buffers_in_window_query()
-        // },
-        _ => Ok(())
-      }
+      // match message.get_message_type() {
+      //   _ => Ok(())
+      // }
+      Ok(())
     }
 
     fn list_message_types(&self) -> Vec<MessageType> {
