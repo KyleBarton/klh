@@ -2,6 +2,8 @@ use log::debug;
 
 use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageError}, session::SessionClient};
 
+pub mod requests;
+
 pub struct Display {
   message_types: Vec<MessageType>,
   // TODO move to klh client!

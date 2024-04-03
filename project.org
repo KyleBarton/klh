@@ -517,3 +517,9 @@ like Klh and Session wrap the same thing. It might be better to
 simplify into the KLH layer, and then develop a "set of option" object
 that is passed in to KLH in order to determine common plugin
 locations, logging setup, etc.
+
+** 2024-04-02 
+So a command like "display::attach_buffer" shows pretty clearly that I
+need command to include optional content. It needs to be generic but
+serializable. Need to figure that out.
+Wait, no I'm misremembering. MessageContent already exists for this.
