@@ -50,11 +50,7 @@ impl Plugin for Buffers {
 
     if message_type.id_equals_str("buffers::list_buffers") {
       let response = models::ListBuffersResponse {
-	buffer_names: self.basic_buffer_names.iter()
-	  .map(|name| {
-	    name.clone()
-	  })
-	  .collect()
+	buffer_names: self.basic_buffer_names.clone(),
       };
       message.get_responder()
 	.expect("No one should have used the responder yet")
