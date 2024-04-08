@@ -81,7 +81,7 @@ e: exit
 		  .fold("".to_string(), |acc, name| {
 		    acc + name + " "
 		  });
-		println!("Active buffers: {:?}", buffer_list);
+		println!("Active buffers: {}", buffer_list);
 	      },
 	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    };
@@ -103,7 +103,12 @@ e: exit
 		println!("Display plugin responded");
 		let list_window_response : ListWindowsResponse = response.deserialize()
 		  .expect("Should have a list windows response");
-		println!("Active windows: {}", list_window_response.list_as_string);
+		let windows_as_string = list_window_response.window_names
+		  .iter()
+		  .fold("".to_string(), |acc, name| {
+		    acc + name + " "
+		  });
+		println!("Active windows: {}", windows_as_string);
 	      },
 	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    }

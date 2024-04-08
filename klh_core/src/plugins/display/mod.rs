@@ -2,6 +2,8 @@ use log::{debug, warn};
 
 use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageError, MessageContent}, session::SessionClient, plugins::display::models::CreateWindowRequest};
 
+use self::models::Window;
+
 pub mod requests;
 pub mod models;
 
@@ -9,7 +11,7 @@ pub struct Displays {
   message_types: Vec<MessageType>,
   // TODO move to klh client!
   session_client: Option<SessionClient>,
-  basic_window_names: Vec<String>,
+  windows: Vec<Window>,
 }
 
 impl Displays {
@@ -26,7 +28,7 @@ impl Displays {
     Self {
       message_types,
       session_client: None,
-      basic_window_names: Vec::new(),
+      windows: Vec::new(),
     }
   }
 }
@@ -44,15 +46,14 @@ impl Plugin for Displays {
       let message_type = message.get_message_type();
 
       if message_type.id_equals_str("display::list_windows") {
-	let mut content: String = "".to_string();
-
-	for win_name in self.basic_window_names.iter() {
-	  content.push(' ');
-	  content.push_str(win_name);
-	}
 
 	let response = models::ListWindowsResponse {
-	  list_as_string: content
+	  window_names: self.windows
+	    .iter()
+	    .map(|window| {
+	      window.name.clone()
+	    })
+	    .collect()
 	};
 	message.get_responder()
 	  .expect("No one should have used responder yet")
@@ -63,7 +64,7 @@ impl Plugin for Displays {
       else if message_type.id_equals_str("display::create_window") {
 	let mut request_content = message.get_content().expect("Got a window name");
 	let request : CreateWindowRequest = request_content.deserialize().unwrap();
-	self.basic_window_names.push(request.window_name);
+	self.windows.push(Window::new(request.window_name));
       }
 
       else {
