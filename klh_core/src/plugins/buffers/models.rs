@@ -9,6 +9,5 @@ pub struct CreateBufferContent {
 
 #[derive(Serialize, Deserialize)]
 pub struct ListBuffersResponse {
-  // TODO obviously
-  pub list_as_string: String,
+  pub buffer_names: Vec<String>,
 }

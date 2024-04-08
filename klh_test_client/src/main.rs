@@ -76,7 +76,12 @@ e: exit
 		println!("Buffer plugin responded");
 		let list_buffers_response : ListBuffersResponse = response.deserialize()
 		  .expect("Should have a list buffers response");
-		println!("Active buffers: {}", list_buffers_response.list_as_string);
+		let buffer_list = list_buffers_response.buffer_names
+		  .iter()
+		  .fold("".to_string(), |acc, name| {
+		    acc + name + " "
+		  });
+		println!("Active buffers: {:?}", buffer_list);
 	      },
 	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    };
