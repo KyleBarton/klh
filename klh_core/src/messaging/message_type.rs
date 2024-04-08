@@ -100,6 +100,27 @@ impl MessageType {
       Ok(Self::Command(id))
     }
   }
+
+  
+  /// An instance utility function that allows you to ensure the ID of
+  /// the message type matches.
+  /// # Examples
+  /// ```
+  /// use klh_core::messaging::MessageType;
+  /// let messageType = MessageType::command_from_str("message_type_id").unwrap();
+  /// assert!(messageType.id_equals_str("message_type_id"));
+  /// ```
+  pub fn id_equals_str(&self, id_check: &str) -> bool {
+    // TODO I think this shows that I should just collapse MessageType instead of having command vs query
+    match self {
+      Self::Command(id) => {
+	&id[0..id_check.len()] == id_check.as_bytes()
+      },
+      Self::Query(id) => {
+	&id[0..id_check.len()] == id_check.as_bytes()
+      }
+    }
+  }
 }
 
 impl fmt::Display for MessageType {

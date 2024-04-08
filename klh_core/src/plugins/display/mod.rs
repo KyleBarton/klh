@@ -1,4 +1,4 @@
-use log::debug;
+use log::{debug, warn};
 
 use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageError, MessageContent}, session::SessionClient, plugins::display::models::CreateWindowRequest};
 
@@ -41,33 +41,35 @@ impl Plugin for Displays {
 
     fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
       debug!("[DISPLAY] received message {}", message);
-      match message.get_message_type() {
-        MessageType::Query(id) => {
-	  if &id[0.."display::list_windows".len()] == "display::list_windows".as_bytes() {
-	    let mut content: String = "".to_string();
+      let message_type = message.get_message_type();
 
-	    for win_name in self.basic_window_names.iter() {
-	      content.push(' ');
-	      content.push_str(win_name);
-	    }
+      if message_type.id_equals_str("display::list_windows") {
+	let mut content: String = "".to_string();
 
-	    let response = models::ListWindowsResponse {
-	      list_as_string: content
-	    };
-	    message.get_responder()
-	      .expect("No one should have used responder yet")
-	      .respond(MessageContent::from_content(response))
-	      .unwrap();
-	  }
-	},
-	MessageType::Command(id) => {
-	  if &id[0.."display::create_window".len()] == "display::create_window".as_bytes() {
-	    let mut request_content = message.get_content().expect("Got a window name");
-	    let request : CreateWindowRequest = request_content.deserialize().unwrap();
-	    self.basic_window_names.push(request.window_name);
-	  }
-	},
+	for win_name in self.basic_window_names.iter() {
+	  content.push(' ');
+	  content.push_str(win_name);
+	}
+
+	let response = models::ListWindowsResponse {
+	  list_as_string: content
+	};
+	message.get_responder()
+	  .expect("No one should have used responder yet")
+	  .respond(MessageContent::from_content(response))
+	  .unwrap();
       }
+
+      else if message_type.id_equals_str("display::create_window") {
+	let mut request_content = message.get_content().expect("Got a window name");
+	let request : CreateWindowRequest = request_content.deserialize().unwrap();
+	self.basic_window_names.push(request.window_name);
+      }
+
+      else {
+	warn!("[DISPLAY] message type id not found: {}", &message.get_message_type());
+      }
+
       Ok(())
     }
 
