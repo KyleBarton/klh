@@ -1,13 +1,19 @@
 
 // requests.rs
 
-use crate::messaging::{Request, MessageType};
+use crate::messaging::{Request, MessageType, MessageContent};
+
+use super::models::CreateWindowRequest;
 
 // TODO visual positioning arguments?
 // TODO window ID argument
-pub fn new_create_window_request() -> Request {
-  Request::from_message_type(
-    MessageType::command_from_str("display::create_window").unwrap()
+pub fn new_create_window_request(window_name: String) -> Request {
+  let create_window_content = CreateWindowRequest {
+    window_name,
+  };
+  Request::new(
+    MessageType::command_from_str("display::create_window").unwrap(),
+    MessageContent::from_content(create_window_content),
   )
 }
 

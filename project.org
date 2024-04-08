@@ -523,3 +523,19 @@ So a command like "display::attach_buffer" shows pretty clearly that I
 need command to include optional content. It needs to be generic but
 serializable. Need to figure that out.
 Wait, no I'm misremembering. MessageContent already exists for this.
+
+Ok, so how would a "cross-plugin" thing work? An example:
+buffer::update_content -> this updates the content of a given buffer
+/However/, it might also update the viewable content of the associated window.
+
+So:
+- display has to listen for buffer::update_content
+- display /also/ needs to read the content
+
+So... buffer plugins needs to have a public "Buffer Requests" module I
+think? Because dependent plugins like display need both the
+MessageType ID and the Message Content.
+
+But there has to be some sort of public MessageTypeID concept (maybe
+just constant string-likes?), so that display can tell the dispatch
+that it wants to subscribe to these particular messages.

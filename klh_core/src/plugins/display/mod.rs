@@ -1,16 +1,18 @@
 use log::debug;
 
-use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageError}, session::SessionClient};
+use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageError, MessageContent}, session::SessionClient, plugins::display::models::CreateWindowRequest};
 
 pub mod requests;
+pub mod models;
 
-pub struct Display {
+pub struct Displays {
   message_types: Vec<MessageType>,
   // TODO move to klh client!
   session_client: Option<SessionClient>,
+  basic_window_names: Vec<String>,
 }
 
-impl Display {
+impl Displays {
   pub fn new() -> Self {
     let message_types: Vec<MessageType> = vec![
       MessageType::command_from_str("display::create_window").unwrap(),
@@ -24,23 +26,48 @@ impl Display {
     Self {
       message_types,
       session_client: None,
+      basic_window_names: Vec::new(),
     }
   }
 }
 
-impl Default for Display {
+impl Default for Displays {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Plugin for Display {
+impl Plugin for Displays {
 
-    fn accept_message(&mut self, message: Message) -> Result<(), MessageError> {
+    fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
       debug!("[DISPLAY] received message {}", message);
-      // match message.get_message_type() {
-      //   _ => Ok(())
-      // }
+      match message.get_message_type() {
+        MessageType::Query(id) => {
+	  if &id[0.."display::list_windows".len()] == "display::list_windows".as_bytes() {
+	    let mut content: String = "".to_string();
+
+	    for win_name in self.basic_window_names.iter() {
+	      content.push(' ');
+	      content.push_str(win_name);
+	    }
+
+	    let response = models::ListWindowsResponse {
+	      list_as_string: content
+	    };
+	    message.get_responder()
+	      .expect("No one should have used responder yet")
+	      .respond(MessageContent::from_content(response))
+	      .unwrap();
+	  }
+	},
+	MessageType::Command(id) => {
+	  if &id[0.."display::create_window".len()] == "display::create_window".as_bytes() {
+	    let mut request_content = message.get_content().expect("Got a window name");
+	    let request : CreateWindowRequest = request_content.deserialize().unwrap();
+	    self.basic_window_names.push(request.window_name);
+	  }
+	},
+      }
       Ok(())
     }
 
