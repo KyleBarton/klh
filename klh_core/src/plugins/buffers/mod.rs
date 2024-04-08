@@ -49,15 +49,12 @@ impl Plugin for Buffers {
     let message_type = message.get_message_type();
 
     if message_type.id_equals_str("buffers::list_buffers") {
-      let mut content: String = "".to_string();
-
-      for buf_name in self.basic_buffer_names.iter() {
-	content.push(' ');
-	content.push_str(buf_name);
-      }
-
       let response = models::ListBuffersResponse {
-	list_as_string: content,
+	buffer_names: self.basic_buffer_names.iter()
+	  .map(|name| {
+	    name.clone()
+	  })
+	  .collect()
       };
       message.get_responder()
 	.expect("No one should have used the responder yet")
