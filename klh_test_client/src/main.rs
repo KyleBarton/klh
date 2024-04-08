@@ -1,7 +1,8 @@
 use klh_core::klh::{Klh, KlhClient};
 use klh_core::messaging::{Request, MessageType};
 use klh_core::plugins::buffers::models::ListBuffersResponse;
-use klh_core::plugins::{diagnostics, buffers};
+use klh_core::plugins::display::models::ListWindowsResponse;
+use klh_core::plugins::{diagnostics, buffers, display};
 use std::{io, fs};
 
 async fn prompt_and_read(
@@ -80,6 +81,28 @@ e: exit
 	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    };
 	  },
+	  "wc" => {
+	    println!("Creating a window buffer");
+	    let create_window_request = display::requests::new_create_window_request("window_name".to_string());
+	    client.send(create_window_request).await.unwrap()
+	  },
+	  "wl" => {
+	    println!("Listing windows");
+	    let mut list_window_request = display::requests::new_list_windows_request();
+	    let mut list_window_handler = list_window_request.get_handler().unwrap();
+
+	    client.send(list_window_request).await.unwrap();
+
+	    match list_window_handler.handle_response().await {
+	      Ok(mut response) => {
+		println!("Display plugin responded");
+		let list_window_response : ListWindowsResponse = response.deserialize()
+		  .expect("Should have a list windows response");
+		println!("Active windows: {}", list_window_response.list_as_string);
+	      },
+	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
+	    }
+	  }
 	  "e" => {
 	    println!("e for exit");
 	    break;
