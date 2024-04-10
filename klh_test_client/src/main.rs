@@ -3,8 +3,10 @@ use klh_core::messaging::{Request, MessageType};
 use klh_core::plugins::buffers::models::ListBuffersResponse;
 use klh_core::plugins::display::models::ListWindowsResponse;
 use klh_core::plugins::{diagnostics, buffers, display};
+use std::io::stdin;
 use std::{io, fs};
 
+// Remember, this is a temporary client and not too much work should be put in here
 async fn prompt_and_read(
   mut client: KlhClient,
 ) {
@@ -14,6 +16,8 @@ async fn prompt_and_read(
     println!("Enter any of the following:
 bl: List Buffers
 bc: Create Buffer
+wl: List Windows
+wc: Create Window
 dl: Send a log event to diagnostics
 db: Send a slow bomb to diagnostics
 bad_query: Send an unknown query through the client
@@ -59,8 +63,14 @@ e: exit
 	    });
 	  }
 	  "bc" => {
+	    println!("Enter the buffer name");
+
+	    let mut buf_name = String::new();
+	    stdin().read_line(&mut buf_name).unwrap();
+	      
 	    println!("Creating a buffer");
-	    let create_buffer_request = buffers::requests::new_create_buffer_request("special_buffer");
+
+	    let create_buffer_request = buffers::requests::new_create_buffer_request(buf_name.trim());
 	    client.send(create_buffer_request).await.unwrap();
 	  },
 	  "bl" => {
@@ -87,8 +97,12 @@ e: exit
 	    };
 	  },
 	  "wc" => {
+	    println!("Enter a window name");
+	    let mut window_name = String::new();
+	    stdin().read_line(&mut window_name).unwrap();
+	    
 	    println!("Creating a window buffer");
-	    let create_window_request = display::requests::new_create_window_request("window_name".to_string());
+	    let create_window_request = display::requests::new_create_window_request(window_name.trim());
 	    client.send(create_window_request).await.unwrap()
 	  },
 	  "wl" => {

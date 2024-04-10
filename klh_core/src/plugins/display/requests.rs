@@ -7,9 +7,9 @@ use super::models::CreateWindowRequest;
 
 // TODO visual positioning arguments?
 // TODO window ID argument
-pub fn new_create_window_request(window_name: String) -> Request {
+pub fn new_create_window_request(win_name: &str) -> Request {
   let create_window_content = CreateWindowRequest {
-    window_name,
+    window_name: win_name.to_string(),
   };
   Request::new(
     MessageType::command_from_str("display::create_window").unwrap(),
