@@ -539,3 +539,14 @@ MessageType ID and the Message Content.
 But there has to be some sort of public MessageTypeID concept (maybe
 just constant string-likes?), so that display can tell the dispatch
 that it wants to subscribe to these particular messages.
+** 2024-04-09
+Ok, making some progress:
+
+- Modify the main.rs to allow you to specify window & buffer names - DONE
+- Enforce uniqueness on those names - DONE
+- Start on buffer-to-window association
+
+Oooh, created an interesting problem. When I attempt to create a
+buffer name that already exists, subsequent bl commands fail?
+It's like it knocks the whole plugin out of commission. That's interesting.
+- Fixed by actually handling the error instead of panicking in plugin_channel.
