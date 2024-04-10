@@ -41,4 +41,8 @@ pub enum MessageError {
   /// unable to send a response along the oneshot channel. This points
   /// to a serious problem in the request/response infrastructure.
   FailedToSendResponse,
+  /// Indicates that a plugin successfully received the message, but
+  /// did not process it because it contained improper content (for
+  /// instance, a resource with the given unique ID already exists).
+  BadRequest(String),
 }

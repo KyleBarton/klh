@@ -62,8 +62,14 @@ impl Plugin for Displays {
       }
 
       else if message_type.id_equals_str("display::create_window") {
+
 	let mut request_content = message.get_content().expect("Got a window name");
 	let request : CreateWindowRequest = request_content.deserialize().unwrap();
+
+	if self.windows.iter().any(|window| window.name == request.window_name) {
+	  return Err(MessageError::BadRequest(String::from("Window name already exists")))
+	}
+
 	self.windows.push(Window::new(request.window_name));
       }
 

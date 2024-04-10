@@ -2,6 +2,8 @@ use log::{debug, warn};
 
 use crate::{messaging::{MessageType, Message, MessageContent, MessageError, }, plugin::Plugin, session::SessionClient};
 
+use self::models::Buffer;
+
 
 pub mod requests;
 pub mod models;
@@ -10,7 +12,7 @@ pub mod models;
 pub(crate) struct Buffers {
   message_types: Vec<MessageType>,
   session_client: Option<SessionClient>,
-  basic_buffer_names: Vec<String>,
+  buffers: Vec<Buffer>,
 }
 
 impl Buffers {
@@ -23,7 +25,7 @@ impl Buffers {
     Self {
       message_types,
       session_client: None,
-      basic_buffer_names: Vec::new(),
+      buffers: Vec::new(),
     }
   }
 }
@@ -50,7 +52,7 @@ impl Plugin for Buffers {
 
     if message_type.id_equals_str("buffers::list_buffers") {
       let response = models::ListBuffersResponse {
-	buffer_names: self.basic_buffer_names.clone(),
+	buffer_names: self.buffers.iter().map(|b| b.name.clone()).collect(),
       };
       message.get_responder()
 	.expect("No one should have used the responder yet")
@@ -64,8 +66,14 @@ impl Plugin for Buffers {
       let create_buffer_content : models::CreateBufferContent = message_content
 	.deserialize()
 	.expect("Should be able to deserialize");
+
       debug!("[BUFFERS] Creating buffer with name {}", &create_buffer_content.name);
-      self.basic_buffer_names.push(create_buffer_content.name);
+
+      if self.buffers.iter().any(|b| b.name == create_buffer_content.name) {
+	return Err(MessageError::BadRequest(String::from("Buffer name already exists")))
+      }
+
+      self.buffers.push(Buffer::new(create_buffer_content.name));
     }
 
     else {
