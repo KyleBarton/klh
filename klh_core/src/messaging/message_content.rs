@@ -38,7 +38,7 @@ impl MessageContent {
   /// is not possible for the following reasons:
   /// - The content was already deserialized
   /// - The serialized content does not fit the provided type to
-  /// deserialize.
+  ///   deserialize.
   /// # Examples
   /// ```
   /// use klh_core::messaging::MessageContent;

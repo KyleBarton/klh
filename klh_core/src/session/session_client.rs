@@ -30,7 +30,7 @@ impl SessionClient {
   /// certain situations:
   /// 1. [SessionError::ErrorSendingMessage](super::SessionError::ErrorSendingMessage)
   /// - the client was unable to send the message along to the running
-  /// Session. Further details available in the error log.
+  ///   Session. Further details available in the error log.
   pub async fn send(&mut self, message: Message) -> Result<(), SessionError> {
     match self.dispatch_client.send(message).await {
       Err(err) => {
