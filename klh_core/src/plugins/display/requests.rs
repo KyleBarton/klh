@@ -3,7 +3,7 @@
 
 use crate::messaging::{Request, MessageType, MessageContent};
 
-use super::models::CreateWindowRequest;
+use super::models::{AttachBufferRequest, CreateWindowRequest};
 
 // TODO visual positioning arguments?
 // TODO window ID argument
@@ -24,11 +24,17 @@ pub fn new_delete_window_request() -> Request {
   )
 }
 
-// TODO window ID argument
-// TODO buffer ID argument
-pub fn new_attach_buffer_request() -> Request {
-  Request::from_message_type(
-    MessageType::command_from_str("display::attach_buffer").unwrap()
+pub fn new_attach_buffer_request(
+  buffer_name: &str,
+  window_name: &str,
+) -> Request {
+  let attach_buffer_request = AttachBufferRequest {
+    window_name: window_name.to_string(),
+    buffer_name: buffer_name.to_string(),
+  };
+  Request::new(
+    MessageType::command_from_str("display::attach_buffer").unwrap(),
+    MessageContent::from_content(attach_buffer_request),
   )
 }
 
