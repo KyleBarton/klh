@@ -64,13 +64,13 @@ impl Session {
 
   /// Runs the `Session`. This will do the following:
   /// 1. Registers core plugins according to the `KlhConfig`
-  /// `CorePlugins` options.
+  ///    `CorePlugins` options.
   /// 2. Starts a each registered plugin on a plugin channel
   /// 3. Starts the main processing loop to listen for incoming messages.
   /// # Errors
   /// Returns an [Err] result of [SessionError] in certain situations:
   /// 1. [SessionError::SessionAlreadyStarted] - this session has
-  /// already had `run()` called.
+  ///    already had `run()` called.
   pub async fn run(&mut self) -> Result<(), SessionError> {
     self.start_plugins().await;
 
