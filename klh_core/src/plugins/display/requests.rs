@@ -3,7 +3,7 @@
 
 use crate::messaging::{Request, MessageType, MessageContent};
 
-use super::models::{AttachBufferRequest, CreateWindowRequest};
+use super::models::{AttachBufferRequest, CreateWindowRequest, GetWindowRequest};
 
 // TODO visual positioning arguments?
 // TODO window ID argument
@@ -56,5 +56,15 @@ pub fn new_list_buffers_in_window() -> Request {
 pub fn new_list_windows_request() -> Request {
   Request::from_message_type(
     MessageType::query_from_str("display::list_windows").unwrap()
+  )
+}
+
+pub fn new_get_window_request(window_name: &str) -> Request {
+  let get_window_request = GetWindowRequest {
+    window_name: window_name.to_string(),
+  };
+  Request::new(
+    MessageType::query_from_str("display::get_window").unwrap(),
+    MessageContent::from_content(get_window_request),
   )
 }

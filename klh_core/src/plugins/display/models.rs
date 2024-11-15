@@ -1,5 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize)]
+pub struct GetWindowRequest {
+  pub window_name: String
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GetWindowResponse {
+  pub window: Option<Window>
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ListWindowsResponse {
@@ -18,7 +27,7 @@ pub struct AttachBufferRequest {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Window {
   pub name: String,
   // TODO figure out how to use lifetimes to tie the buffer name to the vec
