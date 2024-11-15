@@ -1,7 +1,7 @@
 use klh_core::klh::{Klh, KlhClient};
 use klh_core::messaging::{Request, MessageType};
 use klh_core::plugins::buffers::models::ListBuffersResponse;
-use klh_core::plugins::display::models::ListWindowsResponse;
+use klh_core::plugins::display::models::{GetWindowResponse, ListWindowsResponse};
 use klh_core::plugins::{diagnostics, buffers, display};
 use std::io::stdin;
 use std::{io, fs};
@@ -19,6 +19,7 @@ bc: Create Buffer
 wl: List Windows
 wc: Create Window
 wa: Associate a Buffer to a Window
+wg: Get a window
 dl: Send a log event to diagnostics
 db: Send a slow bomb to diagnostics
 bad_query: Send an unknown query through the client
@@ -127,6 +128,25 @@ e: exit
 	      },
 	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    }
+	  },
+	  "wg" => {
+	    println!("What window do you want?");
+	    let mut window_name = String::new();
+	    stdin().read_line(&mut window_name).unwrap();
+
+	    let mut get_window_request = display::requests::new_get_window_request(window_name.trim());
+	    let mut get_window_handler = get_window_request.get_handler().unwrap();
+	    client.send(get_window_request).await.unwrap();
+
+	    let window_response = match get_window_handler.handle_response().await {
+	      Ok(mut response) => {
+		let get_window_response: GetWindowResponse = response.deserialize()
+		  .expect("Should get a get windows response");
+		get_window_response
+	      },
+	      Err(_) => panic!("Error getting window"),
+	    };
+	    println!("Window: {:?}", window_response.window)
 	  },
 	  "wa" => {
 	    println!("Let's associate a buffer to a window");
