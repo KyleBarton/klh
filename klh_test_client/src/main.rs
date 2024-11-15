@@ -18,6 +18,7 @@ bl: List Buffers
 bc: Create Buffer
 wl: List Windows
 wc: Create Window
+wa: Associate a Buffer to a Window
 dl: Send a log event to diagnostics
 db: Send a slow bomb to diagnostics
 bad_query: Send an unknown query through the client
@@ -126,6 +127,48 @@ e: exit
 	      },
 	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    }
+	  },
+	  "wa" => {
+	    println!("Let's associate a buffer to a window");
+
+	    let mut list_windows_request = display::requests::new_list_windows_request();
+	    let mut list_windows_handler = list_windows_request.get_handler().unwrap();
+	    client.send(list_windows_request).await.unwrap();
+
+	    let mut list_buffers_request = buffers::requests::new_list_buffers_request();
+	    let mut list_buffers_handler = list_buffers_request.get_handler().unwrap();
+	    client.send(list_buffers_request).await.unwrap();
+
+	    let window_list = match list_windows_handler.handle_response().await {
+	      Ok(mut response) => {
+		let list_windows_response : ListWindowsResponse = response.deserialize()
+		  .expect("Should have a list windows response");
+		list_windows_response.window_names
+	      },
+	      Err(_) => panic!("Error on list windows request"),
+	    };
+
+	    let buffer_list = match list_buffers_handler.handle_response().await {
+	      Ok(mut response) => {
+		let list_buffers_response : ListBuffersResponse = response.deserialize()
+		  .expect("Should have a list buffers response");
+		list_buffers_response.buffer_names
+	      },
+	      Err(_) => panic!("Error on list buffers request"),
+	    };
+	    println!("Buffer list: {}", &buffer_list.iter().fold("".to_string(), |acc, b| {acc + b + " "}));
+	    println!("Choose buffer");
+	    let mut buffer_name = String::new();
+	    stdin().read_line(&mut buffer_name).unwrap();
+
+	    println!("Window list: {}", &window_list.iter().fold("".to_string(), |acc, b| {acc + b + " "}));
+	    println!("Choose window");
+	    let mut window_name = String::new();
+	    stdin().read_line(&mut window_name).unwrap();
+
+	    let attach_buffer_request = display::requests::new_attach_buffer_request(buffer_name.trim(), window_name.trim());
+	    // Not handling the response for now
+	    client.send(attach_buffer_request).await.unwrap();
 	  }
 	  "e" => {
 	    println!("e for exit");

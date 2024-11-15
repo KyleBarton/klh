@@ -1,4 +1,5 @@
 use log::{debug, warn};
+use models::AttachBufferRequest;
 
 use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageError, MessageContent}, session::SessionClient, plugins::display::models::CreateWindowRequest};
 
@@ -71,6 +72,20 @@ impl Plugin for Displays {
 	}
 
 	self.windows.push(Window::new(request.window_name));
+      }
+
+      else if message_type.id_equals_str("display::attach_buffer") {
+	let mut request_content = message.get_content().expect("Got a window name");
+	let request : AttachBufferRequest = request_content.deserialize().unwrap();
+	println!("window name: {}", &request.window_name);
+	println!("windows: {:?}", &self.windows);
+	let window : &mut Window = self.windows.iter_mut().find(|window| window.name == request.window_name).expect("Found window");
+
+	// TODO check with buffers plugin to ensure it's an actual buffer name
+	window.associated_buffers_names.push(request.buffer_name.clone());
+	// Assume this becomes the active buffer when this happens
+	// Ok, what if I just re-order the vec? Idk figure this out later
+	window.active_buffer_name = Some(request.buffer_name)
       }
 
       else {
