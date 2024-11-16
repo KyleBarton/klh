@@ -1,4 +1,5 @@
 use log::{debug, warn};
+use models::GetBufferResponse;
 
 use crate::{messaging::{MessageType, Message, MessageContent, MessageError, }, plugin::Plugin, session::SessionClient};
 
@@ -20,6 +21,8 @@ impl Buffers {
     let message_types: Vec<MessageType> = vec![
       MessageType::command_from_str("buffers::create_buffer").unwrap(),
       MessageType::query_from_str("buffers::list_buffers").unwrap(),
+      MessageType::query_from_str("buffers::get_buffer").unwrap(),
+      MessageType::command_from_str("buffers:append_string").unwrap(),
     ];
 
     Self {
@@ -63,7 +66,7 @@ impl Plugin for Buffers {
 
     else if message_type.id_equals_str("buffers::create_buffer") {
       let mut message_content = message.get_content().expect("Content should be present");
-      let create_buffer_content : models::CreateBufferContent = message_content
+      let create_buffer_content : models::CreateBufferRequest = message_content
 	.deserialize()
 	.expect("Should be able to deserialize");
 
@@ -74,6 +77,33 @@ impl Plugin for Buffers {
       }
 
       self.buffers.push(Buffer::new(create_buffer_content.name));
+    }
+
+    else if message_type.id_equals_str("buffers:append_string") {
+      let mut message_content = message.get_content().expect("Content should be present");
+      let append_buffer_content : models::AppendStringToBufferRequest = message_content
+	.deserialize()
+	.expect("Should be able to deserialize");
+
+      let buffer = match self.buffers.iter_mut().find(|b| b.name == append_buffer_content.buffer_name) {
+        Some(buffer) => buffer,
+        None => return Err(MessageError::BadRequest(String::from("No buffer matching provided name"))),
+      };
+
+      buffer.content.append(append_buffer_content.content);
+    }
+
+    else if message_type.id_equals_str("buffers::get_buffer") {
+      let mut message_content = message.get_content().expect("Content should be present");
+      let get_buffer_request : models::GetBufferRequest = message_content
+	.deserialize()
+	.expect("Should be able to deserialize");
+      
+      let buffer = self.buffers.iter().find(|b| b.name == get_buffer_request.buffer_name);
+      message.get_responder()
+	.expect("No one should have used the responder yet")
+	.respond(MessageContent::from_content(GetBufferResponse { buffer: buffer.cloned() }))
+	.unwrap(); // TODO I should be handling these
     }
 
     else {
