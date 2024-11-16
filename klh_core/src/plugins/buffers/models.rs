@@ -55,6 +55,12 @@ pub struct BufferContent {
   content: String,
 }
 
+impl Default for BufferContent {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BufferContent {
   pub fn new() -> Self {
     Self {
