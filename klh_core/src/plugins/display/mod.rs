@@ -125,14 +125,11 @@ impl Plugin for Displays {
 	// - Can I just do this with a tokio spawn for now?
 	// - Ok seems to work as is - let's test
 
-	match &self.session_client {
-	  Some(client) => {
+	if let Some(client) = &self.session_client {
 	    let cli_clone = client.clone();
 	    tokio::spawn(async move {
 	      cli_clone.send(request_to_buffer.as_message()).await.unwrap();
 	    });
-	  },
-	  None => (),
 	};
       }
 
