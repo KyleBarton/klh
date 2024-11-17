@@ -151,7 +151,7 @@ use crate::klh::Klh;
 
     klh.add_plugin(Box::new(test_plugin));
 
-    let mut klh_client = klh.get_client();
+    let klh_client = klh.get_client();
     tokio::spawn(async move {
       klh.start().await;
     }).await.unwrap();
@@ -177,7 +177,7 @@ use crate::klh::Klh;
 
     klh.add_plugin(Box::new(test_plugin));
 
-    let mut klh_client = klh.get_client();
+    let klh_client = klh.get_client();
     tokio::spawn(async move {
       klh.start().await;
     }).await.unwrap();
