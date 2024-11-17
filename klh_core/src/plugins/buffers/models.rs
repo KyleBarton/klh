@@ -34,7 +34,7 @@ pub struct ListBuffersResponse {
 }
 
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Buffer {
   pub name: String,
   pub content: BufferContent,
@@ -50,7 +50,7 @@ impl Buffer {
 }
 
 // Placeholder for a way to store the content. For now basically wraps a string
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BufferContent {
   content: String,
 }
