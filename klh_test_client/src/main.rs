@@ -1,6 +1,6 @@
 use klh_core::klh::{Klh, KlhClient};
 use klh_core::messaging::{Request, MessageType};
-use klh_core::plugins::buffers::models::ListBuffersResponse;
+use klh_core::plugins::buffers::models::{GetBufferResponse, ListBuffersResponse};
 use klh_core::plugins::display::models::{GetWindowResponse, ListWindowsResponse};
 use klh_core::plugins::{diagnostics, buffers, display};
 use std::io::stdin;
@@ -16,12 +16,14 @@ async fn prompt_and_read(
     println!("Enter any of the following:
 bl: List Buffers
 bc: Create Buffer
+bg: Get a buffer
 wl: List Windows
 wc: Create Window
 wa: Associate a Buffer to a Window
 wg: Get a window
 dl: Send a log event to diagnostics
 db: Send a slow bomb to diagnostics
+write: Send some data to a window for writing to a buffer
 bad_query: Send an unknown query through the client
 bad_command: Send an unknown command through the client
 e: exit
@@ -98,6 +100,30 @@ e: exit
 	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
 	    };
 	  },
+	  "bg" => {
+	    println!("What buffer do you want?");
+	    let mut buffer_name = String::new();
+	    stdin().read_line(&mut buffer_name).unwrap();
+
+	    let mut get_buffer_request = buffers::requests::new_get_buffer_request(buffer_name.trim());
+	    let mut handler = get_buffer_request.get_handler().unwrap();
+	    client.send(get_buffer_request).await.unwrap();
+
+	    let buffer = match handler.handle_response().await {
+	      Ok(mut resp) => {
+		let buffer_response: GetBufferResponse = resp.deserialize()
+		  .expect("Should have gotten a GetBufferResponse");
+		buffer_response.buffer
+		
+	      },
+	      Err(_) => panic!("error getting buffer response"),
+	    };
+
+	    match buffer {
+	      Some(b) => println!("Buffer: {:?}", b),
+	      None => println!("No buffer returned"),
+	    }
+	  }
 	  "wc" => {
 	    println!("Enter a window name");
 	    let mut window_name = String::new();
@@ -189,6 +215,18 @@ e: exit
 	    let attach_buffer_request = display::requests::new_attach_buffer_request(buffer_name.trim(), window_name.trim());
 	    // Not handling the response for now
 	    client.send(attach_buffer_request).await.unwrap();
+	  }
+	  "write" => {
+	    println!("Choose window");
+	    let mut window_name = String::new();
+	    stdin().read_line(&mut window_name).unwrap();
+
+	    println!("What do you want to write to the window's active buffer?");
+	    let mut content = String::new();
+	    stdin().read_line(&mut content).unwrap();
+
+	    let request = display::requests::new_accept_string_input_request(window_name.trim(), content.trim());
+	    client.send(request).await.unwrap();
 	  }
 	  "e" => {
 	    println!("e for exit");
