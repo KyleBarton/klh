@@ -3,7 +3,7 @@
 
 use crate::messaging::{Request, MessageType, MessageContent};
 
-use super::models::{AttachBufferRequest, CreateWindowRequest, GetWindowRequest};
+use super::models::{AcceptStringInputRequest, AttachBufferRequest, CreateWindowRequest, GetWindowRequest};
 
 // TODO visual positioning arguments?
 // TODO window ID argument
@@ -66,5 +66,16 @@ pub fn new_get_window_request(window_name: &str) -> Request {
   Request::new(
     MessageType::query_from_str("display::get_window").unwrap(),
     MessageContent::from_content(get_window_request),
+  )
+}
+
+pub fn new_accept_string_input_request(window_name: &str, input: &str) -> Request {
+  let accept_input_request = AcceptStringInputRequest {
+    window_name: window_name.to_string(),
+    input: input.to_string(),
+  };
+  Request::new(
+    MessageType::command_from_str("display::accept_string_input").unwrap(),
+    MessageContent::from_content(accept_input_request),
   )
 }

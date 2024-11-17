@@ -1,7 +1,7 @@
 use log::{debug, warn};
-use models::{AttachBufferRequest, GetWindowRequest, GetWindowResponse};
+use models::{AcceptStringInputRequest, AttachBufferRequest, GetWindowRequest, GetWindowResponse};
 
-use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageError, MessageContent}, session::SessionClient, plugins::display::models::CreateWindowRequest};
+use crate::{messaging::{Message, MessageContent, MessageError, MessageType}, plugin::Plugin, plugins::{buffers, display::models::CreateWindowRequest}, session::SessionClient};
 
 use self::models::Window;
 
@@ -25,6 +25,7 @@ impl Displays {
       MessageType::command_from_str("display::attach_buffer").unwrap(),
       MessageType::command_from_str("display::detach_buffer").unwrap(),
       MessageType::query_from_str("display::list_buffers_in_window").unwrap(),
+      MessageType::command_from_str("display::accept_string_input").unwrap(),
     ];
 
     Self {
@@ -86,7 +87,6 @@ impl Plugin for Displays {
 	window.active_buffer_name = Some(request.buffer_name)
       }
       else if message_type.id_equals_str("display::get_window") {
-	println!("hi");
 	let mut request_content = message.get_content().expect("Got a window name");
 	let request : GetWindowRequest = request_content.deserialize().unwrap();
 	let window = self.windows.iter().find(|window| window.name == request.window_name);
@@ -98,6 +98,42 @@ impl Plugin for Displays {
 	  .expect("No one should have used responder yet")
 	  .respond(MessageContent::from_content(response))
 	  .unwrap();
+      }
+      //My first inter-plugin command!
+      else if message_type.id_equals_str("display::accept_string_input") {
+	let mut request_content = message.get_content().expect("Got a window name");
+	let request : AcceptStringInputRequest = request_content.deserialize().unwrap();
+	let window = match self.windows.iter().find(|window| window.name == request.window_name) {
+	  Some(window) => window,
+	  None => return Err(MessageError::BadRequest(String::from("Could not find window by provided name"))),
+	};
+
+	let active_buffer_name = match &window.active_buffer_name {
+	  Some(b) => b.clone(),
+	  // TODO this should be possible later (e.g. when opening a buffer)
+	  None => return Err(MessageError::BadRequest(String::from("Cannot accept input in a window without an active buffer"))),
+	};
+
+	let mut request_to_buffer = buffers::requests::new_append_string_to_buffer_request(
+	  &active_buffer_name,
+	  &request.input,
+	);
+
+	//Ugh this presents a huge problem
+	// - How do I make this method async?
+	// - Gotta move to klh client
+	// - Can I just do this with a tokio spawn for now?
+	// - Ok seems to work as is - let's test
+
+	match &self.session_client {
+	  Some(client) => {
+	    let cli_clone = client.clone();
+	    tokio::spawn(async move {
+	      cli_clone.send(request_to_buffer.as_message()).await.unwrap();
+	    });
+	  },
+	  None => (),
+	};
       }
 
       else {

@@ -550,3 +550,24 @@ Oooh, created an interesting problem. When I attempt to create a
 buffer name that already exists, subsequent bl commands fail?
 It's like it knocks the whole plugin out of commission. That's interesting.
 - Fixed by actually handling the error instead of panicking in plugin_channel.
+
+** 2024-11-16
+
+Ok, I think the point of my display_plugin_poc gets answered with this
+commit. Basically, I needed an answer to the questions:
+- How will the display and buffer plugins interface?
+- How will plugins talk to each other more generally?
+
+While the latter still has some ambiguity, I have a working approach
+for the former. Display will be the "front end" and accept command
+inputs. This will then send downstream commands to, e.g. the buffer
+plugin. I think this is appropriate but makes the design assumption
+that commands are sticky to a window, frame, or other visual context.
+This is something I should consider long-term. Gets me off the ground
+for now though.
+
+One thing I still need to figure out is how to make plugin commands
+discoverable. Also, possibly the display plugin should just become the
+"command plugin" with implementations to talk to display and buffer
+downstream? Whatever, need to move forward with something so I can
+iterate.
