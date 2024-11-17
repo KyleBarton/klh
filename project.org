@@ -571,3 +571,13 @@ discoverable. Also, possibly the display plugin should just become the
 "command plugin" with implementations to talk to display and buffer
 downstream? Whatever, need to move forward with something so I can
 iterate.
+
+Ok, I think there's no way around it: I need to create an "event"
+message type to which clients can subscribe, sent _from_ plugins.
+
+Tasks to make this work:
+- Create a "subscription" flow in the client
+- Copy the plugin_registrar logic for client subscribers (e.g. subscriber_registrar)
+- Create the "event" message type
+- Verify it works, e.g. with windows in the test client
+- (Maybe) collapse the query & command message types? Just turn it into "request"? As opposed to "events" to which clients subscribe.
