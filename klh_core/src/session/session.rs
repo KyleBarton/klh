@@ -143,7 +143,7 @@ mod session_tests {
   #[rstest]
   #[tokio::test]
   async fn should_send_message_to_registered_plugin(mut default_session: Session) {
-    let mut client = default_session.get_client();
+    let client = default_session.get_client();
     default_session.run().await.unwrap();
     let mut request = Request::from_message_type(
       MessageType::query_from_str(QUERY_ID).unwrap()
@@ -171,7 +171,7 @@ mod session_tests {
   async fn should_handle_unknown_message(mut default_session: Session) {
     default_session.run().await.unwrap();
 
-    let mut client = default_session.get_client();
+    let client = default_session.get_client();
 
     let mut unknown_request = Request::from_message_type(
       MessageType::query_from_str("unknown").unwrap()
