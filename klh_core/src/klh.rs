@@ -31,7 +31,7 @@ impl KlhClient {
 
   /// Aynchronously send a [Request](crate::messaging::Request) along
   /// to the running instance of KLH.
-  pub async fn send(&mut self, mut request: Request) -> Result<(), KlhError> {
+  pub async fn send(&self, mut request: Request) -> Result<(), KlhError> {
     match self.session_client.send(
       request.as_message()
     ).await {

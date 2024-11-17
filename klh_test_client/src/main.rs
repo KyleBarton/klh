@@ -8,7 +8,7 @@ use std::{io, fs};
 
 // Remember, this is a temporary client and not too much work should be put in here
 async fn prompt_and_read(
-  mut client: KlhClient,
+  client: KlhClient,
 ) {
   loop {
 
@@ -50,7 +50,7 @@ e: exit
 	    client.send(diagnostics_request).await.unwrap();
 	  },
 	  "db" => {
-	    let mut thread_client = client.clone();
+	    let thread_client = client.clone();
 	    tokio::spawn(async move {
 	      println!("Sending a slow bomb");
 	      let mut diagnostics_request = diagnostics::requests::new_slow_bomb(10);

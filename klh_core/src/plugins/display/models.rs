@@ -26,6 +26,13 @@ pub struct AttachBufferRequest {
   pub buffer_name: String,
 }
 
+/// Probably gets replaced with something that maps more closely to key-strokes
+#[derive(Serialize, Deserialize)]
+pub struct AcceptStringInputRequest {
+  pub window_name: String,
+  pub input: String,
+}
+
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Window {
