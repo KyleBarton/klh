@@ -1,4 +1,4 @@
-use log::{debug, warn};
+use log::{debug, warn, error};
 use models::{AcceptStringInputRequest, AttachBufferRequest, GetWindowRequest, GetWindowResponse};
 
 use crate::{messaging::{Message, MessageContent, MessageError, MessageType}, plugin::Plugin, plugins::{buffers, display::models::CreateWindowRequest}, session::SessionClient};
@@ -58,10 +58,12 @@ impl Plugin for Displays {
 	    })
 	    .collect()
 	};
-	message.get_responder()
+	if let Err(e) = message.get_responder()
 	  .expect("No one should have used responder yet")
-	  .respond(MessageContent::from_content(response))
-	  .unwrap();
+	  .respond(MessageContent::from_content(response)) {
+	    error!("[DISPLAY] failed to respond to message. Error: {:?}", e);
+	    return Err(MessageError::PluginFailedToProcessMessage)
+	  }
       }
 
       else if message_type.id_equals_str("display::create_window") {
