@@ -1,4 +1,4 @@
-use log::{debug, warn};
+use log::{debug, error, warn};
 use models::GetBufferResponse;
 
 use crate::{messaging::{MessageType, Message, MessageContent, MessageError, }, plugin::Plugin, session::SessionClient};
@@ -57,10 +57,12 @@ impl Plugin for Buffers {
       let response = models::ListBuffersResponse {
 	buffer_names: self.buffers.iter().map(|b| b.name.clone()).collect(),
       };
-      message.get_responder()
+      if let Err(e) = message.get_responder()
 	.expect("No one should have used the responder yet")
-	.respond(MessageContent::from_content(response))
-	.unwrap();
+	.respond(MessageContent::from_content(response)) {
+	  error!("[BUFFERS] Unable to respond to message. Error: {:?}", e);
+	  return Err(MessageError::PluginFailedToProcessMessage);
+	}
 
     }
 
@@ -100,10 +102,12 @@ impl Plugin for Buffers {
 	.expect("Should be able to deserialize");
       
       let buffer = self.buffers.iter().find(|b| b.name == get_buffer_request.buffer_name);
-      message.get_responder()
+      if let Err(e) = message.get_responder()
 	.expect("No one should have used the responder yet")
-	.respond(MessageContent::from_content(GetBufferResponse { buffer: buffer.cloned() }))
-	.unwrap(); // TODO I should be handling these
+	.respond(MessageContent::from_content(GetBufferResponse { buffer: buffer.cloned() })) {
+	  error!("[BUFFERS] Unable to respond to message. Error: {:?}", e);
+	  return Err(MessageError::PluginFailedToProcessMessage);
+	}
     }
 
     else {
