@@ -2,6 +2,23 @@ use core::fmt;
 
 use super::{MessageType, Responder, MessageContent};
 
+/// The struct which plugins send along to subscribers. Different from
+/// Message in the sense that it derives Clone and can be sent to
+/// multiple subscribers.
+#[derive(Debug, Clone)]
+pub struct EventMessage {
+  pub message_type: MessageType,
+  pub content: Option<MessageContent>,
+}
+
+impl EventMessage {
+  /// Returns the [MessageType] associated with the EventMessage.
+  pub fn get_message_type(&self) -> MessageType {
+    self.message_type
+  }
+
+}
+
 /// The fundamental struct by which plugins accept data through the
 /// [Plugin::accept_message](crate::plugin::Plugin::accept_message)
 /// interface. The plugin contains the necessary information for a
