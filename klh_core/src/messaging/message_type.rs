@@ -31,6 +31,12 @@ pub enum MessageType {
   /// MessageType of Query will respond via the
   /// [Responder](super::Responder) of a message.
   Query([u8; MESSAGE_TYPE_ID_MAX_LENGTH]),
+  /// Intended to reflect a certain change has occurred at the plugin
+  /// level. These message types are meant for plugins to emit to
+  /// clients, rather than for clients to send to plugins. Clients
+  /// should be able to act on these message types using
+  /// [subscribe](crate::KlhClient::subscribe)
+  Event([u8; MESSAGE_TYPE_ID_MAX_LENGTH]),
 }
 
 /// # Examples:
@@ -50,6 +56,10 @@ impl MessageType {
 	.replace('\u{0}', "")
 	.to_string(),
       MessageType::Query(bytes) => std::str::from_utf8(bytes)
+	.unwrap()
+	.replace('\u{0}', "")
+	.to_string(),
+      MessageType::Event(bytes) => std::str::from_utf8(bytes)
 	.unwrap()
 	.replace('\u{0}', "")
 	.to_string(),
@@ -101,6 +111,24 @@ impl MessageType {
     }
   }
 
+  // TODO annotate
+  pub fn event_from_str(str_id: &str) -> Result<Self, MessageTypeError> {
+    if str_id.len() > MESSAGE_TYPE_ID_MAX_LENGTH {
+      Err(MessageTypeError::MessageTypeIdTooLong)
+    }
+    else {
+      let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
+      for (index, b) in str_id
+	.as_bytes()
+	.iter()
+	.enumerate()
+      {
+	id[index] = *b;
+      }
+
+      Ok(Self::Event(id))
+    }
+  }
   
   /// An instance utility function that allows you to ensure the ID of
   /// the message type matches.
@@ -118,7 +146,10 @@ impl MessageType {
       },
       Self::Query(id) => {
 	&id[0..id_check.len()] == id_check.as_bytes()
-      }
+      },
+      Self::Event(id) => {
+	&id[0..id_check.len()] == id_check.as_bytes()
+      },
     }
   }
 }
