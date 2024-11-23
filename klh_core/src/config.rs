@@ -5,6 +5,7 @@ pub enum CorePlugins {
   Buffers,
   Diagnostics,
   Displays,
+  TestClient,
 }
 
 /// An object containing a representation of any configuration needed
@@ -19,7 +20,8 @@ impl Default for KlhConfig {
       core_plugins: vec!(
 	CorePlugins::Buffers,
 	CorePlugins::Diagnostics,
-	CorePlugins::Displays
+	CorePlugins::Displays,
+	CorePlugins::TestClient,
       ),
     }
   }
