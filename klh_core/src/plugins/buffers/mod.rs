@@ -1,7 +1,7 @@
 use log::{debug, error, warn};
 use models::GetBufferResponse;
 
-use crate::{messaging::{MessageType, Message, MessageContent, MessageError, }, plugin::Plugin, session::SessionClient};
+use crate::{messaging::{Message, MessageContent, MessageError, MessageType, Request }, plugin::Plugin, session::SessionClient};
 
 use self::models::Buffer;
 
@@ -93,6 +93,18 @@ impl Plugin for Buffers {
       };
 
       buffer.content.append(append_buffer_content.content);
+
+      //TODO this is meh
+      let mut request = Request::new(
+	MessageType::event_from_str("buffers:buffer_appended").unwrap(),
+	MessageContent::from_content(buffer),
+      );
+
+      let client_clone = self.session_client.clone().expect("Should have a client");
+
+      tokio::spawn(async move {
+	client_clone.send(request.as_message()).await.unwrap();
+      });
     }
 
     else if message_type.id_equals_str("buffers::get_buffer") {

@@ -61,6 +61,8 @@ pub mod plugin_test_utility {
 	      .unwrap();
 	  }
 	},
+	// TODO a responder shouldn't occur for an event, so need some other way to handle this here.
+	MessageType::Event(_) => ()
       };
 
       Ok(())

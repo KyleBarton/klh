@@ -4,6 +4,7 @@ use crate::config::{KlhConfig, CorePlugins};
 use crate::messaging::Request;
 use crate::plugin::Plugin;
 use crate::plugins::display::Displays;
+use crate::plugins::test_client::TestClient;
 use crate::plugins::{diagnostics::Diagnostics, buffers::Buffers};
 use crate::session::{Session, SessionClient, SessionError};
 
@@ -99,13 +100,18 @@ impl Klh {
 	  debug!("Diagnostics plugin added");
 	},
 	CorePlugins::Buffers => {
-	  debug!("Adding Diagnostics plugin");
+	  debug!("Adding Buffers plugin");
 	  self.add_plugin(Box::new(Buffers::new()));
-	  debug!("Diagnostics plugin added");
+	  debug!("Buffers plugin added");
 	},
 	CorePlugins::Displays => {
 	  debug!("Adding Display plugin");
 	  self.add_plugin(Box::new(Displays::new()));
+	}
+	CorePlugins::TestClient => {
+	  debug!("Adding TestClient plugin");
+	  self.add_plugin(Box::new(TestClient::new()));
+	  debug!("TestClient plugin added");
 	}
       }
     }
