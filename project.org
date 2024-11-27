@@ -581,3 +581,9 @@ Tasks to make this work:
 - Create the "event" message type
 - Verify it works, e.g. with windows in the test client
 - (Maybe) collapse the query & command message types? Just turn it into "request"? As opposed to "events" to which clients subscribe.
+
+** 2024-11-26
+Probably need to change Message to an interface? Hrm. Or an enum where
+one has a responder and one doesn't?
+
+This is because messagetransmitter assumes type, but event messages need to be clonable (since multiple subscribers can be listening), and that isn't feasible if they have responders

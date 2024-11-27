@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use log::{debug, warn};
 
-use crate::messaging::{Message, MessageType, MessageContent, MessageError};
+use crate::messaging::{EventMessage, Message, MessageContent, MessageError, MessageType};
 
 use super::plugin_channel::PluginTransmitter;
 
@@ -11,14 +11,17 @@ use super::plugin_channel::PluginTransmitter;
 /// during its running session. Not part of the KLH public API.
 #[derive(Clone)]
 pub(crate) struct PluginRegistrar {
-  plugin_type_map: HashMap<MessageType, PluginTransmitter>,
+  command_plugin_map: HashMap<MessageType, PluginTransmitter>,
+  event_plugin_map: HashMap<MessageType, Vec<PluginTransmitter>>,
 }
 
 impl PluginRegistrar {
 
   pub(crate) fn new() -> Self {
     PluginRegistrar {
-      plugin_type_map: HashMap::new(),
+      command_plugin_map: HashMap::new(),
+      // TODO this isn't quite right, need eventmessage instead of message (no responder, true pub sub)
+      event_plugin_map: HashMap::new(),
     }
   }
 
@@ -32,7 +35,42 @@ impl PluginRegistrar {
   ) {
     for message_type in message_types.iter() {
       debug!("Registering message type {}", message_type);
-      self.plugin_type_map.insert(*message_type, transmitter.clone());
+      match message_type {
+        MessageType::Command(_) => {
+	  self.command_plugin_map.insert(*message_type, transmitter.clone());
+	},
+        MessageType::Query(_) => {
+	  self.command_plugin_map.insert(*message_type, transmitter.clone());
+	},
+        MessageType::Event(_) => {
+	  match self.event_plugin_map.get_mut(message_type) {
+	    Some(transmitters) => {
+	      transmitters.push(transmitter.clone());
+	    },
+	    None => {
+	      let transmitters = vec!(transmitter.clone());
+	      self.event_plugin_map.insert(*message_type, transmitters);
+	    },
+	  }
+	},
+      };
+    }
+  }
+
+  /// Receives an event message and sends it to all the transmitters
+  /// subscribed.
+  pub(crate) async fn send_event_to_plugin(&self, mut message: EventMessage) {
+    debug!("Plugin registrar received event message {:?}", message);
+    match self.event_plugin_map.get(&message.get_message_type()) {
+      Some(listeners) => {
+	for _listener in listeners {
+	  // listener.send_message()
+	  debug!("TODO sending message to listener");
+	}
+      },
+      None => {
+	debug!("No listeners found for event message {:?}", message)
+      }
     }
   }
 
@@ -41,7 +79,7 @@ impl PluginRegistrar {
   /// MessageType of the sent Message.
   pub(crate) async fn send_to_plugin(&self, mut message: Message) {
     debug!("Plugin registrar received message {}", message);
-    match self.plugin_type_map.get(&message.get_message_type()) {
+    match self.command_plugin_map.get(&message.get_message_type()) {
       Some(listener) => {
 	debug!("Found listener for message {}", message);
 	match listener.send_message(message).await {
