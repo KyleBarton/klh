@@ -12,6 +12,12 @@ pub struct EventMessage {
 }
 
 impl EventMessage {
+  pub fn new(message_type: MessageType, content: Option<MessageContent>) -> Self {
+    Self {
+      message_type,
+      content,
+    }
+  }
   /// Returns the [MessageType] associated with the EventMessage.
   pub fn get_message_type(&self) -> MessageType {
     self.message_type
@@ -26,13 +32,19 @@ impl EventMessage {
 /// [MessageContent] of the message, and a [Responder] with
 /// which to send an asynchronous response.
 #[derive(Debug)]
-pub struct Message {
+pub enum Message {
+  Event(EventMessage),
+  Command(CommandMessage),
+}
+
+#[derive(Debug)]
+pub struct CommandMessage {
   message_type: MessageType,
   responder: Option<Responder>,
   content: Option<MessageContent>,
 }
 
-impl Message {
+impl CommandMessage {
 
   pub(crate) fn new(
     message_type: MessageType,
@@ -73,11 +85,25 @@ impl Message {
 
 impl fmt::Display for Message {
   fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f,"Message {{
+    match self {
+      Message::Event(event) => {
+	write!(f,"Message {{
   message_type: {},
   content: {:?},
 }}
-", self.message_type.display_id(), self.content)
+", event.message_type.display_id(), event.content)
+	
+      },
+      Message::Command(command) => {
+	write!(f,"Message {{
+  message_type: {},
+  content: {:?},
+}}
+", command.message_type.display_id(), command.content)
+	
+	
+      },
+    }
   }
 }
 

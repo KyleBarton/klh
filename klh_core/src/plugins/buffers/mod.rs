@@ -1,7 +1,7 @@
 use log::{debug, error, warn};
 use models::GetBufferResponse;
 
-use crate::{messaging::{Message, MessageContent, MessageError, MessageType, Request }, plugin::Plugin, session::SessionClient};
+use crate::{messaging::{CommandMessage, Event, Message, MessageContent, MessageError, MessageType}, plugin::Plugin, session::SessionClient};
 
 use self::models::Buffer;
 
@@ -31,26 +31,8 @@ impl Buffers {
       buffers: Vec::new(),
     }
   }
-}
-
-impl Default for Buffers {
-  fn default() -> Self {
-    Self::new()
-  }
-}
-
-impl Plugin for Buffers {
-
-  fn list_message_types(&self) -> Vec<MessageType> {
-    self.message_types.clone()
-  }
-
-  fn receive_client(&mut self, session_client: SessionClient) {
-    self.session_client = Some(session_client)
-  }
-
-  fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
-    debug!("[BUFFERS] received message {}", message);
+  fn accept_command(&mut self, mut message: CommandMessage) -> Result<(), MessageError> {
+    debug!("[BUFFERS] received message {:?}", message);
     let message_type = message.get_message_type();
 
     if message_type.id_equals_str("buffers::list_buffers") {
@@ -95,7 +77,7 @@ impl Plugin for Buffers {
       buffer.content.append(append_buffer_content.content);
 
       //TODO this is meh
-      let mut request = Request::new(
+      let mut request = Event::new(
 	MessageType::event_from_str("buffers:buffer_appended").unwrap(),
 	MessageContent::from_content(buffer),
       );
@@ -126,5 +108,29 @@ impl Plugin for Buffers {
       warn!("[BUFFERS] message type id not found: {}", &message.get_message_type());
     }
     Ok(())
+  }
+}
+
+impl Default for Buffers {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
+impl Plugin for Buffers {
+
+  fn list_message_types(&self) -> Vec<MessageType> {
+    self.message_types.clone()
+  }
+
+  fn receive_client(&mut self, session_client: SessionClient) {
+    self.session_client = Some(session_client)
+  }
+
+  fn accept_message(&mut self, message: Message) -> Result<(), MessageError> {
+    match message {
+        Message::Event(_) => todo!(),
+        Message::Command(command) => self.accept_command(command),
+    }
   }
 }

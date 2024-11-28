@@ -1,6 +1,6 @@
 use tokio::sync::oneshot;
 
-use super::{Message, MessageType, MessageContent, Responder, ResponseHandler, MessageError};
+use super::{CommandMessage, EventMessage, Message, MessageContent, MessageError, MessageType, Responder, ResponseHandler};
 
 /// The fundamental struct with which to communicate through klh. A
 /// `Request` can apply to any [MessageType]. A user interfaces with
@@ -61,16 +61,16 @@ impl Request {
 
   pub(crate) fn as_message(&mut self) -> Message {
     match self.content.take() {
-      None => Message::new(
+      None => Message::Command(CommandMessage::new(
 	self.message_type,
 	self.sender.take(),
 	None,
-      ),
-      Some(content) => Message::new(
+      )),
+      Some(content) => Message::Command(CommandMessage::new(
 	self.message_type,
 	self.sender.take(),
 	Some(content),
-      ),
+      )),
     }
     
   }
@@ -84,6 +84,33 @@ impl Request {
     match self.receiver.take() {
       None => Err(MessageError::ResponseHandlerAlreadyTaken),
       Some(r) => Ok(r),
+    }
+    
+  }
+}
+
+pub struct Event {
+  message_type: MessageType,
+  content: Option<MessageContent>,
+}
+
+impl Event {
+  pub fn new(message_type: MessageType, content: MessageContent) -> Self {
+    Self {
+      message_type,
+      content: Some(content),
+    }
+  }
+  pub(crate) fn as_message(&mut self) -> Message {
+    match self.content.take() {
+      None => Message::Event(EventMessage::new(
+	self.message_type,
+	None,
+      )),
+      Some(content) => Message::Event(EventMessage::new(
+	self.message_type,
+	Some(content),
+      )),
     }
     
   }
