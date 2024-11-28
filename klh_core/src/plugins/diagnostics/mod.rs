@@ -2,7 +2,7 @@ use std::{thread, time};
 
 use log::{debug, warn, info};
 
-use crate::{plugin::Plugin, messaging::{MessageType, Message, MessageContent, MessageError}, session::SessionClient};
+use crate::{messaging::{CommandMessage, Message, MessageContent, MessageError, MessageType}, plugin::Plugin, session::SessionClient};
 
 
 pub mod requests;
@@ -36,11 +36,9 @@ impl Diagnostics {
       session_client: None,
     }
   }
-}
-impl Plugin for Diagnostics {
 
-  fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
-    debug!("[DIAGNOSTICS] Diagnostics received message {}", message);
+  fn accept_command(&mut self, mut message: CommandMessage) -> Result<(), MessageError> {
+    debug!("[DIAGNOSTICS] Diagnostics received message {:?}", message);
     let message_type = message.get_message_type();
 
     if message_type.id_equals_str("diagnostics::log_event") {
@@ -64,6 +62,15 @@ impl Plugin for Diagnostics {
     }
     
     Ok(())
+  }
+}
+impl Plugin for Diagnostics {
+
+  fn accept_message(&mut self, message: Message) -> Result<(), MessageError> {
+    match message {
+        Message::Event(_) => todo!(),
+        Message::Command(command) => self.accept_command(command),
+    }
   }
 
   fn list_message_types(&self) -> Vec<MessageType> {

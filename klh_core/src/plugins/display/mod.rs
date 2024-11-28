@@ -1,7 +1,7 @@
 use log::{debug, warn, error};
 use models::{AcceptStringInputRequest, AttachBufferRequest, GetWindowRequest, GetWindowResponse};
 
-use crate::{messaging::{Message, MessageContent, MessageError, MessageType}, plugin::Plugin, plugins::{buffers, display::models::CreateWindowRequest}, session::SessionClient};
+use crate::{messaging::{CommandMessage, Message, MessageContent, MessageError, MessageType}, plugin::Plugin, plugins::{buffers, display::models::CreateWindowRequest}, session::SessionClient};
 
 use self::models::Window;
 
@@ -34,18 +34,9 @@ impl Displays {
       windows: Vec::new(),
     }
   }
-}
 
-impl Default for Displays {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Plugin for Displays {
-
-    fn accept_message(&mut self, mut message: Message) -> Result<(), MessageError> {
-      debug!("[DISPLAY] received message {}", message);
+  fn accept_command(&mut self, mut message: CommandMessage) -> Result<(), MessageError> {
+      debug!("[DISPLAY] received command message {:?}", message);
       let message_type = message.get_message_type();
 
       if message_type.id_equals_str("display::list_windows") {
@@ -140,6 +131,24 @@ impl Plugin for Displays {
       }
 
       Ok(())
+  }
+}
+
+impl Default for Displays {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Plugin for Displays {
+
+    fn accept_message(&mut self, message: Message) -> Result<(), MessageError> {
+      match message {
+        Message::Event(_) => todo!(),
+        Message::Command(command) => {
+	  self.accept_command(command)
+	},
+    }
     }
 
     fn list_message_types(&self) -> Vec<MessageType> {
