@@ -4,7 +4,7 @@ use super::models::{AppendStringToBufferRequest, CreateBufferRequest, GetBufferR
 
 pub fn new_list_buffers_request() -> Request {
   Request::from_message_type(
-    MessageType::query_from_str("buffers::list_buffers").unwrap()
+    MessageType::command_from_str("buffers::list_buffers").unwrap()
   )
 }
 
@@ -37,7 +37,7 @@ pub fn new_get_buffer_request(name: &str) -> Request {
   };
 
   Request::new(
-    MessageType::query_from_str("buffers::get_buffer").unwrap(),
+    MessageType::command_from_str("buffers::get_buffer").unwrap(),
     MessageContent::from_content(get_buffer_request),
   )
 }

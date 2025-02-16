@@ -25,12 +25,6 @@ pub enum MessageType {
   /// [Message](super::Message) instances with a MessageType of
   /// Command to respond to the message.
   Command([u8; MESSAGE_TYPE_ID_MAX_LENGTH]),
-  /// Intended to represent requests for data from a specific
-  /// plugin. "buffers:list_buffers" is a query. Conventionally, it is
-  /// expected that [Message](super::Message) instances with a
-  /// MessageType of Query will respond via the
-  /// [Responder](super::Responder) of a message.
-  Query([u8; MESSAGE_TYPE_ID_MAX_LENGTH]),
   /// Intended to reflect a certain change has occurred at the plugin
   /// level. These message types are meant for plugins to emit to
   /// clients, rather than for clients to send to plugins. Clients
@@ -42,7 +36,7 @@ pub enum MessageType {
 /// # Examples:
 /// ```
 /// use klh_core::messaging::MessageType;
-/// let message: MessageType = MessageType::query_from_str("test").unwrap();
+/// let message: MessageType = MessageType::command_from_str("test").unwrap();
 /// assert_eq!("test".to_string(), message.display_id())
 /// ```
 impl MessageType {
@@ -55,39 +49,12 @@ impl MessageType {
 	.unwrap()
 	.replace('\u{0}', "")
 	.to_string(),
-      MessageType::Query(bytes) => std::str::from_utf8(bytes)
-	.unwrap()
-	.replace('\u{0}', "")
-	.to_string(),
       MessageType::Event(bytes) => std::str::from_utf8(bytes)
 	.unwrap()
 	.replace('\u{0}', "")
 	.to_string(),
     }
   }
-
-  /// A utility function to create a [MessageType::Query] from a &str
-  /// input. The slice will be read as bytes and serialized into an ID
-  /// of a fixed length in order to prevent dynamic sizing of
-  /// MessageType objects.
-  pub fn query_from_str(str_id: &str) -> Result<Self, MessageTypeError> {
-    if str_id.len() > MESSAGE_TYPE_ID_MAX_LENGTH {
-      Err(MessageTypeError::MessageTypeIdTooLong)
-    }
-    else {
-      let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
-      for (index, b) in str_id
-	.as_bytes()
-	.iter()
-	.enumerate()
-      {
-	id[index] = *b;
-      }
-
-      Ok(Self::Query(id))
-    }
-  }
-
 
   /// A utility function to create a [MessageType::Command] from a
   /// &str input. The slice will be read as bytes and serialzied into
@@ -144,9 +111,6 @@ impl MessageType {
       Self::Command(id) => {
 	&id[0..id_check.len()] == id_check.as_bytes()
       },
-      Self::Query(id) => {
-	&id[0..id_check.len()] == id_check.as_bytes()
-      },
       Self::Event(id) => {
 	&id[0..id_check.len()] == id_check.as_bytes()
       },
@@ -180,28 +144,9 @@ mod message_type_tests {
   }
 
   #[rstest]
-  fn should_create_query_from_str() {
-    let message_type = MessageType::query_from_str("query_id").unwrap();
-
-    assert!(matches!(message_type, MessageType::Query(..)));
-    assert_eq!(message_type.display_id(), "query_id".to_string());
-  }
-
-  #[rstest]
   fn should_fail_to_create_command_from_str_too_long() {
     let command_id_too_long: String = ['a'; MESSAGE_TYPE_ID_MAX_LENGTH+1].iter().collect();
     let message_type_result = MessageType::command_from_str(&command_id_too_long);
-    assert!(message_type_result.is_err());
-    assert_eq!(
-      message_type_result.expect_err("Is an error"),
-      MessageTypeError::MessageTypeIdTooLong,
-    )
-  }
-  
-  #[rstest]
-  fn should_fail_to_create_query_from_str_too_long() {
-    let query_id_too_long: String = ['a'; MESSAGE_TYPE_ID_MAX_LENGTH+1].iter().collect();
-    let message_type_result = MessageType::query_from_str(&query_id_too_long);
     assert!(message_type_result.is_err());
     assert_eq!(
       message_type_result.expect_err("Is an error"),
