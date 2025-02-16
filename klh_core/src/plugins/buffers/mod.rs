@@ -20,8 +20,8 @@ impl Buffers {
   pub fn new() -> Self {
     let message_types: Vec<MessageType> = vec![
       MessageType::command_from_str("buffers::create_buffer").unwrap(),
-      MessageType::query_from_str("buffers::list_buffers").unwrap(),
-      MessageType::query_from_str("buffers::get_buffer").unwrap(),
+      MessageType::command_from_str("buffers::list_buffers").unwrap(),
+      MessageType::command_from_str("buffers::get_buffer").unwrap(),
       MessageType::command_from_str("buffers:append_string").unwrap(),
     ];
 

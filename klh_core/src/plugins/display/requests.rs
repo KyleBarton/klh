@@ -49,13 +49,13 @@ pub fn new_detach_buffer_request() -> Request {
 // TODO window ID argument
 pub fn new_list_buffers_in_window() -> Request {
   Request::from_message_type(
-    MessageType::query_from_str("display::list_buffers_in_window").unwrap()
+    MessageType::command_from_str("display::list_buffers_in_window").unwrap()
   )
 }
 
 pub fn new_list_windows_request() -> Request {
   Request::from_message_type(
-    MessageType::query_from_str("display::list_windows").unwrap()
+    MessageType::command_from_str("display::list_windows").unwrap()
   )
 }
 
@@ -64,7 +64,7 @@ pub fn new_get_window_request(window_name: &str) -> Request {
     window_name: window_name.to_string(),
   };
   Request::new(
-    MessageType::query_from_str("display::get_window").unwrap(),
+    MessageType::command_from_str("display::get_window").unwrap(),
     MessageContent::from_content(get_window_request),
   )
 }

@@ -83,7 +83,7 @@ impl PluginTransmitter {
 mod plugin_channel_tests {
   use rstest::*;
 
-  use crate::plugin::plugin_test_utility::{TestPlugin, QUERY_RESPONSE, QUERY_ID};
+  use crate::plugin::plugin_test_utility::{TestPlugin, COMMAND_ID, COMMAND_RESPONSE};
   use crate::messaging::{Request, MessageType, Message, MessageContent};
 
   use super::PluginChannel;
@@ -91,7 +91,7 @@ mod plugin_channel_tests {
   #[fixture]
   fn message_to_send() -> Message {
     Request::from_message_type(
-      MessageType::query_from_str(QUERY_ID).unwrap()
+      MessageType::command_from_str(COMMAND_ID).unwrap()
     ).as_message()
   }
 
@@ -99,7 +99,7 @@ mod plugin_channel_tests {
   #[tokio::test]
   async fn should_send_message_through_plugin_channel() {
     let mut given_request = Request::from_message_type(
-      MessageType::query_from_str(QUERY_ID).unwrap()
+      MessageType::command_from_str(COMMAND_ID).unwrap()
     );
     let mut response_handler = given_request.get_handler()
       .expect("response handler should be available");
@@ -121,6 +121,6 @@ mod plugin_channel_tests {
 
     let response = response_handler.handle_response().await.unwrap();
 
-    assert_eq!(response, MessageContent::from_content(QUERY_RESPONSE))
+    assert_eq!(response, MessageContent::from_content(COMMAND_RESPONSE))
   }
 }

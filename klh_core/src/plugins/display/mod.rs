@@ -19,12 +19,12 @@ impl Displays {
   pub fn new() -> Self {
     let message_types: Vec<MessageType> = vec![
       MessageType::command_from_str("display::create_window").unwrap(),
-      MessageType::query_from_str("display::list_windows").unwrap(),
-      MessageType::query_from_str("display::get_window").unwrap(),
+      MessageType::command_from_str("display::list_windows").unwrap(),
+      MessageType::command_from_str("display::get_window").unwrap(),
       MessageType::command_from_str("display::delete_window").unwrap(),
       MessageType::command_from_str("display::attach_buffer").unwrap(),
       MessageType::command_from_str("display::detach_buffer").unwrap(),
-      MessageType::query_from_str("display::list_buffers_in_window").unwrap(),
+      MessageType::command_from_str("display::list_buffers_in_window").unwrap(),
       MessageType::command_from_str("display::accept_string_input").unwrap(),
     ];
 

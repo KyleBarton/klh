@@ -128,7 +128,7 @@ use super::Request;
   #[rstest]
   fn should_serialize_into_message_with_no_content() {
     let mut request: Request = Request::from_message_type(
-      MessageType::query_from_str("query").unwrap()
+      MessageType::command_from_str("cmd").unwrap()
     );
 
     let mut serialized_message = request.as_message();
@@ -141,7 +141,7 @@ use super::Request;
   #[rstest]
   fn should_serialize_into_message_with_expected_content() {
     let mut request: Request = Request::new(
-      MessageType::query_from_str("query").unwrap(),
+      MessageType::command_from_str("command").unwrap(),
       MessageContent::from_content("content"),
     );
 
@@ -155,21 +155,21 @@ use super::Request;
   #[rstest]
   fn should_serialize_into_message_with_expected_message_type() {
     let mut request: Request = Request::from_message_type(
-      MessageType::query_from_str("query").unwrap()
+      MessageType::command_from_str("command").unwrap()
     );
 
     let serialized_message = request.as_message();
 
     assert_eq!(
       serialized_message.get_message_type(),
-      MessageType::query_from_str("query").unwrap(),
+      MessageType::command_from_str("command").unwrap(),
     );
   }
 
   #[rstest]
   fn should_provide_handler_when_get_handler_first_called() {
     let mut request: Request = Request::from_message_type(
-      MessageType::query_from_str("query").unwrap()
+      MessageType::command_from_str("command").unwrap()
     );
 
     let handler = request.get_handler();
@@ -180,7 +180,7 @@ use super::Request;
   #[rstest]
   fn should_return_expected_err_when_get_handler_called_more_than_once() {
     let mut request: Request = Request::from_message_type(
-      MessageType::query_from_str("query").unwrap()
+      MessageType::command_from_str("command").unwrap()
     );
 
     let _handler = request.get_handler();

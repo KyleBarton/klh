@@ -130,7 +130,7 @@ mod session_tests {
   use super::Session;
   use crate::messaging::{Request, MessageType, MessageError};
   use crate::session::session::SessionError;
-  use crate::plugin::plugin_test_utility::{TestPlugin, QUERY_ID, QUERY_RESPONSE};
+  use crate::plugin::plugin_test_utility::{TestPlugin, COMMAND_ID, COMMAND_RESPONSE};
 
   #[fixture]
   fn default_session() -> Session {
@@ -146,7 +146,7 @@ mod session_tests {
     let client = default_session.get_client();
     default_session.run().await.unwrap();
     let mut request = Request::from_message_type(
-      MessageType::query_from_str(QUERY_ID).unwrap()
+      MessageType::command_from_str(COMMAND_ID).unwrap()
     );
     let mut handler = request.get_handler().unwrap();
 
@@ -156,7 +156,7 @@ mod session_tests {
 
     let deserialized_response: String = response.deserialize()
       .expect("Should deserialize into a string");
-    assert_eq!(QUERY_RESPONSE.to_string(), deserialized_response);
+    assert_eq!(COMMAND_RESPONSE.to_string(), deserialized_response);
   }
 
   #[rstest]
@@ -174,7 +174,7 @@ mod session_tests {
     let client = default_session.get_client();
 
     let mut unknown_request = Request::from_message_type(
-      MessageType::query_from_str("unknown").unwrap()
+      MessageType::command_from_str("unknown").unwrap()
     );
 
     let mut handler = unknown_request.get_handler().unwrap();

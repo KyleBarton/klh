@@ -23,6 +23,16 @@ impl EventMessage {
     self.message_type
   }
 
+  pub fn get_content(&mut self) -> Option<MessageContent> {
+    match self.content.take() {
+      None => None,
+      Some(c) => {
+	self.content = Some(c.clone());
+	Some(c)
+      }
+    }
+  }
+
 }
 
 /// The fundamental struct by which plugins accept data through the
@@ -35,6 +45,29 @@ impl EventMessage {
 pub enum Message {
   Event(EventMessage),
   Command(CommandMessage),
+}
+
+impl Message {
+  pub fn get_message_type(&self) -> MessageType {
+    match self {
+        Message::Event(event) => event.get_message_type(),
+        Message::Command(command) => command.get_message_type(),
+    }
+  }
+  pub fn get_content(&mut self) -> Option<MessageContent> {
+    match self {
+        Message::Event(event) => event.get_content(),
+        Message::Command(command) => command.get_content(),
+    }
+  }
+
+  // Probably need a better way to do this. And the signature... ugh
+  pub fn get_responder(&mut self) -> Result<Option<Responder>, String> {
+    match self {
+      Message::Event(_) => Err("event types do not have responders".to_string()),
+      Message::Command(command) => Ok(command.get_responder()),
+    }
+  }
 }
 
 #[derive(Debug)]
@@ -100,8 +133,6 @@ impl fmt::Display for Message {
   content: {:?},
 }}
 ", command.message_type.display_id(), command.content)
-	
-	
       },
     }
   }
@@ -112,6 +143,8 @@ mod message_tests {
   use rstest::*;
 
   use crate::messaging::{MessageType, MessageContent, Request};
+
+use super::Message;
 
   #[rstest]
   fn should_get_expected_content_from_message() {
@@ -154,11 +187,15 @@ mod message_tests {
       MessageContent::from_content("content"),
     );
 
-    let mut message = given_request.as_message();
+    if let Message::Command(mut command) = given_request.as_message() {
+      let responder = command.get_responder();
 
-    let responder = message.get_responder();
+      assert!(responder.is_some())
+      
+    } else {
+      panic!("should have a command from request")
+    }
 
-    assert!(responder.is_some())
   }
 
   #[rstest]
@@ -168,26 +205,30 @@ mod message_tests {
       MessageContent::from_content("content"),
     );
 
-    let mut message = given_request.as_message();
+    if let Message::Command(mut message) = given_request.as_message() {
+      let _responder_thrown_away = message.get_responder();
 
-    let _responder_thrown_away = message.get_responder();
+      let second_responder = message.get_responder();
 
-    let second_responder = message.get_responder();
+      assert!(second_responder.is_none())
+      
+    } else {
+      panic!("Should have a command message")
+    }
 
-    assert!(second_responder.is_none())
   }
 
   #[rstest]
   fn should_return_expected_message_type() {
     let mut given_request = Request::from_message_type(
-      MessageType::query_from_str("query").unwrap(),
+      MessageType::command_from_str("command").unwrap(),
     );
 
     let message = given_request.as_message();
 
     assert_eq!(
       message.get_message_type(),
-      MessageType::query_from_str("query").unwrap(),
+      MessageType::command_from_str("command").unwrap(),
     )
   }
 }

@@ -93,14 +93,16 @@ use crate::messaging::{Request, MessageType, MessageContent, MessageError};
   #[tokio::test]
   async fn responder_should_respond_with_expected_content() {
     let mut given_request = Request::from_message_type(
-      MessageType::query_from_str("test").unwrap()
+      MessageType::command_from_str("test").unwrap()
     );
 
     let mut response_handler = given_request.get_handler().unwrap();
 
     let mut given_message = given_request.as_message();
 
-    let mut responder = given_message.get_responder().expect("Should be a responder available");
+    let mut responder = given_message.get_responder()
+      .expect("Should be possible to get a responder for a comman")
+      .expect("Should have its responder unused");
 
     tokio::spawn(async move {
       responder.respond(MessageContent::from_content("responding"))
@@ -117,11 +119,13 @@ use crate::messaging::{Request, MessageType, MessageContent, MessageError};
   #[rstest]
   fn responder_should_return_expected_error_when_called_to_respond_twice() {
     let mut given_request = Request::from_message_type(
-      MessageType::query_from_str("test").unwrap()
+      MessageType::command_from_str("test").unwrap()
     );
     let mut given_message = given_request.as_message();
 
-    let mut responder = given_message.get_responder().expect("Should be a responder available");
+    let mut responder = given_message.get_responder()
+      .expect("Should be possible to get a responder for a comman")
+      .expect("Should have its responder unused");
 
     responder.respond(MessageContent::from_content("content")).unwrap();
 
@@ -136,14 +140,16 @@ use crate::messaging::{Request, MessageType, MessageContent, MessageError};
   #[tokio::test]
   async fn response_hander_should_return_expected_error_when_called_to_handle_twice() {
     let mut given_request = Request::from_message_type(
-      MessageType::query_from_str("test").unwrap()
+      MessageType::command_from_str("test").unwrap()
     );
 
     let mut response_handler = given_request.get_handler().unwrap();
 
     let mut given_message = given_request.as_message();
 
-    let mut responder = given_message.get_responder().expect("Should be a responder available");
+    let mut responder = given_message.get_responder()
+      .expect("Should be possible to get a responder for a comman")
+      .expect("Should have its responder unused");
 
     tokio::spawn(async move {
       responder.respond(MessageContent::from_content("responding"))

@@ -38,9 +38,6 @@ impl PluginRegistrar {
         MessageType::Command(_) => {
 	  self.command_plugin_map.insert(*message_type, transmitter.clone());
 	},
-        MessageType::Query(_) => {
-	  self.command_plugin_map.insert(*message_type, transmitter.clone());
-	},
         MessageType::Event(_) => {
 	  match self.event_plugin_map.get_mut(message_type) {
 	    Some(transmitters) => {

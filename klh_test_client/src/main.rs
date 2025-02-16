@@ -24,7 +24,6 @@ wg: Get a window
 dl: Send a log event to diagnostics
 db: Send a slow bomb to diagnostics
 write: Send some data to a window for writing to a buffer
-bad_query: Send an unknown query through the client
 bad_command: Send an unknown command through the client
 e: exit
     ");
@@ -32,13 +31,6 @@ e: exit
     match io::stdin().read_line(&mut input) {
       Ok(_n) => {
 	match input.as_str().trim() {
-	  "bad_query" => {
-	    println!("Sending bogus query");
-	    let bad_query = Request::from_message_type(
-	      MessageType::query_from_str("NoSuchId").unwrap()
-	    );
-	    client.send(bad_query).await.unwrap();
-	  },
 	  "bad_command" => {
 	    println!("Sending bogus command");
 	    let bad_command = Request::from_message_type(
