@@ -41,6 +41,7 @@ impl EventMessage {
 /// plugin to get the [MessageType] of the originating request, the
 /// [MessageContent] of the message, and a [Responder] with
 /// which to send an asynchronous response.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum Message {
   Event(EventMessage),
