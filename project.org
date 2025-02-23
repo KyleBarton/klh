@@ -587,3 +587,11 @@ Probably need to change Message to an interface? Hrm. Or an enum where
 one has a responder and one doesn't?
 
 This is because messagetransmitter assumes type, but event messages need to be clonable (since multiple subscribers can be listening), and that isn't feasible if they have responders
+
+** 2025-02-15
+Finally consolidated queries and commands into just commands. I think at this point I need to figure out how to have the client read events. Probably best implemented as a plugin?
+
+- Try and use slow-bombs and display updates as examples, and figure out looping logic in the test client.
+- After that, merge in and start on an Iced implementation for a front end and an actual RPC protocol - probably unix sockets?
+
+
