@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 // TODO separate this into models.rs, requests.rs, and responses.rs
 // Requests -> What subscribers care about
@@ -8,51 +8,50 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct CreateBufferRequest {
-  pub name: String,
+    pub name: String,
 }
 
 /// A simple way to append a string of characters to the end of the buffer. No cursor/point considered here.
 #[derive(Serialize, Deserialize)]
 pub struct AppendStringToBufferRequest {
-  pub buffer_name: String,
-  pub content: String,
+    pub buffer_name: String,
+    pub content: String,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct GetBufferRequest {
-  pub buffer_name: String,
+    pub buffer_name: String,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct GetBufferResponse {
-  pub buffer: Option<Buffer>,
+    pub buffer: Option<Buffer>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct ListBuffersResponse {
-  pub buffer_names: Vec<String>,
+    pub buffer_names: Vec<String>,
 }
-
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Buffer {
-  pub name: String,
-  pub content: BufferContent,
+    pub name: String,
+    pub content: BufferContent,
 }
 
 impl Buffer {
-  pub fn new(name: String) -> Self {
-    Self {
-      name,
-      content: BufferContent::new(),
+    pub fn new(name: String) -> Self {
+        Self {
+            name,
+            content: BufferContent::new(),
+        }
     }
-  }
 }
 
 // Placeholder for a way to store the content. For now basically wraps a string
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BufferContent {
-  content: String,
+    content: String,
 }
 
 impl Default for BufferContent {
@@ -62,13 +61,13 @@ impl Default for BufferContent {
 }
 
 impl BufferContent {
-  pub fn new() -> Self {
-    Self {
-      content: "".to_string(),
+    pub fn new() -> Self {
+        Self {
+            content: "".to_string(),
+        }
     }
-  }
 
-  pub fn append(&mut self, content: String) {
-    self.content.push_str(&content);
-  }
+    pub fn append(&mut self, content: String) {
+        self.content.push_str(&content);
+    }
 }

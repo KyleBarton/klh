@@ -1,85 +1,86 @@
 use std::{thread, time};
 
-use log::{debug, warn, info};
+use log::{debug, info, warn};
 
-use crate::{messaging::{CommandMessage, Message, MessageContent, MessageError, MessageType}, plugin::Plugin, session::SessionClient};
+use crate::{
+    messaging::{CommandMessage, Message, MessageContent, MessageError, MessageType},
+    plugin::Plugin,
+    session::SessionClient,
+};
 
-
-pub mod requests;
 pub mod models;
+pub mod requests;
 
 // TODO need a better way to do this
-static COMMAND_MESSAGE_TYPE_IDS : [&str; 2] = [
-  "diagnostics::log_event",
-  "diagnostics::slow_bomb",
-];
+static COMMAND_MESSAGE_TYPE_IDS: [&str; 2] = ["diagnostics::log_event", "diagnostics::slow_bomb"];
 
 pub(crate) struct Diagnostics {
-  message_types: Vec<MessageType>,
-  session_client: Option<SessionClient>,
+    message_types: Vec<MessageType>,
+    session_client: Option<SessionClient>,
 }
 
 impl Diagnostics {
-  pub fn new() -> Self {
+    pub fn new() -> Self {
+        //TODO ugly place for this
+        let mut message_types: Vec<MessageType> = Vec::new();
 
-    //TODO ugly place for this
-    let mut message_types: Vec<MessageType> = Vec::new();
+        for id in COMMAND_MESSAGE_TYPE_IDS {
+            message_types.push(MessageType::command_from_str(id).unwrap());
+        }
 
-    for id in COMMAND_MESSAGE_TYPE_IDS {
-      message_types.push(
-	MessageType::command_from_str(id).unwrap()
-      );
+        Diagnostics {
+            message_types,
+            session_client: None,
+        }
     }
 
-    Diagnostics{
-      message_types,
-      session_client: None,
-    }
-  }
+    fn accept_command(&mut self, mut message: CommandMessage) -> Result<(), MessageError> {
+        debug!("[DIAGNOSTICS] Diagnostics received message {:?}", message);
+        let message_type = message.get_message_type();
 
-  fn accept_command(&mut self, mut message: CommandMessage) -> Result<(), MessageError> {
-    debug!("[DIAGNOSTICS] Diagnostics received message {:?}", message);
-    let message_type = message.get_message_type();
+        if message_type.id_equals_str("diagnostics::log_event") {
+            info!("[DIAGNOSTICS] Diagnostics plugin received a log event.");
+        }
 
-    if message_type.id_equals_str("diagnostics::log_event") {
-      info!("[DIAGNOSTICS] Diagnostics plugin received a log event.");
-    }
+        if message_type.id_equals_str("diagnostics::slow_bomb") {
+            let content: models::SlowBombContent = message
+                .get_content()
+                .expect("Should have content")
+                .deserialize()
+                .expect("Should have slow bomb content");
+            debug!(
+                "[DIAGNOSTICS] Diagnostics processing a slow bomb for {} seconds.",
+                &content.interval_seconds
+            );
+            thread::sleep(time::Duration::from_secs(content.interval_seconds));
+            let mut responder = message
+                .get_responder()
+                .expect("Should not have responded yet.");
+            responder.respond(MessageContent::empty()).unwrap();
+        } else {
+            warn!(
+                "[DIAGNOSTICS] message type not found: {}",
+                &message.get_message_type()
+            );
+        }
 
-    if message_type.id_equals_str("diagnostics::slow_bomb") {
-      let content: models::SlowBombContent = message.get_content()
-	.expect("Should have content")
-	.deserialize()
-	.expect("Should have slow bomb content");
-      debug!("[DIAGNOSTICS] Diagnostics processing a slow bomb for {} seconds.", &content.interval_seconds);
-      thread::sleep(time::Duration::from_secs(content.interval_seconds));
-      let mut responder = message.get_responder()
-	.expect("Should not have responded yet.");
-      responder.respond(MessageContent::empty()).unwrap();
+        Ok(())
     }
-
-    else {
-      warn!("[DIAGNOSTICS] message type not found: {}", &message.get_message_type());
-    }
-    
-    Ok(())
-  }
 }
 impl Plugin for Diagnostics {
-
-  fn accept_message(&mut self, message: Message) -> Result<(), MessageError> {
-    match message {
-        Message::Event(_) => todo!(),
-        Message::Command(command) => self.accept_command(command),
+    fn accept_message(&mut self, message: Message) -> Result<(), MessageError> {
+        match message {
+            Message::Event(_) => todo!(),
+            Message::Command(command) => self.accept_command(command),
+        }
     }
-  }
 
-  fn list_message_types(&self) -> Vec<MessageType> {
-    self.message_types.clone()
-  }
+    fn list_message_types(&self) -> Vec<MessageType> {
+        self.message_types.clone()
+    }
 
-  // TODO do I actually need the client for diagnostics?
-  fn receive_client(&mut self, session_client: SessionClient) {
-    self.session_client = Some(session_client);
-  }
+    // TODO do I actually need the client for diagnostics?
+    fn receive_client(&mut self, session_client: SessionClient) {
+        self.session_client = Some(session_client);
+    }
 }
-

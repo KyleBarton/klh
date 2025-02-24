@@ -5,9 +5,9 @@ const MESSAGE_TYPE_ID_MAX_LENGTH: usize = 100;
 /// A collection of error conditions that can occur when interacting with the [MessageType] struct.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum MessageTypeError {
-  /// Indicates an attempt to create a MessageType with an id that
-  /// falls beyond the max length of 100.
-  MessageTypeIdTooLong,
+    /// Indicates an attempt to create a MessageType with an id that
+    /// falls beyond the max length of 100.
+    MessageTypeIdTooLong,
 }
 
 /// Enum that identifies the type of a message sent through Klh.  Note
@@ -19,18 +19,18 @@ pub enum MessageTypeError {
 /// handler).
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Hash)]
 pub enum MessageType {
-  /// Intended for imperative requests to mutate state in a
-  /// plugin. For instance, "buffers::create_buffer", from the Buffers
-  /// plugin, is a command. Conventionally, clients should not expect
-  /// [Message](super::Message) instances with a MessageType of
-  /// Command to respond to the message.
-  Command([u8; MESSAGE_TYPE_ID_MAX_LENGTH]),
-  /// Intended to reflect a certain change has occurred at the plugin
-  /// level. These message types are meant for plugins to emit to
-  /// clients, rather than for clients to send to plugins. Clients
-  /// should be able to act on these message types using
-  /// [subscribe](crate::KlhClient::subscribe)
-  Event([u8; MESSAGE_TYPE_ID_MAX_LENGTH]),
+    /// Intended for imperative requests to mutate state in a
+    /// plugin. For instance, "buffers::create_buffer", from the Buffers
+    /// plugin, is a command. Conventionally, clients should not expect
+    /// [Message](super::Message) instances with a MessageType of
+    /// Command to respond to the message.
+    Command([u8; MESSAGE_TYPE_ID_MAX_LENGTH]),
+    /// Intended to reflect a certain change has occurred at the plugin
+    /// level. These message types are meant for plugins to emit to
+    /// clients, rather than for clients to send to plugins. Clients
+    /// should be able to act on these message types using
+    /// [subscribe](crate::KlhClient::subscribe)
+    Event([u8; MESSAGE_TYPE_ID_MAX_LENGTH]),
 }
 
 /// # Examples:
@@ -40,117 +40,100 @@ pub enum MessageType {
 /// assert_eq!("test".to_string(), message.display_id())
 /// ```
 impl MessageType {
+    /// Displays the Id of the MessageType as a readable string, for
+    /// debugging & logging purposes.
+    pub fn display_id(&self) -> String {
+        match self {
+            MessageType::Command(bytes) => std::str::from_utf8(bytes)
+                .unwrap()
+                .replace('\u{0}', "")
+                .to_string(),
+            MessageType::Event(bytes) => std::str::from_utf8(bytes)
+                .unwrap()
+                .replace('\u{0}', "")
+                .to_string(),
+        }
+    }
 
-  /// Displays the Id of the MessageType as a readable string, for
-  /// debugging & logging purposes.
-  pub fn display_id(&self) -> String {
-    match self {
-      MessageType::Command(bytes) => std::str::from_utf8(bytes)
-	.unwrap()
-	.replace('\u{0}', "")
-	.to_string(),
-      MessageType::Event(bytes) => std::str::from_utf8(bytes)
-	.unwrap()
-	.replace('\u{0}', "")
-	.to_string(),
-    }
-  }
+    /// A utility function to create a [MessageType::Command] from a
+    /// &str input. The slice will be read as bytes and serialzied into
+    /// an ID of a fixed lenght in order to prevent dynamic sizing of
+    /// MessageType objects.
+    pub fn command_from_str(str_id: &str) -> Result<Self, MessageTypeError> {
+        if str_id.len() > MESSAGE_TYPE_ID_MAX_LENGTH {
+            Err(MessageTypeError::MessageTypeIdTooLong)
+        } else {
+            let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
+            for (index, b) in str_id.as_bytes().iter().enumerate() {
+                id[index] = *b;
+            }
 
-  /// A utility function to create a [MessageType::Command] from a
-  /// &str input. The slice will be read as bytes and serialzied into
-  /// an ID of a fixed lenght in order to prevent dynamic sizing of
-  /// MessageType objects.
-  pub fn command_from_str(str_id: &str) -> Result<Self, MessageTypeError> {
-    if str_id.len() > MESSAGE_TYPE_ID_MAX_LENGTH {
-      Err(MessageTypeError::MessageTypeIdTooLong)
+            Ok(Self::Command(id))
+        }
     }
-    else {
-      let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
-      for (index, b) in str_id
-	.as_bytes()
-	.iter()
-	.enumerate()
-      {
-	id[index] = *b;
-      }
 
-      Ok(Self::Command(id))
-    }
-  }
+    // TODO annotate
+    pub fn event_from_str(str_id: &str) -> Result<Self, MessageTypeError> {
+        if str_id.len() > MESSAGE_TYPE_ID_MAX_LENGTH {
+            Err(MessageTypeError::MessageTypeIdTooLong)
+        } else {
+            let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
+            for (index, b) in str_id.as_bytes().iter().enumerate() {
+                id[index] = *b;
+            }
 
-  // TODO annotate
-  pub fn event_from_str(str_id: &str) -> Result<Self, MessageTypeError> {
-    if str_id.len() > MESSAGE_TYPE_ID_MAX_LENGTH {
-      Err(MessageTypeError::MessageTypeIdTooLong)
+            Ok(Self::Event(id))
+        }
     }
-    else {
-      let mut id: [u8; MESSAGE_TYPE_ID_MAX_LENGTH] = [0u8; MESSAGE_TYPE_ID_MAX_LENGTH];
-      for (index, b) in str_id
-	.as_bytes()
-	.iter()
-	.enumerate()
-      {
-	id[index] = *b;
-      }
 
-      Ok(Self::Event(id))
+    /// An instance utility function that allows you to ensure the ID of
+    /// the message type matches.
+    /// # Examples
+    /// ```
+    /// use klh_core::messaging::MessageType;
+    /// let messageType = MessageType::command_from_str("message_type_id").unwrap();
+    /// assert!(messageType.id_equals_str("message_type_id"));
+    /// ```
+    pub fn id_equals_str(&self, id_check: &str) -> bool {
+        // TODO I think this shows that I should just collapse MessageType instead of having command vs query
+        match self {
+            Self::Command(id) => &id[0..id_check.len()] == id_check.as_bytes(),
+            Self::Event(id) => &id[0..id_check.len()] == id_check.as_bytes(),
+        }
     }
-  }
-  
-  /// An instance utility function that allows you to ensure the ID of
-  /// the message type matches.
-  /// # Examples
-  /// ```
-  /// use klh_core::messaging::MessageType;
-  /// let messageType = MessageType::command_from_str("message_type_id").unwrap();
-  /// assert!(messageType.id_equals_str("message_type_id"));
-  /// ```
-  pub fn id_equals_str(&self, id_check: &str) -> bool {
-    // TODO I think this shows that I should just collapse MessageType instead of having command vs query
-    match self {
-      Self::Command(id) => {
-	&id[0..id_check.len()] == id_check.as_bytes()
-      },
-      Self::Event(id) => {
-	&id[0..id_check.len()] == id_check.as_bytes()
-      },
-    }
-  }
 }
 
 impl fmt::Display for MessageType {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    write!(f,"{}", self.display_id())
-  }
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.display_id())
+    }
 }
-
 
 #[cfg(test)]
 mod message_type_tests {
 
-  use rstest::*;
+    use rstest::*;
 
-  use crate::messaging::MessageTypeError;
+    use crate::messaging::MessageTypeError;
 
-  use super::{MessageType, MESSAGE_TYPE_ID_MAX_LENGTH};
+    use super::{MESSAGE_TYPE_ID_MAX_LENGTH, MessageType};
 
+    #[rstest]
+    fn should_create_command_from_str() {
+        let message_type = MessageType::command_from_str("command_id").unwrap();
 
-  #[rstest]
-  fn should_create_command_from_str() {
-    let message_type = MessageType::command_from_str("command_id").unwrap();
+        assert!(matches!(message_type, MessageType::Command(..)));
+        assert_eq!(message_type.display_id(), "command_id".to_string());
+    }
 
-    assert!(matches!(message_type, MessageType::Command(..)));
-    assert_eq!(message_type.display_id(), "command_id".to_string());
-  }
-
-  #[rstest]
-  fn should_fail_to_create_command_from_str_too_long() {
-    let command_id_too_long: String = ['a'; MESSAGE_TYPE_ID_MAX_LENGTH+1].iter().collect();
-    let message_type_result = MessageType::command_from_str(&command_id_too_long);
-    assert!(message_type_result.is_err());
-    assert_eq!(
-      message_type_result.expect_err("Is an error"),
-      MessageTypeError::MessageTypeIdTooLong,
-    )
-  }
+    #[rstest]
+    fn should_fail_to_create_command_from_str_too_long() {
+        let command_id_too_long: String = ['a'; MESSAGE_TYPE_ID_MAX_LENGTH + 1].iter().collect();
+        let message_type_result = MessageType::command_from_str(&command_id_too_long);
+        assert!(message_type_result.is_err());
+        assert_eq!(
+            message_type_result.expect_err("Is an error"),
+            MessageTypeError::MessageTypeIdTooLong,
+        )
+    }
 }

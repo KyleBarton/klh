@@ -1,177 +1,172 @@
 use log::debug;
 
-use crate::config::{KlhConfig, CorePlugins};
+use crate::config::{CorePlugins, KlhConfig};
 use crate::messaging::Request;
 use crate::plugin::Plugin;
 use crate::plugins::display::Displays;
 use crate::plugins::test_client::TestClient;
-use crate::plugins::{diagnostics::Diagnostics, buffers::Buffers};
+use crate::plugins::{buffers::Buffers, diagnostics::Diagnostics};
 use crate::session::{Session, SessionClient, SessionError};
-
 
 #[derive(Debug, Eq, PartialEq)]
 pub enum KlhError {
-  /// Indicates that a Message was not able to be sent to the running
-  /// Klh instance. Wraps a
-  /// [SessionError](crate::session::SessionError)
-  ErrorSendingMessage(SessionError),
+    /// Indicates that a Message was not able to be sent to the running
+    /// Klh instance. Wraps a
+    /// [SessionError](crate::session::SessionError)
+    ErrorSendingMessage(SessionError),
 }
 
 /// The entrypoint to sending data through KLH using a [Request](crate::messaging::Request)
 #[derive(Clone)]
 pub struct KlhClient {
-  session_client: SessionClient,
+    session_client: SessionClient,
 }
 
 impl KlhClient {
-  pub fn new(session_client: SessionClient) -> Self {
-    Self {
-      session_client,
+    pub fn new(session_client: SessionClient) -> Self {
+        Self { session_client }
     }
-  }
 
-  /// Aynchronously send a [Request](crate::messaging::Request) along
-  /// to the running instance of KLH.
-  pub async fn send(&self, mut request: Request) -> Result<(), KlhError> {
-    match self.session_client.send(
-      request.as_message()
-    ).await {
-      Err(session_err) => {
-	debug!("Error sending message to session: {:?}", session_err);
-	Err(KlhError::ErrorSendingMessage(session_err))
-      },
-      Ok(_) => Ok(()),
+    /// Aynchronously send a [Request](crate::messaging::Request) along
+    /// to the running instance of KLH.
+    pub async fn send(&self, mut request: Request) -> Result<(), KlhError> {
+        match self.session_client.send(request.as_message()).await {
+            Err(session_err) => {
+                debug!("Error sending message to session: {:?}", session_err);
+                Err(KlhError::ErrorSendingMessage(session_err))
+            }
+            Ok(_) => Ok(()),
+        }
     }
-  }
 }
 
 impl Default for Klh {
-  fn default() -> Self {
-    Self::new()
-  }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 /// The primary struct of a running KLH instance.
 pub struct Klh {
-  session: Session,
-  config: KlhConfig,
+    session: Session,
+    config: KlhConfig,
 }
 
 impl Klh {
-  pub fn new() -> Self {
-    let session = Session::new();
-    Self {
-      session,
-      config: KlhConfig::default(),
+    pub fn new() -> Self {
+        let session = Session::new();
+        Self {
+            session,
+            config: KlhConfig::default(),
+        }
     }
-  }
 
-  /// Start the instance of Klh, after registering the core plugins
-  /// according to its [KlhConfig](crate::config::KlhConfig)
-  pub async fn start(&mut self) {
-    self.register_core_plugins();
-    self.session.run().await.unwrap();
-    debug!("Session started successfully");
-  }
-
-  /// Add an instance of a [Plugin](crate::plugin::Plugin) to the
-  /// session for registration. Must be called before [Klh::start]
-  pub fn add_plugin(&mut self, plugin: Box<dyn Plugin + Send>) {
-    self.session.register_plugin(plugin)
-  }
-
-  /// Provide an instance of a [KlhClient] in order to send it
-  /// messages.
-  pub fn get_client(&self) -> KlhClient {
-    
-    KlhClient::new(self.session.get_client())
-  }
-
-  /// Meant as a place that can locate plugins at a given startup spot,
-  /// as well as load the core functional plugins. For now, core
-  /// functional plugins are hard-coded. Dynamic memory appropriate
-  /// here as we are dealing with variou plugins at runtime here.
-  fn register_core_plugins(&mut self) {
-    for core_plugin in &self.config.core_plugins.clone() {
-      match core_plugin {
-	CorePlugins::Diagnostics => {
-	  debug!("Adding Diagnostics plugin");
-	  self.add_plugin(Box::new(Diagnostics::new()));
-	  debug!("Diagnostics plugin added");
-	},
-	CorePlugins::Buffers => {
-	  debug!("Adding Buffers plugin");
-	  self.add_plugin(Box::new(Buffers::new()));
-	  debug!("Buffers plugin added");
-	},
-	CorePlugins::Displays => {
-	  debug!("Adding Display plugin");
-	  self.add_plugin(Box::new(Displays::new()));
-	}
-	CorePlugins::TestClient => {
-	  debug!("Adding TestClient plugin");
-	  self.add_plugin(Box::new(TestClient::new()));
-	  debug!("TestClient plugin added");
-	}
-      }
+    /// Start the instance of Klh, after registering the core plugins
+    /// according to its [KlhConfig](crate::config::KlhConfig)
+    pub async fn start(&mut self) {
+        self.register_core_plugins();
+        self.session.run().await.unwrap();
+        debug!("Session started successfully");
     }
-  }
+
+    /// Add an instance of a [Plugin](crate::plugin::Plugin) to the
+    /// session for registration. Must be called before [Klh::start]
+    pub fn add_plugin(&mut self, plugin: Box<dyn Plugin + Send>) {
+        self.session.register_plugin(plugin)
+    }
+
+    /// Provide an instance of a [KlhClient] in order to send it
+    /// messages.
+    pub fn get_client(&self) -> KlhClient {
+        KlhClient::new(self.session.get_client())
+    }
+
+    /// Meant as a place that can locate plugins at a given startup spot,
+    /// as well as load the core functional plugins. For now, core
+    /// functional plugins are hard-coded. Dynamic memory appropriate
+    /// here as we are dealing with variou plugins at runtime here.
+    fn register_core_plugins(&mut self) {
+        for core_plugin in &self.config.core_plugins.clone() {
+            match core_plugin {
+                CorePlugins::Diagnostics => {
+                    debug!("Adding Diagnostics plugin");
+                    self.add_plugin(Box::new(Diagnostics::new()));
+                    debug!("Diagnostics plugin added");
+                }
+                CorePlugins::Buffers => {
+                    debug!("Adding Buffers plugin");
+                    self.add_plugin(Box::new(Buffers::new()));
+                    debug!("Buffers plugin added");
+                }
+                CorePlugins::Displays => {
+                    debug!("Adding Display plugin");
+                    self.add_plugin(Box::new(Displays::new()));
+                }
+                CorePlugins::TestClient => {
+                    debug!("Adding TestClient plugin");
+                    self.add_plugin(Box::new(TestClient::new()));
+                    debug!("TestClient plugin added");
+                }
+            }
+        }
+    }
 }
-
 
 #[cfg(test)]
 mod end_to_end_tests {
 
-  use log::debug;
-use rstest::{fixture, rstest};
+    use log::debug;
+    use rstest::{fixture, rstest};
 
-use crate::klh::Klh;
-  use crate::messaging::{Request, MessageType};
-  use crate::plugin::plugin_test_utility::{TestPlugin, COMMAND_ID, COMMAND_RESPONSE};
+    use crate::klh::Klh;
+    use crate::messaging::{MessageType, Request};
+    use crate::plugin::plugin_test_utility::{COMMAND_ID, COMMAND_RESPONSE, TestPlugin};
 
-  // Option thing to set up if you need to debug
-  #[fixture]
-  #[once]
-  fn setup_logging_fixture() -> () {
-    simplelog::TermLogger::init(
-      simplelog::LevelFilter::Debug,
-      simplelog::Config::default(),
-      simplelog::TerminalMode::Stdout,
-      simplelog::ColorChoice::Auto,
-    ).unwrap()
-  }
+    // Option thing to set up if you need to debug
+    #[fixture]
+    #[once]
+    fn setup_logging_fixture() -> () {
+        simplelog::TermLogger::init(
+            simplelog::LevelFilter::Debug,
+            simplelog::Config::default(),
+            simplelog::TerminalMode::Stdout,
+            simplelog::ColorChoice::Auto,
+        )
+        .unwrap()
+    }
 
-  #[rstest]
-  // Comment the below `ignore` in order to enable stdout debug
-  // logging during test runs.
-  #[ignore]
-  fn setup(_setup_logging_fixture: &()) {
-    debug!("Setup function completed")
-  }
+    #[rstest]
+    // Comment the below `ignore` in order to enable stdout debug
+    // logging during test runs.
+    #[ignore]
+    fn setup(_setup_logging_fixture: &()) {
+        debug!("Setup function completed")
+    }
 
-  #[tokio::test]
-  async fn should_send_command_request_and_get_response() {
-    let mut klh = Klh::new();
+    #[tokio::test]
+    async fn should_send_command_request_and_get_response() {
+        let mut klh = Klh::new();
 
-    let test_plugin = TestPlugin::new();
+        let test_plugin = TestPlugin::new();
 
-    klh.add_plugin(Box::new(test_plugin));
+        klh.add_plugin(Box::new(test_plugin));
 
-    let klh_client = klh.get_client();
-    tokio::spawn(async move {
-      klh.start().await;
-    }).await.unwrap();
+        let klh_client = klh.get_client();
+        tokio::spawn(async move {
+            klh.start().await;
+        })
+        .await
+        .unwrap();
 
-    let mut request = Request::from_message_type(
-      MessageType::command_from_str(COMMAND_ID).unwrap()
-    );
-    let mut handler = request.get_handler().unwrap();
+        let mut request =
+            Request::from_message_type(MessageType::command_from_str(COMMAND_ID).unwrap());
+        let mut handler = request.get_handler().unwrap();
 
-    klh_client.send(request).await.unwrap();
+        klh_client.send(request).await.unwrap();
 
-    let mut response = handler.handle_response().await.unwrap();
+        let mut response = handler.handle_response().await.unwrap();
 
-    let response_deserialized: String = response.deserialize().expect("Serialize correctly");
-    assert_eq!(COMMAND_RESPONSE.to_string(), response_deserialized);
-  }
+        let response_deserialized: String = response.deserialize().expect("Serialize correctly");
+        assert_eq!(COMMAND_RESPONSE.to_string(), response_deserialized);
+    }
 }

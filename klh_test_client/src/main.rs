@@ -1,19 +1,17 @@
 use klh_core::klh::{Klh, KlhClient};
-use klh_core::messaging::{Request, MessageType};
+use klh_core::messaging::{MessageType, Request};
 use klh_core::plugins::buffers::models::{GetBufferResponse, ListBuffersResponse};
 use klh_core::plugins::display::models::{GetWindowResponse, ListWindowsResponse};
-use klh_core::plugins::{diagnostics, buffers, display};
+use klh_core::plugins::{buffers, diagnostics, display};
 use std::io::stdin;
-use std::{io, fs};
+use std::{fs, io};
 
 // Remember, this is a temporary client and not too much work should be put in here
-async fn prompt_and_read(
-  client: KlhClient,
-) {
-  loop {
-
-    let mut input: String = String::new();
-    println!("Enter any of the following:
+async fn prompt_and_read(client: KlhClient) {
+    loop {
+        let mut input: String = String::new();
+        println!(
+            "Enter any of the following:
 bl: List Buffers
 bc: Create Buffer
 bg: Get a buffer
@@ -26,238 +24,261 @@ db: Send a slow bomb to diagnostics
 write: Send some data to a window for writing to a buffer
 bad_command: Send an unknown command through the client
 e: exit
-    ");
+    "
+        );
 
-    match io::stdin().read_line(&mut input) {
-      Ok(_n) => {
-	match input.as_str().trim() {
-	  "bad_command" => {
-	    println!("Sending bogus command");
-	    let bad_command = Request::from_message_type(
-	      MessageType::command_from_str("NoSuchId").unwrap()
-	    );
-	    client.send(bad_command).await.unwrap();
-	  }
-	  "dl" => {
-	    println!("Sending a diagnostics log");
-	    let diagnostics_request = diagnostics::requests::new_log_event();
-	    client.send(diagnostics_request).await.unwrap();
-	  },
-	  "db" => {
-	    let thread_client = client.clone();
-	    tokio::spawn(async move {
-	      println!("Sending a slow bomb");
-	      let mut diagnostics_request = diagnostics::requests::new_slow_bomb(10);
-	      let mut slow_bomb_handler = diagnostics_request.get_handler().unwrap();
-	      thread_client.send(diagnostics_request).await.unwrap();
-	      match slow_bomb_handler.handle_response().await {
-		Err(msg) => println!("Problem handling slow bomb response: {:?}", &msg),
-		Ok(_) => {
-		  println!("Slow bomb responded!")
-		}
-	      };
-	    });
-	  }
-	  "bc" => {
-	    println!("Enter the buffer name");
+        match io::stdin().read_line(&mut input) {
+            Ok(_n) => {
+                match input.as_str().trim() {
+                    "bad_command" => {
+                        println!("Sending bogus command");
+                        let bad_command = Request::from_message_type(
+                            MessageType::command_from_str("NoSuchId").unwrap(),
+                        );
+                        client.send(bad_command).await.unwrap();
+                    }
+                    "dl" => {
+                        println!("Sending a diagnostics log");
+                        let diagnostics_request = diagnostics::requests::new_log_event();
+                        client.send(diagnostics_request).await.unwrap();
+                    }
+                    "db" => {
+                        let thread_client = client.clone();
+                        tokio::spawn(async move {
+                            println!("Sending a slow bomb");
+                            let mut diagnostics_request = diagnostics::requests::new_slow_bomb(10);
+                            let mut slow_bomb_handler = diagnostics_request.get_handler().unwrap();
+                            thread_client.send(diagnostics_request).await.unwrap();
+                            match slow_bomb_handler.handle_response().await {
+                                Err(msg) => {
+                                    println!("Problem handling slow bomb response: {:?}", &msg)
+                                }
+                                Ok(_) => {
+                                    println!("Slow bomb responded!")
+                                }
+                            };
+                        });
+                    }
+                    "bc" => {
+                        println!("Enter the buffer name");
 
-	    let mut buf_name = String::new();
-	    stdin().read_line(&mut buf_name).unwrap();
-	      
-	    println!("Creating a buffer");
+                        let mut buf_name = String::new();
+                        stdin().read_line(&mut buf_name).unwrap();
 
-	    let create_buffer_request = buffers::requests::new_create_buffer_request(buf_name.trim());
-	    client.send(create_buffer_request).await.unwrap();
-	  },
-	  "bl" => {
-	    println!("Asking for a buffers list");
+                        println!("Creating a buffer");
 
-	    let mut list_buffer_request = buffers::requests::new_list_buffers_request();
-	    let mut list_buffer_handler = list_buffer_request.get_handler().unwrap();
+                        let create_buffer_request =
+                            buffers::requests::new_create_buffer_request(buf_name.trim());
+                        client.send(create_buffer_request).await.unwrap();
+                    }
+                    "bl" => {
+                        println!("Asking for a buffers list");
 
-	    client.send(list_buffer_request).await.unwrap();
+                        let mut list_buffer_request = buffers::requests::new_list_buffers_request();
+                        let mut list_buffer_handler = list_buffer_request.get_handler().unwrap();
 
-	    match list_buffer_handler.handle_response().await {
-	      Ok(mut response) => {
-		println!("Buffer plugin responded");
-		let list_buffers_response : ListBuffersResponse = response.deserialize()
-		  .expect("Should have a list buffers response");
-		let buffer_list = list_buffers_response.buffer_names
-		  .iter()
-		  .fold("".to_string(), |acc, name| {
-		    acc + name + " "
-		  });
-		println!("Active buffers: {}", buffer_list);
-	      },
-	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
-	    };
-	  },
-	  "bg" => {
-	    println!("What buffer do you want?");
-	    let mut buffer_name = String::new();
-	    stdin().read_line(&mut buffer_name).unwrap();
+                        client.send(list_buffer_request).await.unwrap();
 
-	    let mut get_buffer_request = buffers::requests::new_get_buffer_request(buffer_name.trim());
-	    let mut handler = get_buffer_request.get_handler().unwrap();
-	    client.send(get_buffer_request).await.unwrap();
+                        match list_buffer_handler.handle_response().await {
+                            Ok(mut response) => {
+                                println!("Buffer plugin responded");
+                                let list_buffers_response: ListBuffersResponse = response
+                                    .deserialize()
+                                    .expect("Should have a list buffers response");
+                                let buffer_list = list_buffers_response
+                                    .buffer_names
+                                    .iter()
+                                    .fold("".to_string(), |acc, name| acc + name + " ");
+                                println!("Active buffers: {}", buffer_list);
+                            }
+                            Err(msg) => println!("Sender dropped probably: {:?}", &msg),
+                        };
+                    }
+                    "bg" => {
+                        println!("What buffer do you want?");
+                        let mut buffer_name = String::new();
+                        stdin().read_line(&mut buffer_name).unwrap();
 
-	    let buffer = match handler.handle_response().await {
-	      Ok(mut resp) => {
-		let buffer_response: GetBufferResponse = resp.deserialize()
-		  .expect("Should have gotten a GetBufferResponse");
-		buffer_response.buffer
-		
-	      },
-	      Err(_) => panic!("error getting buffer response"),
-	    };
+                        let mut get_buffer_request =
+                            buffers::requests::new_get_buffer_request(buffer_name.trim());
+                        let mut handler = get_buffer_request.get_handler().unwrap();
+                        client.send(get_buffer_request).await.unwrap();
 
-	    match buffer {
-	      Some(b) => println!("Buffer: {:?}", b),
-	      None => println!("No buffer returned"),
-	    }
-	  }
-	  "wc" => {
-	    println!("Enter a window name");
-	    let mut window_name = String::new();
-	    stdin().read_line(&mut window_name).unwrap();
-	    
-	    println!("Creating a window buffer");
-	    let create_window_request = display::requests::new_create_window_request(window_name.trim());
-	    client.send(create_window_request).await.unwrap()
-	  },
-	  "wl" => {
-	    println!("Listing windows");
-	    let mut list_window_request = display::requests::new_list_windows_request();
-	    let mut list_window_handler = list_window_request.get_handler().unwrap();
+                        let buffer = match handler.handle_response().await {
+                            Ok(mut resp) => {
+                                let buffer_response: GetBufferResponse = resp
+                                    .deserialize()
+                                    .expect("Should have gotten a GetBufferResponse");
+                                buffer_response.buffer
+                            }
+                            Err(_) => panic!("error getting buffer response"),
+                        };
 
-	    client.send(list_window_request).await.unwrap();
+                        match buffer {
+                            Some(b) => println!("Buffer: {:?}", b),
+                            None => println!("No buffer returned"),
+                        }
+                    }
+                    "wc" => {
+                        println!("Enter a window name");
+                        let mut window_name = String::new();
+                        stdin().read_line(&mut window_name).unwrap();
 
-	    match list_window_handler.handle_response().await {
-	      Ok(mut response) => {
-		println!("Display plugin responded");
-		let list_window_response : ListWindowsResponse = response.deserialize()
-		  .expect("Should have a list windows response");
-		let windows_as_string = list_window_response.window_names
-		  .iter()
-		  .fold("".to_string(), |acc, name| {
-		    acc + name + " "
-		  });
-		println!("Active windows: {}", windows_as_string);
-	      },
-	      Err(msg) => println!("Sender dropped probably: {:?}", &msg),
-	    }
-	  },
-	  "wg" => {
-	    println!("What window do you want?");
-	    let mut window_name = String::new();
-	    stdin().read_line(&mut window_name).unwrap();
+                        println!("Creating a window buffer");
+                        let create_window_request =
+                            display::requests::new_create_window_request(window_name.trim());
+                        client.send(create_window_request).await.unwrap()
+                    }
+                    "wl" => {
+                        println!("Listing windows");
+                        let mut list_window_request = display::requests::new_list_windows_request();
+                        let mut list_window_handler = list_window_request.get_handler().unwrap();
 
-	    let mut get_window_request = display::requests::new_get_window_request(window_name.trim());
-	    let mut get_window_handler = get_window_request.get_handler().unwrap();
-	    client.send(get_window_request).await.unwrap();
+                        client.send(list_window_request).await.unwrap();
 
-	    let window_response = match get_window_handler.handle_response().await {
-	      Ok(mut response) => {
-		let get_window_response: GetWindowResponse = response.deserialize()
-		  .expect("Should get a get windows response");
-		get_window_response
-	      },
-	      Err(_) => panic!("Error getting window"),
-	    };
-	    println!("Window: {:?}", window_response.window)
-	  },
-	  "wa" => {
-	    println!("Let's associate a buffer to a window");
+                        match list_window_handler.handle_response().await {
+                            Ok(mut response) => {
+                                println!("Display plugin responded");
+                                let list_window_response: ListWindowsResponse = response
+                                    .deserialize()
+                                    .expect("Should have a list windows response");
+                                let windows_as_string = list_window_response
+                                    .window_names
+                                    .iter()
+                                    .fold("".to_string(), |acc, name| acc + name + " ");
+                                println!("Active windows: {}", windows_as_string);
+                            }
+                            Err(msg) => println!("Sender dropped probably: {:?}", &msg),
+                        }
+                    }
+                    "wg" => {
+                        println!("What window do you want?");
+                        let mut window_name = String::new();
+                        stdin().read_line(&mut window_name).unwrap();
 
-	    let mut list_windows_request = display::requests::new_list_windows_request();
-	    let mut list_windows_handler = list_windows_request.get_handler().unwrap();
-	    client.send(list_windows_request).await.unwrap();
+                        let mut get_window_request =
+                            display::requests::new_get_window_request(window_name.trim());
+                        let mut get_window_handler = get_window_request.get_handler().unwrap();
+                        client.send(get_window_request).await.unwrap();
 
-	    let mut list_buffers_request = buffers::requests::new_list_buffers_request();
-	    let mut list_buffers_handler = list_buffers_request.get_handler().unwrap();
-	    client.send(list_buffers_request).await.unwrap();
+                        let window_response = match get_window_handler.handle_response().await {
+                            Ok(mut response) => {
+                                let get_window_response: GetWindowResponse = response
+                                    .deserialize()
+                                    .expect("Should get a get windows response");
+                                get_window_response
+                            }
+                            Err(_) => panic!("Error getting window"),
+                        };
+                        println!("Window: {:?}", window_response.window)
+                    }
+                    "wa" => {
+                        println!("Let's associate a buffer to a window");
 
-	    let window_list = match list_windows_handler.handle_response().await {
-	      Ok(mut response) => {
-		let list_windows_response : ListWindowsResponse = response.deserialize()
-		  .expect("Should have a list windows response");
-		list_windows_response.window_names
-	      },
-	      Err(_) => panic!("Error on list windows request"),
-	    };
+                        let mut list_windows_request =
+                            display::requests::new_list_windows_request();
+                        let mut list_windows_handler = list_windows_request.get_handler().unwrap();
+                        client.send(list_windows_request).await.unwrap();
 
-	    let buffer_list = match list_buffers_handler.handle_response().await {
-	      Ok(mut response) => {
-		let list_buffers_response : ListBuffersResponse = response.deserialize()
-		  .expect("Should have a list buffers response");
-		list_buffers_response.buffer_names
-	      },
-	      Err(_) => panic!("Error on list buffers request"),
-	    };
-	    println!("Buffer list: {}", &buffer_list.iter().fold("".to_string(), |acc, b| {acc + b + " "}));
-	    println!("Choose buffer");
-	    let mut buffer_name = String::new();
-	    stdin().read_line(&mut buffer_name).unwrap();
+                        let mut list_buffers_request =
+                            buffers::requests::new_list_buffers_request();
+                        let mut list_buffers_handler = list_buffers_request.get_handler().unwrap();
+                        client.send(list_buffers_request).await.unwrap();
 
-	    println!("Window list: {}", &window_list.iter().fold("".to_string(), |acc, b| {acc + b + " "}));
-	    println!("Choose window");
-	    let mut window_name = String::new();
-	    stdin().read_line(&mut window_name).unwrap();
+                        let window_list = match list_windows_handler.handle_response().await {
+                            Ok(mut response) => {
+                                let list_windows_response: ListWindowsResponse = response
+                                    .deserialize()
+                                    .expect("Should have a list windows response");
+                                list_windows_response.window_names
+                            }
+                            Err(_) => panic!("Error on list windows request"),
+                        };
 
-	    let attach_buffer_request = display::requests::new_attach_buffer_request(buffer_name.trim(), window_name.trim());
-	    // Not handling the response for now
-	    client.send(attach_buffer_request).await.unwrap();
-	  }
-	  "write" => {
-	    println!("Choose window");
-	    let mut window_name = String::new();
-	    stdin().read_line(&mut window_name).unwrap();
+                        let buffer_list = match list_buffers_handler.handle_response().await {
+                            Ok(mut response) => {
+                                let list_buffers_response: ListBuffersResponse = response
+                                    .deserialize()
+                                    .expect("Should have a list buffers response");
+                                list_buffers_response.buffer_names
+                            }
+                            Err(_) => panic!("Error on list buffers request"),
+                        };
+                        println!(
+                            "Buffer list: {}",
+                            &buffer_list
+                                .iter()
+                                .fold("".to_string(), |acc, b| { acc + b + " " })
+                        );
+                        println!("Choose buffer");
+                        let mut buffer_name = String::new();
+                        stdin().read_line(&mut buffer_name).unwrap();
 
-	    println!("What do you want to write to the window's active buffer?");
-	    let mut content = String::new();
-	    stdin().read_line(&mut content).unwrap();
+                        println!(
+                            "Window list: {}",
+                            &window_list
+                                .iter()
+                                .fold("".to_string(), |acc, b| { acc + b + " " })
+                        );
+                        println!("Choose window");
+                        let mut window_name = String::new();
+                        stdin().read_line(&mut window_name).unwrap();
 
-	    let request = display::requests::new_accept_string_input_request(window_name.trim(), content.trim());
-	    client.send(request).await.unwrap();
-	  }
-	  "e" => {
-	    println!("e for exit");
-	    break;
-	  }
-	  _ => {
-	    println!("read the instructions dummy");
-	  }
-	}
-      },
-      Err(err) => {
-	println!("Error: {err}");
-	break;
-      },
+                        let attach_buffer_request = display::requests::new_attach_buffer_request(
+                            buffer_name.trim(),
+                            window_name.trim(),
+                        );
+                        // Not handling the response for now
+                        client.send(attach_buffer_request).await.unwrap();
+                    }
+                    "write" => {
+                        println!("Choose window");
+                        let mut window_name = String::new();
+                        stdin().read_line(&mut window_name).unwrap();
+
+                        println!("What do you want to write to the window's active buffer?");
+                        let mut content = String::new();
+                        stdin().read_line(&mut content).unwrap();
+
+                        let request = display::requests::new_accept_string_input_request(
+                            window_name.trim(),
+                            content.trim(),
+                        );
+                        client.send(request).await.unwrap();
+                    }
+                    "e" => {
+                        println!("e for exit");
+                        break;
+                    }
+                    _ => {
+                        println!("read the instructions dummy");
+                    }
+                }
+            }
+            Err(err) => {
+                println!("Error: {err}");
+                break;
+            }
+        }
     }
-  };
 }
 
 // What if you wanted it to actually follow the public interface
 #[tokio::main]
 async fn main() {
-  // Set up some logging.
-  simplelog::WriteLogger::init(
-    simplelog::LevelFilter::Debug,
-    simplelog::Config::default(),
-    fs::File::create("klh.log").unwrap(),
-  ).unwrap();
-  
-  let mut klh = Klh::new();
+    // Set up some logging.
+    simplelog::WriteLogger::init(
+        simplelog::LevelFilter::Debug,
+        simplelog::Config::default(),
+        fs::File::create("klh.log").unwrap(),
+    )
+    .unwrap();
 
-  klh.start().await;
+    let mut klh = Klh::new();
 
-  let client : KlhClient = klh.get_client();
+    klh.start().await;
 
-  prompt_and_read(
-    client,
-  ).await;
+    let client: KlhClient = klh.get_client();
+
+    prompt_and_read(client).await;
 }
-
-
-
-

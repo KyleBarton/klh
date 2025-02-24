@@ -1,6 +1,6 @@
-pub mod plugins;
-pub mod messaging;
-pub mod session;
-pub mod plugin;
-pub mod klh;
 pub mod config;
+pub mod klh;
+pub mod messaging;
+pub mod plugin;
+pub mod plugins;
+pub mod session;

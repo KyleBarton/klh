@@ -87,7 +87,7 @@ impl Buffers {
                 None => {
                     return Err(MessageError::BadRequest(String::from(
                         "No buffer matching provided name",
-                    )))
+                    )));
                 }
             };
 

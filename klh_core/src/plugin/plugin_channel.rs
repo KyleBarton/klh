@@ -1,4 +1,4 @@
-use log::{info, debug, warn};
+use log::{debug, info, warn};
 use tokio::sync::mpsc::{self, error::SendError};
 
 use crate::messaging::Message;
@@ -10,117 +10,106 @@ use super::Plugin;
 /// and is instead private integrating code that allows KLH to
 /// properly isolate Plugins from each other.
 pub(crate) struct PluginChannel {
-  listener: PluginListener,
-  transmitter: PluginTransmitter,
-  plugin: Box<dyn Plugin + Send>,
+    listener: PluginListener,
+    transmitter: PluginTransmitter,
+    plugin: Box<dyn Plugin + Send>,
 }
 
 impl PluginChannel {
-  pub(crate) fn new(plugin: Box<dyn Plugin + Send>) -> Self {
-    let (tx, rx) = mpsc::channel(128);
-    Self {
-      listener: PluginListener {
-	listener: rx,
-      },
-      transmitter: PluginTransmitter {
-	transmitter: tx,
-      },
-      plugin,
+    pub(crate) fn new(plugin: Box<dyn Plugin + Send>) -> Self {
+        let (tx, rx) = mpsc::channel(128);
+        Self {
+            listener: PluginListener { listener: rx },
+            transmitter: PluginTransmitter { transmitter: tx },
+            plugin,
+        }
     }
-  }
 
-  /// Start listening for messages to sent along to the Plugin.
-  pub(crate) async fn start(&mut self) {
-    while let Some(message) = self.listener.receive().await {
-      debug!("Received message on PluginChannel: {}", message);
-      match self.plugin.accept_message(message) {
-	Ok(_) => {
-	  debug!("Plugin accepted and processed message");
-	},
-	Err(msg) => {
-	  warn!("Plugin failed to process message with error {:?}", msg);
-	}
-      }
-      
+    /// Start listening for messages to sent along to the Plugin.
+    pub(crate) async fn start(&mut self) {
+        while let Some(message) = self.listener.receive().await {
+            debug!("Received message on PluginChannel: {}", message);
+            match self.plugin.accept_message(message) {
+                Ok(_) => {
+                    debug!("Plugin accepted and processed message");
+                }
+                Err(msg) => {
+                    warn!("Plugin failed to process message with error {:?}", msg);
+                }
+            }
+        }
+        info!("Plugin stopped listening");
     }
-    info!("Plugin stopped listening");
-  }
 
-  /// Provide a transmitter by which messages can be sent along this
-  /// PluginChannel. Typically this is called by the PluginRegistrar
-  /// of the KLH instance, which keeps a copy of a PluginTransmitter
-  /// for each registered Plugin.
-  pub(crate) fn get_transmitter(&self) -> PluginTransmitter {
-    self.transmitter.clone()
-  }
+    /// Provide a transmitter by which messages can be sent along this
+    /// PluginChannel. Typically this is called by the PluginRegistrar
+    /// of the KLH instance, which keeps a copy of a PluginTransmitter
+    /// for each registered Plugin.
+    pub(crate) fn get_transmitter(&self) -> PluginTransmitter {
+        self.transmitter.clone()
+    }
 }
 
 /// Wrapper for receiving messages along the PluginChannel.
 struct PluginListener {
-  listener: mpsc::Receiver<Message>,
+    listener: mpsc::Receiver<Message>,
 }
 
 impl PluginListener {
-  async fn receive(&mut self) -> Option<Message> {
-    self.listener.recv().await
-  }
+    async fn receive(&mut self) -> Option<Message> {
+        self.listener.recv().await
+    }
 }
 
 /// Wrapper for sending messages along the PluginChannel
 #[derive(Clone)]
 pub(crate) struct PluginTransmitter {
-  transmitter: mpsc::Sender<Message>,
+    transmitter: mpsc::Sender<Message>,
 }
 
 impl PluginTransmitter {
-  
-  pub(crate) async fn send_message(&self, message: Message) -> Result<(), SendError<Message>> {
-    self.transmitter.send(message).await
-  }
+    pub(crate) async fn send_message(&self, message: Message) -> Result<(), SendError<Message>> {
+        self.transmitter.send(message).await
+    }
 }
 
 #[cfg(test)]
 mod plugin_channel_tests {
-  use rstest::*;
+    use rstest::*;
 
-  use crate::plugin::plugin_test_utility::{TestPlugin, COMMAND_ID, COMMAND_RESPONSE};
-  use crate::messaging::{Request, MessageType, Message, MessageContent};
+    use crate::messaging::{Message, MessageContent, MessageType, Request};
+    use crate::plugin::plugin_test_utility::{COMMAND_ID, COMMAND_RESPONSE, TestPlugin};
 
-  use super::PluginChannel;
+    use super::PluginChannel;
 
-  #[fixture]
-  fn message_to_send() -> Message {
-    Request::from_message_type(
-      MessageType::command_from_str(COMMAND_ID).unwrap()
-    ).as_message()
-  }
+    #[fixture]
+    fn message_to_send() -> Message {
+        Request::from_message_type(MessageType::command_from_str(COMMAND_ID).unwrap()).as_message()
+    }
 
-  #[rstest]
-  #[tokio::test]
-  async fn should_send_message_through_plugin_channel() {
-    let mut given_request = Request::from_message_type(
-      MessageType::command_from_str(COMMAND_ID).unwrap()
-    );
-    let mut response_handler = given_request.get_handler()
-      .expect("response handler should be available");
+    #[rstest]
+    #[tokio::test]
+    async fn should_send_message_through_plugin_channel() {
+        let mut given_request =
+            Request::from_message_type(MessageType::command_from_str(COMMAND_ID).unwrap());
+        let mut response_handler = given_request
+            .get_handler()
+            .expect("response handler should be available");
 
-    let message = given_request.as_message();
+        let message = given_request.as_message();
 
-    let mut plugin_channel : PluginChannel = PluginChannel::new(
-      Box::new(TestPlugin::new()),
-    );
+        let mut plugin_channel: PluginChannel = PluginChannel::new(Box::new(TestPlugin::new()));
 
-    let transmitter = plugin_channel.get_transmitter();
+        let transmitter = plugin_channel.get_transmitter();
 
+        tokio::spawn(async move {
+            plugin_channel.start().await;
+        });
 
-    tokio::spawn(async move {
-      plugin_channel.start().await;
-    });
+        let _ = transmitter.send_message(message).await;
 
-    let _ = transmitter.send_message(message).await;
+        let response = response_handler.handle_response().await.unwrap();
 
-    let response = response_handler.handle_response().await.unwrap();
-
-    assert_eq!(response, MessageContent::from_content(COMMAND_RESPONSE))
-  }
+        assert_eq!(response, MessageContent::from_content(COMMAND_RESPONSE))
+    }
 }
