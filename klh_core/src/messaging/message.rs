@@ -1,38 +1,37 @@
 use core::fmt;
 
-use super::{MessageType, Responder, MessageContent};
+use super::{MessageContent, MessageType, Responder};
 
 /// The struct which plugins send along to subscribers. Different from
 /// Message in the sense that it derives Clone and can be sent to
 /// multiple subscribers.
 #[derive(Debug, Clone)]
 pub struct EventMessage {
-  pub message_type: MessageType,
-  pub content: Option<MessageContent>,
+    pub message_type: MessageType,
+    pub content: Option<MessageContent>,
 }
 
 impl EventMessage {
-  pub fn new(message_type: MessageType, content: Option<MessageContent>) -> Self {
-    Self {
-      message_type,
-      content,
+    pub fn new(message_type: MessageType, content: Option<MessageContent>) -> Self {
+        Self {
+            message_type,
+            content,
+        }
     }
-  }
-  /// Returns the [MessageType] associated with the EventMessage.
-  pub fn get_message_type(&self) -> MessageType {
-    self.message_type
-  }
-
-  pub fn get_content(&mut self) -> Option<MessageContent> {
-    match self.content.take() {
-      None => None,
-      Some(c) => {
-	self.content = Some(c.clone());
-	Some(c)
-      }
+    /// Returns the [MessageType] associated with the EventMessage.
+    pub fn get_message_type(&self) -> MessageType {
+        self.message_type
     }
-  }
 
+    pub fn get_content(&mut self) -> Option<MessageContent> {
+        match self.content.take() {
+            None => None,
+            Some(c) => {
+                self.content = Some(c.clone());
+                Some(c)
+            }
+        }
+    }
 }
 
 /// The fundamental struct by which plugins accept data through the
@@ -44,192 +43,223 @@ impl EventMessage {
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum Message {
-  Event(EventMessage),
-  Command(CommandMessage),
+    Event(EventMessage),
+    Command(CommandMessage),
 }
 
 impl Message {
-  pub fn get_message_type(&self) -> MessageType {
-    match self {
-        Message::Event(event) => event.get_message_type(),
-        Message::Command(command) => command.get_message_type(),
+    pub fn get_message_type(&self) -> MessageType {
+        match self {
+            Message::Event(event) => event.get_message_type(),
+            Message::Command(command) => command.get_message_type(),
+        }
     }
-  }
-  pub fn get_content(&mut self) -> Option<MessageContent> {
-    match self {
-        Message::Event(event) => event.get_content(),
-        Message::Command(command) => command.get_content(),
+    pub fn get_content(&mut self) -> Option<MessageContent> {
+        match self {
+            Message::Event(event) => event.get_content(),
+            Message::Command(command) => command.get_content(),
+        }
     }
-  }
 
-  // Probably need a better way to do this. And the signature... ugh
-  pub fn get_responder(&mut self) -> Result<Option<Responder>, String> {
-    match self {
-      Message::Event(_) => Err("event types do not have responders".to_string()),
-      Message::Command(command) => Ok(command.get_responder()),
+    // Probably need a better way to do this. And the signature... ugh
+    pub fn get_responder(&mut self) -> Result<Option<Responder>, String> {
+        match self {
+            Message::Event(_) => Err("event types do not have responders".to_string()),
+            Message::Command(command) => Ok(command.get_responder()),
+        }
     }
-  }
 }
 
 #[derive(Debug)]
 pub struct CommandMessage {
-  message_type: MessageType,
-  responder: Option<Responder>,
-  content: Option<MessageContent>,
-}
-
-impl CommandMessage {
-
-  pub(crate) fn new(
     message_type: MessageType,
     responder: Option<Responder>,
     content: Option<MessageContent>,
-  ) -> Self {
-    Self {
-      message_type,
-      responder,
-      content,
+}
+
+impl CommandMessage {
+    pub(crate) fn new(
+        message_type: MessageType,
+        responder: Option<Responder>,
+        content: Option<MessageContent>,
+    ) -> Self {
+        Self {
+            message_type,
+            responder,
+            content,
+        }
     }
-  }
 
-  /// Returns the [MessageType] associated with the Message.
-  pub fn get_message_type(&self) -> MessageType {
-    self.message_type
-  }
-
-  /// Gets a one-time use responder with which to asynchronously
-  /// respond to the message. A `Message` instance returns [None] if
-  /// this function is called more than once.
-  pub fn get_responder(&mut self) -> Option<Responder> {
-    self.responder.take()
-  }
-
-  /// Gets the [MessageContent] of the message, if present. Otherwise,
-  /// returns [None].
-  pub fn get_content(&mut self) -> Option<MessageContent> {
-    match self.content.take() {
-      None => None,
-      Some(c) => {
-	self.content = Some(c.clone());
-	Some(c)
-      }
+    /// Returns the [MessageType] associated with the Message.
+    pub fn get_message_type(&self) -> MessageType {
+        self.message_type
     }
-  }
+
+    /// Gets a one-time use responder with which to asynchronously
+    /// respond to the message. A `Message` instance returns [None] if
+    /// this function is called more than once.
+    pub fn get_responder(&mut self) -> Option<Responder> {
+        self.responder.take()
+    }
+
+    /// Gets the [MessageContent] of the message, if present. Otherwise,
+    /// returns [None].
+    pub fn get_content(&mut self) -> Option<MessageContent> {
+        match self.content.take() {
+            None => None,
+            Some(c) => {
+                self.content = Some(c.clone());
+                Some(c)
+            }
+        }
+    }
+}
+
+impl fmt::Display for CommandMessage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Command Message {{
+                message_type: {},
+                content: {:?}
+            }}",
+            self.get_message_type(),
+            self.content.clone(),
+        )
+    }
+}
+
+impl fmt::Display for EventMessage {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "Event Message {{
+                message_type: {},
+                content: {:?}
+            }}",
+            self.get_message_type(),
+            self.content.clone(),
+        )
+    }
 }
 
 impl fmt::Display for Message {
-  fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-    match self {
-      Message::Event(event) => {
-	write!(f,"Message {{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Message::Event(event) => {
+                write!(
+                    f,
+                    "Message {{
+                        message_type: {},
+                        event: {},
+                    }}
+",
+                    event.message_type.display_id(),
+                    event
+                )
+            }
+            Message::Command(command) => {
+                write!(
+                    f,
+                    "Message {{
   message_type: {},
-  content: {:?},
+  command: {},
 }}
-", event.message_type.display_id(), event.content)
-	
-      },
-      Message::Command(command) => {
-	write!(f,"Message {{
-  message_type: {},
-  content: {:?},
-}}
-", command.message_type.display_id(), command.content)
-      },
+",
+                    command.message_type.display_id(),
+                    command
+                )
+            }
+        }
     }
-  }
 }
 
 #[cfg(test)]
 mod message_tests {
-  use rstest::*;
+    use rstest::*;
 
-  use crate::messaging::{MessageType, MessageContent, Request};
+    use crate::messaging::{MessageContent, MessageType, Request};
 
-use super::Message;
+    use super::Message;
 
-  #[rstest]
-  fn should_get_expected_content_from_message() {
-    let mut given_request = Request::new(
-      MessageType::command_from_str("command").unwrap(),
-      MessageContent::from_content("content"),
-    );
+    #[rstest]
+    fn should_get_expected_content_from_message() {
+        let mut given_request = Request::new(
+            MessageType::command_from_str("command").unwrap(),
+            MessageContent::from_content("content"),
+        );
 
-    let mut message = given_request.as_message();
+        let mut message = given_request.as_message();
 
-    assert_eq!(
-      message.get_content(),
-      Some(MessageContent::from_content("content")),
-    )
-  }
-
-  #[rstest]
-  fn should_preserve_message_content_after_providing() {
-    let mut given_request = Request::new(
-      MessageType::command_from_str("command").unwrap(),
-      MessageContent::from_content("content"),
-    );
-
-    let mut message = given_request.as_message();
-
-    let _content_throwaway = message.get_content();
-
-    let preserved_content = message.get_content();
-
-    assert_eq!(
-      preserved_content,
-      Some(MessageContent::from_content("content")),
-    )
-  }
-
-  #[rstest]
-  fn should_provide_responder() {
-    let mut given_request = Request::new(
-      MessageType::command_from_str("command").unwrap(),
-      MessageContent::from_content("content"),
-    );
-
-    if let Message::Command(mut command) = given_request.as_message() {
-      let responder = command.get_responder();
-
-      assert!(responder.is_some())
-      
-    } else {
-      panic!("should have a command from request")
+        assert_eq!(
+            message.get_content(),
+            Some(MessageContent::from_content("content")),
+        )
     }
 
-  }
+    #[rstest]
+    fn should_preserve_message_content_after_providing() {
+        let mut given_request = Request::new(
+            MessageType::command_from_str("command").unwrap(),
+            MessageContent::from_content("content"),
+        );
 
-  #[rstest]
-  fn should_provide_none_if_asked_for_responder_twice() {
-    let mut given_request = Request::new(
-      MessageType::command_from_str("command").unwrap(),
-      MessageContent::from_content("content"),
-    );
+        let mut message = given_request.as_message();
 
-    if let Message::Command(mut message) = given_request.as_message() {
-      let _responder_thrown_away = message.get_responder();
+        let _content_throwaway = message.get_content();
 
-      let second_responder = message.get_responder();
+        let preserved_content = message.get_content();
 
-      assert!(second_responder.is_none())
-      
-    } else {
-      panic!("Should have a command message")
+        assert_eq!(
+            preserved_content,
+            Some(MessageContent::from_content("content")),
+        )
     }
 
-  }
+    #[rstest]
+    fn should_provide_responder() {
+        let mut given_request = Request::new(
+            MessageType::command_from_str("command").unwrap(),
+            MessageContent::from_content("content"),
+        );
 
-  #[rstest]
-  fn should_return_expected_message_type() {
-    let mut given_request = Request::from_message_type(
-      MessageType::command_from_str("command").unwrap(),
-    );
+        if let Message::Command(mut command) = given_request.as_message() {
+            let responder = command.get_responder();
 
-    let message = given_request.as_message();
+            assert!(responder.is_some())
+        } else {
+            panic!("should have a command from request")
+        }
+    }
 
-    assert_eq!(
-      message.get_message_type(),
-      MessageType::command_from_str("command").unwrap(),
-    )
-  }
+    #[rstest]
+    fn should_provide_none_if_asked_for_responder_twice() {
+        let mut given_request = Request::new(
+            MessageType::command_from_str("command").unwrap(),
+            MessageContent::from_content("content"),
+        );
+
+        if let Message::Command(mut message) = given_request.as_message() {
+            let _responder_thrown_away = message.get_responder();
+
+            let second_responder = message.get_responder();
+
+            assert!(second_responder.is_none())
+        } else {
+            panic!("Should have a command message")
+        }
+    }
+
+    #[rstest]
+    fn should_return_expected_message_type() {
+        let mut given_request =
+            Request::from_message_type(MessageType::command_from_str("command").unwrap());
+
+        let message = given_request.as_message();
+
+        assert_eq!(
+            message.get_message_type(),
+            MessageType::command_from_str("command").unwrap(),
+        )
+    }
 }
