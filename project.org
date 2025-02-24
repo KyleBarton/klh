@@ -593,5 +593,7 @@ Finally consolidated queries and commands into just commands. I think at this po
 
 - Try and use slow-bombs and display updates as examples, and figure out looping logic in the test client.
 - After that, merge in and start on an Iced implementation for a front end and an actual RPC protocol - probably unix sockets?
+** 2025-02-22
+Sooo close to having something mergable. Get the commands/events to implement "display", then get it in. Then do a big rustfmt that is badly needed, and I guess keep using zed from here? it's sweet.
 
 
