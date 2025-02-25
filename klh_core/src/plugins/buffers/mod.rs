@@ -2,9 +2,9 @@ use log::{debug, error, warn};
 use models::GetBufferResponse;
 
 use crate::{
+    klh::KlhClient,
     messaging::{CommandMessage, Message, MessageContent, MessageError, MessageType, Request},
     plugin::Plugin,
-    session::SessionClient,
 };
 
 use self::models::Buffer;
@@ -15,7 +15,7 @@ pub mod requests;
 // TODO should this be a fully public struct? I think it should...
 pub(crate) struct Buffers {
     message_types: Vec<MessageType>,
-    session_client: Option<SessionClient>,
+    klh_client: Option<KlhClient>,
     buffers: Vec<Buffer>,
 }
 
@@ -30,7 +30,7 @@ impl Buffers {
 
         Self {
             message_types,
-            session_client: None,
+            klh_client: None,
             buffers: Vec::new(),
         }
     }
@@ -94,15 +94,15 @@ impl Buffers {
             buffer.content.append(append_buffer_content.content);
 
             //TODO this is meh
-            let mut request = Request::new(
+            let request = Request::new(
                 MessageType::event_from_str("buffers:buffer_appended").unwrap(),
                 MessageContent::from_content(buffer),
             );
 
-            let client_clone = self.session_client.clone().expect("Should have a client");
+            let client_clone = self.klh_client.clone().expect("Should have a client");
 
             tokio::spawn(async move {
-                client_clone.send(request.as_message()).await.unwrap();
+                client_clone.send(request).await.unwrap();
             });
         } else if message_type.id_equals_str("buffers::get_buffer") {
             let mut message_content = message.get_content().expect("Content should be present");
@@ -145,8 +145,8 @@ impl Plugin for Buffers {
         self.message_types.clone()
     }
 
-    fn receive_client(&mut self, session_client: SessionClient) {
-        self.session_client = Some(session_client)
+    fn receive_client(&mut self, klh_client: KlhClient) {
+        self.klh_client = Some(klh_client)
     }
 
     fn accept_message(&mut self, message: Message) -> Result<(), MessageError> {

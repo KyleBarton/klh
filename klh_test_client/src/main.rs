@@ -1,5 +1,6 @@
 use klh_core::klh::{Klh, KlhClient};
 use klh_core::messaging::{MessageType, Request};
+use klh_core::plugin::Plugin;
 use klh_core::plugins::buffers::models::{GetBufferResponse, ListBuffersResponse};
 use klh_core::plugins::display::models::{GetWindowResponse, ListWindowsResponse};
 use klh_core::plugins::{buffers, diagnostics, display};
@@ -274,11 +275,45 @@ async fn main() {
     )
     .unwrap();
 
+    let plugin = ClientPlugin::new();
+
     let mut klh = Klh::new();
+
+    klh.add_plugin(Box::new(plugin));
 
     klh.start().await;
 
     let client: KlhClient = klh.get_client();
 
     prompt_and_read(client).await;
+}
+
+#[derive(Default)]
+struct ClientPlugin {
+    client: Option<KlhClient>,
+}
+
+impl ClientPlugin {
+    fn new() -> Self {
+        Self { client: None }
+    }
+}
+
+impl Plugin for ClientPlugin {
+    fn accept_message(
+        &mut self,
+        message: klh_core::messaging::Message,
+    ) -> Result<(), klh_core::messaging::MessageError> {
+        println!("Received message: {}", message);
+        Ok(())
+    }
+
+    // Hard-coded for now until we can figure out how to subscribe
+    fn list_message_types(&self) -> Vec<MessageType> {
+        vec![MessageType::event_from_str("buffers:buffer_appended").unwrap()]
+    }
+
+    fn receive_client(&mut self, client: KlhClient) {
+        self.client = Some(client);
+    }
 }

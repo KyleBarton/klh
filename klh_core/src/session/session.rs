@@ -40,9 +40,7 @@ impl Session {
 
     /// Registers a plugin with the session. This plugin will be started
     /// on a channel when [Session::run] is called.
-    pub fn register_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
-        plugin.receive_client(self.get_client());
-
+    pub fn register_plugin(&mut self, plugin: Box<dyn Plugin + Send>) {
         let message_types = plugin.list_message_types();
 
         let channel = PluginChannel::new(plugin);
@@ -121,7 +119,7 @@ impl Default for Session {
 mod session_tests {
     use super::Session;
     use crate::messaging::{MessageError, MessageType, Request};
-    use crate::plugin::plugin_test_utility::{COMMAND_ID, COMMAND_RESPONSE, TestPlugin};
+    use crate::plugin::plugin_test_utility::{TestPlugin, COMMAND_ID, COMMAND_RESPONSE};
     use crate::session::session::SessionError;
     use rstest::*;
 

@@ -2,10 +2,10 @@ use log::{debug, error, warn};
 use models::{AcceptStringInputRequest, AttachBufferRequest, GetWindowRequest, GetWindowResponse};
 
 use crate::{
+    klh::KlhClient,
     messaging::{CommandMessage, Message, MessageContent, MessageError, MessageType},
     plugin::Plugin,
     plugins::{buffers, display::models::CreateWindowRequest},
-    session::SessionClient,
 };
 
 use self::models::Window;
@@ -15,8 +15,7 @@ pub mod requests;
 
 pub struct Displays {
     message_types: Vec<MessageType>,
-    // TODO move to klh client!
-    session_client: Option<SessionClient>,
+    klh_client: Option<KlhClient>,
     windows: Vec<Window>,
 }
 
@@ -35,7 +34,7 @@ impl Displays {
 
         Self {
             message_types,
-            session_client: None,
+            klh_client: None,
             windows: Vec::new(),
         }
     }
@@ -135,24 +134,20 @@ impl Displays {
                 }
             };
 
-            let mut request_to_buffer = buffers::requests::new_append_string_to_buffer_request(
+            let request_to_buffer = buffers::requests::new_append_string_to_buffer_request(
                 &active_buffer_name,
                 &request.input,
             );
 
             //Ugh this presents a huge problem
             // - How do I make this method async?
-            // - Gotta move to klh client
             // - Can I just do this with a tokio spawn for now?
             // - Ok seems to work as is - let's test
 
-            if let Some(client) = &self.session_client {
+            if let Some(client) = &self.klh_client {
                 let cli_clone = client.clone();
                 tokio::spawn(async move {
-                    cli_clone
-                        .send(request_to_buffer.as_message())
-                        .await
-                        .unwrap();
+                    cli_clone.send(request_to_buffer).await.unwrap();
                 });
             };
         } else {
@@ -184,7 +179,7 @@ impl Plugin for Displays {
         self.message_types.clone()
     }
 
-    fn receive_client(&mut self, client: SessionClient) {
-        self.session_client = Some(client);
+    fn receive_client(&mut self, client: KlhClient) {
+        self.klh_client = Some(client);
     }
 }

@@ -1,6 +1,6 @@
 use crate::{
+    klh::KlhClient,
     messaging::{Message, MessageError, MessageType},
-    session::SessionClient,
 };
 
 /// The trait that must be implemented to create a KLH Plugin.
@@ -17,7 +17,7 @@ pub trait Plugin {
     fn list_message_types(&self) -> Vec<MessageType>;
 
     /// This function is called by the KLH runtime to provide a copy of
-    /// the [SessionClient](crate::session::SessionClient) with which the
+    /// the [KlhClient](crate::klh::KlhClient) with which the
     /// plugin can call the KLH API over the course of its functioning.
-    fn receive_client(&mut self, client: SessionClient);
+    fn receive_client(&mut self, client: KlhClient);
 }

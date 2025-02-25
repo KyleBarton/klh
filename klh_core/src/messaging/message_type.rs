@@ -73,6 +73,7 @@ impl MessageType {
     }
 
     // TODO annotate
+    // TODO this and cmd_from_str should be in a macro to avoid typing unwrap every time
     pub fn event_from_str(str_id: &str) -> Result<Self, MessageTypeError> {
         if str_id.len() > MESSAGE_TYPE_ID_MAX_LENGTH {
             Err(MessageTypeError::MessageTypeIdTooLong)
@@ -116,7 +117,7 @@ mod message_type_tests {
 
     use crate::messaging::MessageTypeError;
 
-    use super::{MESSAGE_TYPE_ID_MAX_LENGTH, MessageType};
+    use super::{MessageType, MESSAGE_TYPE_ID_MAX_LENGTH};
 
     #[rstest]
     fn should_create_command_from_str() {

@@ -1,10 +1,10 @@
 use log::debug;
 
-use crate::{messaging::MessageType, plugin::Plugin, session};
+use crate::{klh::KlhClient, messaging::MessageType, plugin::Plugin};
 
 #[derive(Default)]
 pub struct TestClient {
-    client: Option<session::SessionClient>,
+    client: Option<KlhClient>,
 }
 
 impl TestClient {
@@ -26,7 +26,7 @@ impl Plugin for TestClient {
         vec![MessageType::event_from_str("buffers:buffer_appended").unwrap()]
     }
 
-    fn receive_client(&mut self, client: crate::session::SessionClient) {
+    fn receive_client(&mut self, client: KlhClient) {
         self.client = Some(client);
     }
 }

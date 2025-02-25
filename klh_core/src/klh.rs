@@ -71,7 +71,8 @@ impl Klh {
 
     /// Add an instance of a [Plugin](crate::plugin::Plugin) to the
     /// session for registration. Must be called before [Klh::start]
-    pub fn add_plugin(&mut self, plugin: Box<dyn Plugin + Send>) {
+    pub fn add_plugin(&mut self, mut plugin: Box<dyn Plugin + Send>) {
+        plugin.receive_client(self.get_client());
         self.session.register_plugin(plugin)
     }
 
@@ -120,7 +121,7 @@ mod end_to_end_tests {
 
     use crate::klh::Klh;
     use crate::messaging::{MessageType, Request};
-    use crate::plugin::plugin_test_utility::{COMMAND_ID, COMMAND_RESPONSE, TestPlugin};
+    use crate::plugin::plugin_test_utility::{TestPlugin, COMMAND_ID, COMMAND_RESPONSE};
 
     // Option thing to set up if you need to debug
     #[fixture]

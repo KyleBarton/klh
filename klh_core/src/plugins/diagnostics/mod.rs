@@ -3,9 +3,9 @@ use std::{thread, time};
 use log::{debug, info, warn};
 
 use crate::{
+    klh::KlhClient,
     messaging::{CommandMessage, Message, MessageContent, MessageError, MessageType},
     plugin::Plugin,
-    session::SessionClient,
 };
 
 pub mod models;
@@ -16,7 +16,7 @@ static COMMAND_MESSAGE_TYPE_IDS: [&str; 2] = ["diagnostics::log_event", "diagnos
 
 pub(crate) struct Diagnostics {
     message_types: Vec<MessageType>,
-    session_client: Option<SessionClient>,
+    klh_client: Option<KlhClient>,
 }
 
 impl Diagnostics {
@@ -30,7 +30,7 @@ impl Diagnostics {
 
         Diagnostics {
             message_types,
-            session_client: None,
+            klh_client: None,
         }
     }
 
@@ -80,7 +80,7 @@ impl Plugin for Diagnostics {
     }
 
     // TODO do I actually need the client for diagnostics?
-    fn receive_client(&mut self, session_client: SessionClient) {
-        self.session_client = Some(session_client);
+    fn receive_client(&mut self, session_client: KlhClient) {
+        self.klh_client = Some(session_client);
     }
 }

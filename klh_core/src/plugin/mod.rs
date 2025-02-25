@@ -14,8 +14,8 @@ pub mod plugin_test_utility {
     pub const COMMAND_RESPONSE: &str = "commandResponse";
 
     use super::Plugin;
+    use crate::klh::KlhClient;
     use crate::messaging::{Message, MessageContent, MessageError, MessageType};
-    use crate::session::SessionClient;
 
     pub struct TestPlugin {
         command_sent: bool,
@@ -60,6 +60,6 @@ pub mod plugin_test_utility {
             vec![MessageType::command_from_str(COMMAND_ID).unwrap()]
         }
 
-        fn receive_client(&mut self, _client: SessionClient) {}
+        fn receive_client(&mut self, _client: KlhClient) {}
     }
 }
