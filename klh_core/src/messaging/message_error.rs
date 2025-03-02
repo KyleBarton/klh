@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::klh::KlhError;
+
 /// Collection of known error identifiers that can be returned in the [messaging](super) module.
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum MessageError {
@@ -45,4 +47,6 @@ pub enum MessageError {
     /// did not process it because it contained improper content (for
     /// instance, a resource with the given unique ID already exists).
     BadRequest(String),
+    /// Indicates that a downstream error occurred. TODO This probably means errors need to be simplified.
+    DownstreamError(String, KlhError),
 }

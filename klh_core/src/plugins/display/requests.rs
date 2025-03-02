@@ -1,5 +1,3 @@
-// requests.rs
-
 use crate::messaging::{MessageContent, MessageType, Request};
 
 use super::models::{

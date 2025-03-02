@@ -1,4 +1,5 @@
 use log::debug;
+use serde::{Deserialize, Serialize};
 
 use crate::config::{CorePlugins, KlhConfig};
 use crate::messaging::Request;
@@ -8,7 +9,7 @@ use crate::plugins::test_client::TestClient;
 use crate::plugins::{buffers::Buffers, diagnostics::Diagnostics};
 use crate::session::{Session, SessionClient, SessionError};
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum KlhError {
     /// Indicates that a Message was not able to be sent to the running
     /// Klh instance. Wraps a
@@ -37,6 +38,21 @@ impl KlhClient {
             }
             Ok(_) => Ok(()),
         }
+    }
+
+    pub fn send_background(&self, mut request: Request) {
+        let cloned_client = self.session_client.clone();
+        tokio::spawn(async move {
+            match cloned_client.send(request.as_message()).await {
+                Ok(_) => (),
+                Err(session_err) => {
+                    debug!(
+                        "Error sending message to session in task: {:?}",
+                        session_err
+                    );
+                }
+            };
+        });
     }
 }
 

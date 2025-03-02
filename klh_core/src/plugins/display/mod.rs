@@ -139,16 +139,11 @@ impl Displays {
                 &request.input,
             );
 
-            //Ugh this presents a huge problem
-            // - How do I make this method async?
-            // - Can I just do this with a tokio spawn for now?
-            // - Ok seems to work as is - let's test
-
             if let Some(client) = &self.klh_client {
-                let cli_clone = client.clone();
-                tokio::spawn(async move {
-                    cli_clone.send(request_to_buffer).await.unwrap();
-                });
+                client.send_background(request_to_buffer);
+            } else {
+                error!("No klh client available to send request");
+                return Err(MessageError::PluginFailedToProcessMessage);
             };
         } else {
             warn!(

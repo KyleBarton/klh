@@ -1,4 +1,6 @@
 use log::debug;
+use serde::Deserialize;
+use serde::Serialize;
 
 use crate::plugin::Plugin;
 use crate::plugin::PluginChannel;
@@ -8,7 +10,7 @@ use crate::session::SessionClient;
 use super::dispatch::Dispatch;
 
 /// Errors which can occur when using a klh [Session](Session)
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub enum SessionError {
     /// Indicates that a Message was not able to be sent to the central
     /// processing loop of the session.
